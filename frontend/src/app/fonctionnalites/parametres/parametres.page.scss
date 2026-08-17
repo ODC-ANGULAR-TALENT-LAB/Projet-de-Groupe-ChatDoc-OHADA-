@@ -1,0 +1,249 @@
+.page {
+  height: 100%;
+  overflow-y: auto;
+  max-width: var(--largeur-lecture);
+  margin: 0 auto;
+  padding: var(--e4) var(--e3) var(--e8);
+}
+
+header {
+  margin-bottom: var(--e6);
+
+  h1 {
+    margin: 0 0 var(--e2);
+    font-family: var(--police-serif);
+    font-size: 1.6rem;
+    color: var(--bleu-nuit);
+  }
+}
+
+.intro {
+  margin: 0;
+  color: var(--gris-texte);
+  line-height: 1.65;
+}
+
+.bloc {
+  margin-bottom: var(--e6);
+  padding: var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-carte);
+
+  h2 {
+    margin: 0 0 var(--e4);
+    font-family: var(--police-serif);
+    font-size: 1.1rem;
+    color: var(--bleu-nuit);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Identité                                                            */
+/* ------------------------------------------------------------------ */
+
+.identite {
+  display: flex;
+  align-items: center;
+  gap: var(--e4);
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--or-pale);
+}
+
+/* Les initiales prennent la place de la photo quand elle manque. Même
+   taille, même forme : l'absence ne doit pas déplacer la mise en page. */
+.initiales {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--police-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--bleu-nuit);
+  background: var(--or-pale);
+}
+
+.qui {
+  min-width: 0;
+}
+
+.email {
+  margin: 0 0 var(--e1);
+  font-weight: 600;
+  color: var(--texte);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--gris-texte);
+}
+
+/* ------------------------------------------------------------------ */
+/* Champs et réglages                                                  */
+/* ------------------------------------------------------------------ */
+
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--texte);
+  }
+
+  input[type='text'] {
+    padding: 0.6rem 0.7rem;
+    font: inherit;
+    /* 16 px : en dessous, iOS agrandit la page au focus. */
+    font-size: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--gris-bordure);
+    border-radius: var(--rayon);
+  }
+}
+
+.aide {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--gris-texte);
+}
+
+.reglage {
+  padding: var(--e3) 0;
+  border-bottom: 1px solid var(--surface-haute);
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+.bascule {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e3);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    /* 20 px : une case de 13 px est sous la cible tactile confortable. */
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    accent-color: var(--bleu-nuit);
+    cursor: pointer;
+  }
+}
+
+.bascule span,
+.choix label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--texte);
+  }
+
+  em {
+    font-style: normal;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--gris-texte);
+  }
+}
+
+.choix {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e4);
+
+  select {
+    flex-shrink: 0;
+    padding: 0.45rem 0.6rem;
+    font: inherit;
+    font-size: 0.88rem;
+    background: var(--surface);
+    border: 1px solid var(--gris-bordure);
+    border-radius: var(--rayon);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Actions                                                             */
+/* ------------------------------------------------------------------ */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+}
+
+.principal {
+  min-height: 44px;
+  padding: 0.6rem 1.2rem;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--bleu-nuit);
+  border: 0;
+  border-radius: var(--rayon);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--bleu-nuit-clair);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.confirme {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  font-size: 0.85rem;
+  color: var(--vert);
+}
+
+.erreur {
+  margin: 0 0 var(--e3);
+  padding: var(--e2) var(--e3);
+  font-size: 0.86rem;
+  color: #8c2f2f;
+  background: #fbf4f2;
+  border-left: 3px solid #a94442;
+  border-radius: var(--rayon);
+}
+
+.vide,
+.attente {
+  color: var(--gris-texte);
+}
+
+.confidentialite {
+  margin: var(--e6) 0 0;
+  padding-top: var(--e4);
+  border-top: 1px solid var(--bordure);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--gris-texte);
+}

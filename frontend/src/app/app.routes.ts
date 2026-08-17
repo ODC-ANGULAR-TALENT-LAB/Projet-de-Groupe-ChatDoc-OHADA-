@@ -82,10 +82,21 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'compte',
-    title: 'ChatDocs OHADA — Compte',
+    path: 'parametres',
+    title: 'ChatDocs OHADA — Mon profil',
     loadComponent: () =>
-      import('./fonctionnalites/compte/compte.page').then((m) => m.ComptePage),
+      import('./fonctionnalites/parametres/parametres.page').then(
+        (m) => m.ParametresPage,
+      ),
+  },
+  {
+    // /parametres a repris ce que portait cette page — e-mail, plan,
+    // quota — et y a ajouté le profil et les réglages. On redirige
+    // plutôt que de garder deux pages qui disent la même chose : les
+    // liens déjà partagés continuent de fonctionner.
+    path: 'compte',
+    redirectTo: 'parametres',
+    pathMatch: 'full',
   },
   {
     path: 'favoris',

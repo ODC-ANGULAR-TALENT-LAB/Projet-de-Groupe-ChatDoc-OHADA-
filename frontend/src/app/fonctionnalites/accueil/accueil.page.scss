@@ -227,3 +227,11 @@
     font-size: 2.5rem;
   }
 }
+
+/* La salutation précède le titre sans lui voler la vedette : elle
+   accueille, elle n'annonce pas. */
+.salutation {
+  margin: 0 0 var(--e2);
+  font-size: 0.95rem;
+  color: var(--or-fonce);
+}

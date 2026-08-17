@@ -40,6 +40,7 @@ export class InscriptionPage {
   protected readonly erreur = signal<string | null>(null);
   protected readonly occupe = signal(false);
 
+  protected readonly prenom = signal('');
   protected readonly email = signal('');
   protected readonly motDePasse = signal('');
   /** Passe à vrai quand l'utilisateur quitte le champ mot de passe. */
@@ -89,10 +90,19 @@ export class InscriptionPage {
   }
 
   private async entrerGoogle(jetonIdentite: string): Promise<void> {
+    // Deuxième verrou, après celui de l'interface : le rappel de
+    // Google peut arriver alors que la case vient d'être décochée.
+    if (!this.cguAcceptees()) {
+      this.erreur.set(
+        "Acceptez les conditions générales d'utilisation pour créer un compte.",
+      );
+      return;
+    }
+
     this.erreur.set(null);
     this.occupe.set(true);
     try {
-      await this.auth.connexionGoogle(jetonIdentite);
+      await this.auth.connexionGoogle(jetonIdentite, this.cguAcceptees());
       await this.router.navigate(['/accueil']);
     } catch (erreur) {
       this.erreur.set(
@@ -113,6 +123,7 @@ export class InscriptionPage {
         this.email(),
         this.motDePasse(),
         this.cguAcceptees(),
+        this.prenom() || null,
       );
       this.motDePasse.set('');
       await this.router.navigate(['/accueil']);

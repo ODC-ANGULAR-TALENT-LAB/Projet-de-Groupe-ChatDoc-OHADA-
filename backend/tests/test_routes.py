@@ -33,6 +33,7 @@ ROUTES_PUBLIQUES = [
     "/journal",
     "/conformite/modeles",
     "/documents/modeles",
+    "/moi/preferences/catalogue",
     # Le catalogue des calculateurs est public : il ne calcule rien et
     # dit surtout lesquels ont, ou n'ont pas, de base legale en corpus.
     "/calculateurs",
@@ -42,6 +43,8 @@ ROUTES_PUBLIQUES = [
 # ou un cout d'appel partent sans controle.
 ROUTES_PROTEGEES = [
     ("GET", "/moi/quota"),
+    ("GET", "/moi/profil"),
+    ("PUT", "/moi/profil"),
     ("GET", "/conversations"),
     ("POST", "/chat/question"),
     ("POST", "/chat/question/flux"),
@@ -97,6 +100,8 @@ def test_toutes_les_routes_declarees_sont_montees(client):
         "/conformite/analyser",
         "/documents/modeles",
         "/documents/modeles/{cle}/questionnaire",
+        "/moi/profil",
+        "/moi/preferences/catalogue",
         "/documents/{cle}",
         "/favoris",
         "/favoris/{article_id}",

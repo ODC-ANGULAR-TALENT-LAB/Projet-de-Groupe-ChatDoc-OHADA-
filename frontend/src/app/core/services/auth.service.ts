@@ -28,12 +28,14 @@ export class AuthService {
     email: string,
     motDePasse: string,
     cguAcceptees: boolean,
+    prenom: string | null = null,
   ): Promise<void> {
     const jeton = await firstValueFrom(
       this.api.post<Jeton>('/auth/inscription', {
         email,
         mot_de_passe: motDePasse,
         cgu_acceptees: cguAcceptees,
+        prenom,
       }),
     );
     this.enregistrer(jeton);
@@ -52,10 +54,21 @@ export class AuthService {
    * Le jeton d'identité n'est pas conservé : il sert une fois, le temps
    * que le serveur en vérifie la signature et ouvre une session. C'est
    * le jeton de l'application qui persiste ensuite.
+   *
+   * `cguAcceptees` n'est exigé par le serveur QUE si le compte n'existe
+   * pas encore : la même route sert à s'inscrire et à se connecter, et
+   * redemander l'acceptation à chaque connexion la ferait cocher sans
+   * lire.
    */
-  async connexionGoogle(jetonIdentite: string): Promise<void> {
+  async connexionGoogle(
+    jetonIdentite: string,
+    cguAcceptees = false,
+  ): Promise<void> {
     const jeton = await firstValueFrom(
-      this.api.post<Jeton>('/auth/google', { jeton_identite: jetonIdentite }),
+      this.api.post<Jeton>('/auth/google', {
+        jeton_identite: jetonIdentite,
+        cgu_acceptees: cguAcceptees,
+      }),
     );
     this.enregistrer(jeton);
   }

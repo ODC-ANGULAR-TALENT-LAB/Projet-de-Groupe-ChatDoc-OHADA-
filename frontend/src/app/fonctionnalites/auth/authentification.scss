@@ -310,3 +310,16 @@ input[type='password'] {
     font-weight: 600;
   }
 }
+
+/* Le bouton Google est estompé et inerte tant que les conditions ne
+   sont pas acceptées. On le laisse VISIBLE plutôt que masqué : un
+   bouton qui apparaît d'un coup en cochant une case surprend, alors
+   qu'un bouton grisé s'explique tout seul. */
+.google.verrouille {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.aide.centre {
+  text-align: center;
+}

@@ -18,6 +18,24 @@
 
       <form (ngSubmit)="creer()">
         <div class="champ">
+          <label for="prenom">Prénom</label>
+          <input
+            id="prenom"
+            name="prenom"
+            type="text"
+            autocomplete="given-name"
+            maxlength="40"
+            placeholder="Christian"
+            [ngModel]="prenom()"
+            (ngModelChange)="prenom.set($event)"
+          />
+          <p class="aide">
+            L'assistant s'en servira pour vous saluer. Modifiable à tout
+            moment.
+          </p>
+        </div>
+
+        <div class="champ">
           <label for="email">Adresse e-mail</label>
           <input
             id="email"
@@ -94,9 +112,21 @@
 
       <div class="separateur"><span>ou</span></div>
 
-      <div class="google">
+      <!--
+        LE BOUTON GOOGLE EST SOUMIS À LA MÊME CASE. Passer par Google
+        reste une inscription : sans ce verrou, il suffirait d'un clic
+        pour créer un compte sans avoir rien accepté. Le serveur refuse
+        de toute façon, mais le dire ici évite un aller-retour et une
+        erreur incompréhensible.
+      -->
+      <div class="google" [class.verrouille]="!cguAcceptees()">
         <div #boutonGoogle></div>
       </div>
+      @if (!cguAcceptees()) {
+        <p class="aide centre" role="status">
+          Acceptez les conditions ci-dessus pour continuer avec Google.
+        </p>
+      }
       @if (google.erreur(); as messageGoogle) {
         <p class="aide">{{ messageGoogle }}</p>
       }

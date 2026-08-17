@@ -102,6 +102,20 @@ class Utilisateur(Base):
     #
     # NULL pour les comptes anterieurs a la mise en place : on ne leur
     # prete pas un consentement qu'ils n'ont pas donne.
+    # PROFIL.
+    #
+    # `prenom` est une colonne et non une preference : il entre dans le
+    # prompt de l'assistant, et subit donc une validation stricte que du
+    # JSON libre ne permettrait pas d'imposer (voir services/profil.py).
+    prenom: Mapped[str | None] = mapped_column(String(60))
+    # Photo du compte Google. DECORATIVE : si elle ne charge pas — hors
+    # ligne, lien expire — l'interface affiche les initiales.
+    photo_url: Mapped[str | None] = mapped_column(Text)
+    # Reglages d'affichage et de confort. En JSONB parce que la liste
+    # bougera : une colonne par reglage imposerait une migration a
+    # chaque ajout.
+    preferences: Mapped[dict] = mapped_column(JSONB, default=dict)
+
     cgu_version: Mapped[str | None] = mapped_column(String(20))
     cgu_acceptees_le: Mapped[datetime.datetime | None] = mapped_column(
         DateTime(timezone=True)

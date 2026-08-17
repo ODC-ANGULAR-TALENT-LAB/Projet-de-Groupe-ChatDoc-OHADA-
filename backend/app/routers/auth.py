@@ -14,6 +14,7 @@ from app.dependances import QUOTA_PAR_PLAN, utilisateur_courant
 from app.models import Utilisateur
 from app.schemas import Identifiants, Inscription, Jeton, JetonGoogle, Quota
 from app.services.google import JetonGoogleInvalide, verifier_jeton
+from app.services.profil import ProfilRefuse, nettoyer_prenom
 from app.services.securite import creer_jeton, hacher, verifier
 
 routeur = APIRouter(tags=["comptes"])
@@ -49,6 +50,13 @@ def inscription(corps: Inscription, db: Session = Depends(get_db)) -> Jeton:
             "pour créer un compte.",
         )
 
+    try:
+        prenom = nettoyer_prenom(corps.prenom)
+    except ProfilRefuse as erreur:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, str(erreur)
+        ) from erreur
+
     existant = db.scalar(select(Utilisateur).where(Utilisateur.email == corps.email))
     if existant is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Cet e-mail est deja inscrit")
@@ -59,6 +67,8 @@ def inscription(corps: Inscription, db: Session = Depends(get_db)) -> Jeton:
         plan="gratuit",
         quota_restant=QUOTA_PAR_PLAN["gratuit"],
         quota_reinit_le=datetime.date.today(),
+        prenom=prenom,
+        preferences={},
         cgu_version=parametres.version_cgu,
         cgu_acceptees_le=datetime.datetime.now(datetime.timezone.utc),
     )
@@ -85,6 +95,20 @@ def connexion(corps: Identifiants, db: Session = Depends(get_db)) -> Jeton:
         )
 
     return _jeton(utilisateur)
+
+
+def _prenom_google(brut: str | None) -> str | None:
+    """Prenom issu d'un claim Google, valide comme un prenom saisi.
+
+    UN PRENOM GOOGLE N'EST PAS PLUS SUR QU'UN AUTRE : c'est un champ
+    libre du profil Google. S'il ne passe pas la validation, on
+    l'abandonne plutot que de refuser la connexion — l'utilisateur
+    pourra le renseigner depuis ses paramètres.
+    """
+    try:
+        return nettoyer_prenom(brut)
+    except ProfilRefuse:
+        return None
 
 
 @routeur.post("/auth/google")
@@ -116,8 +140,27 @@ def connexion_google(corps: JetonGoogle, db: Session = Depends(get_db)) -> Jeton
         )
         if utilisateur is not None:
             utilisateur.google_sub = identite.sub
+            # On COMPLETE, on n'ECRASE pas : un prénom déjà choisi par
+            # l'utilisateur vaut mieux que celui de son compte Google.
+            if not utilisateur.prenom:
+                utilisateur.prenom = _prenom_google(identite.prenom)
+            if not utilisateur.photo_url:
+                utilisateur.photo_url = identite.photo_url
         else:
             # 3. Aucun compte : on en crée un, sans mot de passe.
+            #
+            # LES CONDITIONS SONT EXIGEES ICI AUSSI. Passer par Google
+            # ne dispense de rien : c'est une inscription, et la seule
+            # difference est que Google atteste de l'identite. Sans ce
+            # contrôle, il suffirait du bouton Google pour créer un
+            # compte sans avoir jamais accepté quoi que ce soit.
+            if not corps.cgu_acceptees:
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    "Les conditions générales d'utilisation doivent être "
+                    "acceptées pour créer un compte.",
+                )
+
             utilisateur = Utilisateur(
                 email=identite.email,
                 mot_de_passe_hash=None,
@@ -125,6 +168,14 @@ def connexion_google(corps: JetonGoogle, db: Session = Depends(get_db)) -> Jeton
                 plan="gratuit",
                 quota_restant=QUOTA_PAR_PLAN["gratuit"],
                 quota_reinit_le=datetime.date.today(),
+                # Le prénom vient de Google, mais il passe par la MEME
+                # validation que celui saisi à la main : un claim est
+                # une donnée reçue, pas une donnée de confiance.
+                prenom=_prenom_google(identite.prenom),
+                photo_url=identite.photo_url,
+                preferences={},
+                cgu_version=parametres.version_cgu,
+                cgu_acceptees_le=datetime.datetime.now(datetime.timezone.utc),
             )
             db.add(utilisateur)
 

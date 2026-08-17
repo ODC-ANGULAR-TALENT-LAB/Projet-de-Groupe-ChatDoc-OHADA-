@@ -41,12 +41,21 @@ class Inscription(Identifiants):
     """
 
     cgu_acceptees: bool = False
+    # Facultatif : on peut s'inscrire sans le donner et le renseigner
+    # plus tard depuis les paramètres.
+    prenom: str | None = Field(default=None, max_length=60)
 
 
 class JetonGoogle(BaseModel):
-    """Jeton d'identite obtenu par le navigateur aupres de Google."""
+    """Jeton d'identite obtenu par le navigateur aupres de Google.
+
+    `cgu_acceptees` n'est exige QUE si le compte n'existe pas encore :
+    Google sert a la fois a s'inscrire et a se connecter, et redemander
+    l'acceptation a chaque connexion la ferait cocher sans lire.
+    """
 
     jeton_identite: str = Field(min_length=20)
+    cgu_acceptees: bool = False
 
 
 class Jeton(BaseModel):
@@ -516,3 +525,44 @@ class DocumentEntree(BaseModel):
 
     reponses: dict[str, str] = {}
     format: Literal["pdf", "docx"] = "pdf"
+
+
+# ---------------------------------------------------------------------
+# Profil et preferences
+# ---------------------------------------------------------------------
+
+
+class ProfilEntree(BaseModel):
+    """Mise a jour du profil.
+
+    LES DEUX CHAMPS SONT FACULTATIFS ET DISTINCTS DE « vide ». `None`
+    signifie « ne touche pas a ce champ » ; une chaine vide, elle,
+    efface le prenom. Sans cette distinction, une interface qui
+    n'affiche que les preferences effacerait le prenom a chaque
+    enregistrement.
+    """
+
+    prenom: str | None = Field(default=None, max_length=60)
+    preferences: dict | None = None
+
+
+class ProfilSortie(BaseModel):
+    email: str
+    prenom: str | None = None
+    photo_url: str | None = None
+    # Deux lettres pour l'avatar quand la photo ne charge pas. Calculees
+    # cote serveur : l'interface n'a pas a reimplementer la regle.
+    initiales: str
+
+    # Lecture seule : ce sont des decisions du service, pas des
+    # preferences. Les exposer evite d'avoir a expliquer pourquoi le
+    # champ ne s'enregistre pas.
+    role: str
+    plan: str
+    quota_restant: int
+    connexion_google: bool
+
+    cgu_version: str | None = None
+    cgu_acceptees_le: datetime.datetime | None = None
+
+    preferences: dict = {}

@@ -19,6 +19,7 @@ from app.routers import (
     corpus,
     favoris,
     generateur,
+    profil,
 )
 
 app = FastAPI(
@@ -69,6 +70,7 @@ app.include_router(conformite.routeur)
 app.include_router(calculateurs.routeur)
 app.include_router(favoris.routeur)
 app.include_router(generateur.routeur)
+app.include_router(profil.routeur)
 app.include_router(admin.routeur)
 
 

@@ -1,0 +1,147 @@
+<section class="page">
+  <header>
+    <h1>Mon profil</h1>
+    <p class="intro">
+      Votre identité dans l'application, et la façon dont elle se
+      comporte.
+    </p>
+  </header>
+
+  @if (!auth.connecte()) {
+    <p class="vide">
+      Cette page demande un compte.
+      <a routerLink="/connexion">Se connecter</a>
+    </p>
+  } @else if (chargement()) {
+    <p class="attente" role="status">Chargement…</p>
+  } @else {
+    @if (profil(); as p) {
+    <!-- IDENTITÉ ------------------------------------------------- -->
+    <section class="bloc identite">
+      <!--
+        La photo vient du compte Google. Elle est DÉCORATIVE : si elle
+        ne charge pas — hors ligne, lien expiré — les initiales
+        s'affichent à sa place, et rien n'est perdu.
+
+        `referrerpolicy` : le navigateur n'annonce pas à Google depuis
+        quelle page l'avatar est demandé.
+      -->
+      @if (p.photo_url) {
+        <img
+          class="avatar"
+          [src]="p.photo_url"
+          alt=""
+          referrerpolicy="no-referrer"
+          width="72"
+          height="72"
+        />
+      } @else {
+        <span class="avatar initiales" aria-hidden="true">{{ p.initiales }}</span>
+      }
+
+      <div class="qui">
+        <p class="email">{{ p.email }}</p>
+        <p class="meta">
+          Plan {{ p.plan }} · {{ p.quota_restant }} question(s) restante(s)
+          @if (p.connexion_google) {
+            · connecté avec Google
+          }
+        </p>
+        @if (p.cgu_acceptees_le) {
+          <p class="meta">
+            Conditions version {{ p.cgu_version }} acceptées le
+            {{ p.cgu_acceptees_le | date: 'dd/MM/yyyy' }}
+          </p>
+        }
+      </div>
+    </section>
+
+    <!-- PRÉNOM --------------------------------------------------- -->
+    <section class="bloc">
+      <h2>Prénom</h2>
+      <div class="champ">
+        <label for="prenom">Comment souhaitez-vous être appelé ?</label>
+        <input
+          id="prenom"
+          type="text"
+          maxlength="40"
+          autocomplete="given-name"
+          placeholder="Christian"
+          [ngModel]="prenom()"
+          (ngModelChange)="prenom.set($event); enregistre.set(false)"
+        />
+        <p class="aide">
+          Lettres, espaces, traits d'union et apostrophes uniquement.
+          Laissez vide pour ne pas être appelé par votre prénom.
+        </p>
+      </div>
+    </section>
+
+    <!-- RÉGLAGES ------------------------------------------------- -->
+    <section class="bloc">
+      <h2>Réglages</h2>
+
+      @for (reglage of reglages(); track reglage.cle) {
+        <div class="reglage">
+          @if (reglage.regle.type === 'booleen') {
+            <label class="bascule">
+              <input
+                type="checkbox"
+                [checked]="$any(valeurs()[reglage.cle])"
+                (change)="changer(reglage.cle, $any($event.target).checked)"
+              />
+              <span>
+                <strong>{{ reglage.libelle }}</strong>
+                <em>{{ reglage.explication }}</em>
+              </span>
+            </label>
+          } @else {
+            <div class="choix">
+              <label [attr.for]="'reglage-' + reglage.cle">
+                <strong>{{ reglage.libelle }}</strong>
+                <em>{{ reglage.explication }}</em>
+              </label>
+              <select
+                [id]="'reglage-' + reglage.cle"
+                [ngModel]="valeurs()[reglage.cle]"
+                (ngModelChange)="changer(reglage.cle, $event)"
+              >
+                @for (valeur of reglage.regle.valeurs; track valeur) {
+                  <option [value]="valeur">{{ valeur }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    @if (erreur()) {
+      <p class="erreur" role="alert">{{ erreur() }}</p>
+    }
+
+    <div class="actions">
+      <button
+        type="button"
+        class="principal"
+        [disabled]="occupe()"
+        (click)="enregistrer()"
+      >
+        {{ occupe() ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+      @if (enregistre()) {
+        <span class="confirme" role="status">
+          <app-icone nom="valide" />
+          Enregistré
+        </span>
+      }
+    </div>
+
+    <p class="confidentialite">
+      Vos réglages et votre prénom ne servent qu'à cette application.
+      Votre prénom n'est transmis à l'assistant que si la salutation est
+      active.
+    </p>
+    }
+  }
+</section>

@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ProfilService } from '../../core/services/profil.service';
 import { IconeComponent } from '../../partage/composants/icone.component';
 
 /**
@@ -58,6 +59,15 @@ const PERSONAS: Persona[] = [
   template: `
     <section class="page">
       <header class="entete">
+        <!--
+          SALUTATION. Elle n'apparaît que si l'utilisateur est connecté,
+          a renseigné un prénom, ET n'a pas désactivé le réglage. Trois
+          conditions plutôt qu'une : saluer quelqu'un qui a demandé
+          qu'on ne le salue pas serait pire que de ne rien dire.
+        -->
+        @if (salutation(); as bonjour) {
+          <p class="salutation">{{ bonjour }}</p>
+        }
         <h1>
           Le droit OHADA, <span class="accent">preuve à l'appui</span>
         </h1>
@@ -151,6 +161,24 @@ const PERSONAS: Persona[] = [
 })
 export class AccueilPage {
   protected readonly auth = inject(AuthService);
+  private readonly profils = inject(ProfilService);
+
+  /**
+   * « Bonjour Christian », ou rien.
+   *
+   * L'HEURE VIENT DU NAVIGATEUR, pas du serveur : c'est celle de
+   * l'utilisateur qui compte, et le serveur ne la connaît pas.
+   */
+  protected readonly salutation = computed(() => {
+    const profil = this.profils.profil();
+    if (!profil?.prenom || profil.preferences?.['salutation'] === false) {
+      return null;
+    }
+    const heure = new Date().getHours();
+    const moment =
+      heure < 5 || heure >= 18 ? 'Bonsoir' : 'Bonjour';
+    return `${moment} ${profil.prenom}.`;
+  });
   private readonly router = inject(Router);
 
   protected readonly personas = PERSONAS;

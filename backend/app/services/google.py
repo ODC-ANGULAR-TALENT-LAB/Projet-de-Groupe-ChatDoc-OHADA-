@@ -37,6 +37,11 @@ class IdentiteGoogle:
 
     sub: str
     email: str
+    # Facultatifs : Google ne les fournit pas toujours, selon ce que
+    # l'utilisateur a rempli et les portees demandees. Leur absence ne
+    # doit jamais empecher la connexion.
+    prenom: str | None = None
+    photo_url: str | None = None
 
 
 def verifier_jeton(jeton: str) -> IdentiteGoogle:
@@ -83,4 +88,12 @@ def verifier_jeton(jeton: str) -> IdentiteGoogle:
             "Google, ou creez un compte avec un mot de passe."
         )
 
-    return IdentiteGoogle(sub=charge["sub"], email=email)
+    # `given_name` plutot que `name` : on veut le prenom seul, pour
+    # saluer. `name` porte le nom complet, qui sonne administratif dans
+    # une salutation.
+    return IdentiteGoogle(
+        sub=charge["sub"],
+        email=email,
+        prenom=charge.get("given_name"),
+        photo_url=charge.get("picture"),
+    )

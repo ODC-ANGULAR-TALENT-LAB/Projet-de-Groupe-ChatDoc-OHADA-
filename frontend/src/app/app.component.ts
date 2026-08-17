@@ -12,6 +12,7 @@ import { Conversation } from './core/models';
 import { AuthService } from './core/services/auth.service';
 import { ChatService } from './core/services/chat.service';
 import { FavorisService } from './core/services/favoris.service';
+import { ProfilService } from './core/services/profil.service';
 import { HistoriqueService } from './core/services/historique.service';
 import { IconeComponent } from './partage/composants/icone.component';
 
@@ -44,7 +45,7 @@ const DESTINATIONS: Destination[] = [
   { chemin: '/chat', libelle: 'Assistant', icone: 'nouveau-chat' },
   { chemin: '/bibliotheque', libelle: 'Bibliothèque', icone: 'bibliotheque' },
   { chemin: '/historique', libelle: 'Historique', icone: 'historique' },
-  { chemin: '/compte', libelle: 'Compte', icone: 'compte' },
+  { chemin: '/parametres', libelle: 'Profil', icone: 'compte' },
   { chemin: '/admin', libelle: 'Corpus', icone: 'corpus', juriste: true },
 ];
 
@@ -113,6 +114,19 @@ const DESTINATIONS: Destination[] = [
            déjà à cinq — leur maximum. On les groupe à part des pages de
            transparence : un calculateur n'est pas une page de
            référence, et les ranger ensemble brouillerait les deux. -->
+      @if (auth.connecte() && profils.profil(); as moi) {
+        <!-- Identité : l'avatar dit à qui appartient la session. Sans
+             lui, rien ne distingue deux comptes sur le même poste. -->
+        <a class="moi" routerLink="/parametres" routerLinkActive="actif">
+          @if (moi.photo_url) {
+            <img [src]="moi.photo_url" alt="" referrerpolicy="no-referrer" />
+          } @else {
+            <span class="initiales" aria-hidden="true">{{ moi.initiales }}</span>
+          }
+          <span class="moi-nom">{{ moi.prenom || moi.email }}</span>
+        </a>
+      }
+
       <nav class="secondaire" aria-label="Outils">
         <a routerLink="/favoris" routerLinkActive="actif">
           Favoris
@@ -383,6 +397,50 @@ const DESTINATIONS: Destination[] = [
     /* Le second groupe suit le premier. Sans cette règle, il hérite du
        « margin-top: auto » et se décolle : les deux blocs seraient
        poussés en bas chacun de leur côté, avec un vide entre eux. */
+    .moi {
+      display: flex;
+      align-items: center;
+      gap: var(--e2);
+      margin-top: var(--e4);
+      padding: var(--e2);
+      color: var(--sur-nuit);
+      text-decoration: none;
+      border-radius: var(--rayon);
+
+      &:hover,
+      &.actif {
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      img,
+      .initiales {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      /* Les initiales occupent exactement la place de la photo : son
+         absence ne doit pas déplacer la mise en page. */
+      .initiales {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--bleu-encre);
+        background: var(--or);
+      }
+    }
+
+    .moi-nom {
+      font-size: 0.85rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .pastille {
       display: inline-flex;
       align-items: center;
@@ -533,6 +591,7 @@ export class AppComponent {
   protected readonly auth = inject(AuthService);
   protected readonly chat = inject(ChatService);
   protected readonly favoris = inject(FavorisService);
+  protected readonly profils = inject(ProfilService);
   private readonly historique = inject(HistoriqueService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -574,6 +633,9 @@ export class AppComponent {
       if (this.auth.connecte()) {
         void this.historique.charger();
         void this.favoris.rafraichirAlertes();
+        // Le profil porte le prénom et l'avatar : il est chargé une
+        // fois pour toute l'application, pas par chaque page.
+        if (!this.profils.profil()) void this.profils.charger();
       }
     });
   }

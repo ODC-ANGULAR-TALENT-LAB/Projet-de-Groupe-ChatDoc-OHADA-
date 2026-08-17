@@ -33,6 +33,7 @@ from app.schemas import (
     SignalementEntree,
 )
 from app.services.export_pdf import construire as construire_pdf
+from app.services.profil import preferences_completes
 from app.services.rag import ServiceIndisponible, repondre, repondre_en_flux
 
 routeur = APIRouter(tags=["chat"])
@@ -145,7 +146,11 @@ def poser_question(
 
     try:
         resultat = repondre(
-            corps.question, historique=_historique(db, conversation)
+            corps.question,
+            historique=_historique(db, conversation),
+            # Le prenom n'est transmis que si l'utilisateur a garde la
+            # salutation active : c'est un reglage, pas un defaut impose.
+            prenom=_prenom_pour_salutation(utilisateur),
         )
     except ServiceIndisponible as erreur:
         # Une panne n'est pas un refus : on le dit, et le quota n'est
@@ -212,7 +217,9 @@ def poser_question_en_flux(
         try:
             resultat = None
             for genre, charge in repondre_en_flux(
-                corps.question, historique=historique
+                corps.question,
+                historique=historique,
+                prenom=_prenom_pour_salutation(utilisateur),
             ):
                 if genre == "texte":
                     yield _sse({"type": "texte", "texte": charge})
