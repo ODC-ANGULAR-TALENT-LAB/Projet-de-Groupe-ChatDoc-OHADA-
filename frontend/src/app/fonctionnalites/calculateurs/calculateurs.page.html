@@ -1,0 +1,148 @@
+<section class="page">
+  <header>
+    <h1>Calculateurs fiscaux</h1>
+    <p class="intro">
+      Chaque résultat cite l'article du Code général des impôts qui le fonde,
+      pour que vous puissiez le justifier dans un dossier.
+    </p>
+  </header>
+
+  <nav class="onglets" role="tablist" aria-label="Choix du calculateur">
+    @for (outil of outils(); track outil.cle) {
+      <button
+        type="button"
+        role="tab"
+        class="onglet"
+        [class.actif]="choisi() === outil.cle"
+        [attr.aria-selected]="choisi() === outil.cle"
+        (click)="selectionner(outil.cle)"
+      >
+        {{ outil.libelle }}
+      </button>
+    }
+  </nav>
+
+  @if (actif(); as outil) {
+    <p class="fondement">
+      <app-icone nom="balance" />
+      Base légale : {{ outil.sigle }}, article {{ outil.numero_article }}
+    </p>
+
+    @if (!outil.disponible) {
+      <!--
+        Le corpus ne porte pas l'article qui fonde ce barème. On le dit
+        AVANT la saisie : faire remplir un formulaire pour opposer
+        ensuite un refus ferait perdre son temps deux fois.
+      -->
+      <p class="indisponible" role="alert">
+        <strong>Ce calculateur est indisponible.</strong>
+        {{ outil.indisponible_parce_que }}
+      </p>
+    } @else if (!auth.connecte()) {
+      <p class="vide">
+        Le calcul demande un compte.
+        <a routerLink="/compte">Se connecter</a>
+      </p>
+    } @else {
+      <section class="bloc">
+        <form class="saisie" (ngSubmit)="calculer()">
+          <label for="montant">
+            {{ choisi() === 'tva' ? 'Montant (FCFA)' : 'Résultat fiscal (FCFA)' }}
+          </label>
+          <input
+            id="montant"
+            name="montant"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="15 000 000"
+            [ngModel]="montant()"
+            (ngModelChange)="montant.set($event)"
+          />
+
+          @if (choisi() === 'tva') {
+            <fieldset class="sens">
+              <legend>Nature du montant saisi</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="sens"
+                  [checked]="!surTtc()"
+                  (change)="surTtc.set(false)"
+                />
+                Hors taxes (HT)
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="sens"
+                  [checked]="surTtc()"
+                  (change)="surTtc.set(true)"
+                />
+                Toutes taxes comprises (TTC)
+              </label>
+            </fieldset>
+          }
+
+          @if (erreur()) {
+            <p class="erreur" role="alert">{{ erreur() }}</p>
+          }
+
+          <button type="submit" class="principal" [disabled]="occupe()">
+            {{ occupe() ? 'Calcul en cours…' : 'Calculer' }}
+          </button>
+        </form>
+      </section>
+    }
+  }
+
+  @if (resultat(); as r) {
+    <section class="bloc resultat">
+      <h2>{{ r.intitule }}</h2>
+
+      <dl class="lignes">
+        @for (ligne of r.lignes; track ligne.libelle) {
+          <div class="ligne">
+            <dt>{{ ligne.libelle }}</dt>
+            <dd>{{ formater(ligne.montant) }} FCFA</dd>
+          </div>
+        }
+      </dl>
+
+      <p class="total">
+        <span>{{ r.resultat.libelle }}</span>
+        <strong>{{ formater(r.resultat.montant) }} FCFA</strong>
+      </p>
+
+      <!--
+        LA PARTIE QUI FAIT LA VALEUR DE L'OUTIL. Sans l'extrait officiel,
+        le chiffre au-dessus n'est qu'un chiffre ; avec lui, il se
+        défend devant l'administration.
+      -->
+      @for (ligne of r.lignes; track ligne.libelle) {
+        @if (ligne.base_legale; as base) {
+          <aside class="base-legale">
+            <p class="etiquette">
+              <app-icone nom="balance" />
+              Source fiscale appliquée
+            </p>
+            <p class="reference">
+              {{ base.sigle }} — article {{ base.numero }}
+            </p>
+            @if (base.chemin) {
+              <p class="chemin">{{ base.chemin }}</p>
+            }
+            <blockquote>{{ base.extrait }}</blockquote>
+          </aside>
+        }
+      }
+
+      <p class="avertissement">
+        ChatDocs OHADA est une aide à la recherche documentaire. Ce calcul ne
+        constitue ni une consultation fiscale, ni une déclaration, ni un acte
+        relevant d'une profession réglementée. L'extrait officiel est reproduit
+        pour que vous exerciez votre propre contrôle professionnel.
+      </p>
+    </section>
+  }
+</section>

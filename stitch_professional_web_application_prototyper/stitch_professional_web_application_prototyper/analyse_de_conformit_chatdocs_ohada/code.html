@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Analyse de Conformité - Lex-Sovereign</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter & Source Serif 4 -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#4f5e81",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#241a00",
+                        "tertiary-container": "#00321a",
+                        "on-secondary-fixed-variant": "#584400",
+                        "secondary-container": "#fed255",
+                        "primary": "#041534",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#00210f",
+                        "surface-paper": "#F4F2EC",
+                        "citation-gold": "#C9A227",
+                        "secondary-fixed": "#ffe08e",
+                        "error": "#ba1a1a",
+                        "outline": "#75777f",
+                        "surface-dim": "#dcdad4",
+                        "inverse-on-surface": "#f3f1eb",
+                        "on-primary-fixed": "#0a1a3a",
+                        "tertiary-fixed-dim": "#86d8a2",
+                        "surface-bright": "#fbf9f3",
+                        "on-tertiary-fixed-variant": "#00522d",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#a1f5bc",
+                        "inverse-primary": "#b7c6ee",
+                        "surface-container": "#f0eee8",
+                        "primary-fixed": "#d9e2ff",
+                        "outline-variant": "#c5c6cf",
+                        "tertiary": "#001b0b",
+                        "surface-container-highest": "#e4e2dd",
+                        "primary-fixed-dim": "#b7c6ee",
+                        "surface": "#fbf9f3",
+                        "border-muted": "#D1CEC4",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1b1c18",
+                        "on-surface-variant": "#45464e",
+                        "legal-navy": "#1B2A4A",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c18",
+                        "inverse-surface": "#30312d",
+                        "validation-green": "#2A7D4F",
+                        "on-primary-fixed-variant": "#384668",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#735a00",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#755b00",
+                        "primary-container": "#1b2a4a",
+                        "surface-container-low": "#f5f3ed",
+                        "secondary-fixed-dim": "#ecc246",
+                        "on-primary-container": "#8392b7",
+                        "background": "#fbf9f3",
+                        "on-tertiary-container": "#51a170",
+                        "surface-variant": "#e4e2dd",
+                        "surface-container-high": "#eae8e2",
+                        "surface-white": "#FFFFFF"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "base-unit": "4px",
+                        "max-content-width": "800px",
+                        "sidebar-width": "280px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["\"Source Serif 4\""],
+                        "metadata": ["Inter"],
+                        "ui-medium": ["Inter"],
+                        "ui-label": ["Inter"],
+                        "ui-body": ["Inter"],
+                        "legal-article": ["\"Source Serif 4\""],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "legal-article-mobile": ["\"Source Serif 4\""]
+                    },
+                    "fontSize": {
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "metadata": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "ui-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "ui-label": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "ui-body": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "legal-article": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "legal-article-mobile": ["16px", { "lineHeight": "26px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Hide scrollbar for clean UI but allow scroll */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D1CEC4; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #75777f; }
+    </style>
+</head>
+<body class="bg-surface-paper text-on-surface font-ui-body text-ui-body min-h-screen flex flex-col md:flex-row">
+<!-- DESKTOP SIDENAVBAR -->
+<aside class="hidden md:flex flex-col fixed left-0 top-0 h-full w-sidebar-width bg-legal-navy shadow-[0_4px_20px_rgba(27,42,74,0.08)] z-50 py-6">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-white rounded flex items-center justify-center">
+<span aria-label="Logo ChatDocs OHADA" class="material-symbols-outlined text-legal-navy">balance</span>
+</div>
+<div>
+<h1 class="text-ui-medium font-ui-medium font-bold text-citation-gold">ChatDocs OHADA</h1>
+<p class="text-metadata font-metadata text-on-primary/70">Expertise Juridique &amp; Fiscale</p>
+</div>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full bg-citation-gold text-primary font-ui-label text-ui-label py-2 px-4 rounded-DEFAULT flex items-center justify-center gap-2 hover:bg-secondary-fixed-dim transition-colors">
+<span class="material-symbols-outlined">add</span> Nouveau Chat
+            </button>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-ui-label font-ui-label">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">library_books</span>
+<span class="text-ui-label font-ui-label">Bibliothèque</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span class="text-ui-label font-ui-label">Calculateurs</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-ui-label font-ui-label">Documents</span>
+</a>
+<!-- ACTIVE TAB: Analyse -->
+<a class="flex items-center gap-3 px-4 py-3 bg-on-primary-fixed-variant text-citation-gold border-l-4 border-citation-gold rounded-r-DEFAULT opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined fill">fact_check</span>
+<span class="text-ui-label font-ui-label">Analyse</span>
+</a>
+</nav>
+<div class="mt-auto px-2 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-ui-label font-ui-label">Paramètres</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-ui-label font-ui-label">Aide</span>
+</a>
+</div>
+</aside>
+<!-- MAIN WRAPPER -->
+<div class="flex-1 flex flex-col min-w-0 md:ml-sidebar-width">
+<!-- TOP APP BAR -->
+<header class="hidden md:flex justify-between items-center h-16 px-container-padding bg-surface-bright border-b border-border-muted sticky top-0 z-40 w-full">
+<div class="flex items-center gap-8">
+<span class="text-ui-medium font-ui-medium font-bold text-primary">Lex-Sovereign</span>
+<nav class="flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors text-ui-label font-ui-label" href="#">Actualités</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-ui-label font-ui-label" href="#">Jurisprudence</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-ui-label font-ui-label" href="#">Codes OHADA</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<input class="bg-surface-white border border-border-muted rounded-DEFAULT px-3 py-1.5 text-ui-body font-ui-body focus:outline-none focus:border-citation-gold focus:ring-1 focus:ring-citation-gold w-64 placeholder:text-outline" placeholder="Recherche rapide..." type="text"/>
+<span class="material-symbols-outlined absolute right-2 top-1.5 text-outline text-[20px]">search</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary scale-95 duration-100"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary scale-95 duration-100">
+<img alt="Profile" class="w-8 h-8 rounded-full object-cover border border-border-muted" data-alt="A small, professional headshot of an African corporate lawyer with a neutral expression, dressed in a formal navy blue suit, set against a clean, light studio background with soft lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaWpr1M7OCRFDWJlrTQ7yL_B8ty-I8IHqJQKlr5Gw53Mbv5uA_lRNFcIe288TtnN9UHrZPEQbxyFqsSPUbT-glPghguI9rUSf70NxbOfjlJ9lTQTb4XoJPwMxhxYebej3fpRsTR-N4NQ6Rx7c0w1mUqWq-_DK2G69z-KAut09eN1yPceZqCCs5tUwyX_wkhnNO_qHjHfyDbbtuwMNFtBb2nUsEHtijp5MGawb1wEWxj4PpFh1CnzhU"/>
+</button>
+</div>
+</header>
+<!-- MAIN CANVAS -->
+<main class="flex-1 p-container-padding pb-24 md:pb-container-padding overflow-y-auto">
+<div class="max-w-max-content-width mx-auto">
+<!-- Page Header -->
+<div class="mb-8">
+<h2 class="font-display-lg text-display-lg text-primary md:font-display-lg md:text-display-lg font-headline-md text-headline-md">Analyse de Conformité</h2>
+<p class="font-ui-body text-ui-body text-on-surface-variant mt-2">Vérification algorithmique des actes de sociétés au regard de l'Acte Uniforme OHADA.</p>
+</div>
+<!-- DRAG & DROP ZONE -->
+<div class="border-2 border-dashed border-border-muted bg-surface-white rounded-lg p-8 flex flex-col items-center justify-center text-center hover:border-citation-gold hover:bg-surface-bright transition-colors cursor-pointer mb-12">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-[32px] text-primary">upload_file</span>
+</div>
+<h3 class="font-ui-medium text-ui-medium text-primary mb-1">Déposez votre document ici</h3>
+<p class="font-ui-body text-metadata text-on-surface-variant mb-4">Formats acceptés: PDF, DOCX (Max 20MB)</p>
+<button class="border border-citation-gold text-citation-gold font-ui-label text-ui-label py-2 px-6 rounded-DEFAULT hover:bg-surface-container-low transition-colors">
+                        Parcourir les fichiers
+                    </button>
+</div>
+<!-- SIMULATED REPORT SECTION (Post-Upload State) -->
+<div class="border-t border-border-muted pt-8">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-validation-green text-[28px]">task_alt</span>
+<h3 class="font-headline-md text-headline-md text-primary">Rapport d'Analyse</h3>
+</div>
+<!-- Bento Grid Style Summary -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<div class="bg-surface-white border border-border-muted rounded-lg p-5 col-span-1 md:col-span-2">
+<p class="font-metadata text-metadata text-outline uppercase tracking-wider mb-1">Fichier analysé</p>
+<h4 class="font-ui-medium text-ui-medium text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">description</span> Projet_Statuts_SARL_Alpha.pdf
+                            </h4>
+<div class="mt-4 flex gap-4">
+<div>
+<p class="font-metadata text-metadata text-outline">Type identifié</p>
+<p class="font-ui-body text-ui-body text-on-surface">Statuts (Société à Responsabilité Limitée)</p>
+</div>
+<div>
+<p class="font-metadata text-metadata text-outline">Référentiel</p>
+<p class="font-ui-body text-ui-body text-on-surface">AUDSCGIE (Rév. 2014)</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-white border border-border-muted rounded-lg p-5 flex flex-col justify-center items-center text-center">
+<p class="font-metadata text-metadata text-outline uppercase tracking-wider mb-2">Indice de Conformité</p>
+<div class="text-[48px] font-headline-md text-error leading-none mb-1">85<span class="text-[24px]">%</span></div>
+<p class="font-ui-label text-ui-label text-error bg-error-container px-2 py-0.5 rounded">Action Requise</p>
+</div>
+</div>
+<!-- Detailed Analysis -->
+<div class="space-y-8">
+<!-- Compliant Points (Summary) -->
+<div>
+<h4 class="font-ui-medium text-ui-medium text-primary mb-3 flex items-center gap-2 border-b border-border-muted pb-2">
+<span class="material-symbols-outlined text-validation-green text-[20px]">check_circle</span>
+                                Points Conformes (12)
+                            </h4>
+<p class="font-ui-body text-ui-body text-on-surface-variant">Les éléments essentiels (forme de la société, dénomination, objet social, siège social) respectent les dispositions des articles 10 à 18 de l'AUDSCGIE.</p>
+</div>
+<!-- Deviations (Blocs Base Légale) -->
+<div>
+<h4 class="font-ui-medium text-ui-medium text-primary mb-4 flex items-center gap-2 border-b border-border-muted pb-2">
+<span class="material-symbols-outlined text-error text-[20px]">error</span>
+                                Écarts &amp; Recommandations (2)
+                            </h4>
+<!-- Legal Block 1 -->
+<div class="bg-surface-container-lowest border border-border-muted border-l-4 border-l-citation-gold p-5 mb-4 shadow-sm">
+<div class="flex items-start justify-between mb-2">
+<div class="font-ui-label text-ui-label text-error flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">warning</span> Écart sur le Capital Social
+                                    </div>
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-[20px]">open_in_new</span></button>
+</div>
+<h3 class="font-legal-article text-legal-article text-primary mb-3">Article 311 - AUDSCGIE</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+<div class="bg-surface-paper p-4 border border-border-muted rounded">
+<p class="font-metadata text-metadata text-outline mb-1">Observation dans le document</p>
+<p class="font-ui-body text-ui-body text-on-surface italic">"Le capital social est fixé à la somme de 500 000 FCFA, divisé en 100 parts de 5 000 FCFA chacune."</p>
+</div>
+<div class="bg-surface-bright p-4 border border-citation-gold/30 rounded">
+<p class="font-metadata text-metadata text-citation-gold mb-1">Recommandation stricte</p>
+<p class="font-ui-body text-ui-body text-on-surface">Bien que le capital minimum de 1.000.000 FCFA ait été supprimé par la révision de 2014 laissant la liberté aux États parties, vérifier la législation nationale spécifique. Si aucune disposition nationale contraire, la valeur nominale des parts sociales ne peut être inférieure à 5.000 FCFA. Le calcul est correct, mais la formulation doit explicitement mentionner la conformité aux dispositions nationales si applicables.</p>
+</div>
+</div>
+</div>
+<!-- Legal Block 2 -->
+<div class="bg-surface-container-lowest border border-border-muted border-l-4 border-l-citation-gold p-5 mb-4 shadow-sm">
+<div class="flex items-start justify-between mb-2">
+<div class="font-ui-label text-ui-label text-error flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">warning</span> Écart sur la Libération des Parts
+                                    </div>
+</div>
+<h3 class="font-legal-article text-legal-article text-primary mb-3">Article 311-1 - AUDSCGIE</h3>
+<div class="mt-4">
+<p class="font-ui-body text-ui-body text-on-surface mb-2">Le document stipule une libération du quart (1/4) des apports en numéraire lors de la constitution.</p>
+<div class="bg-surface-bright p-4 border border-citation-gold/30 rounded mt-2">
+<p class="font-metadata text-metadata text-citation-gold mb-1">Exigence Légale</p>
+<p class="font-ui-body text-ui-body text-on-surface">Contrairement aux SA, pour les SARL (sauf disposition nationale contraire autorisant le libération partielle), les parts sociales représentant des apports en numéraire doivent être intégralement libérées lors de la souscription du capital.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="mt-8 flex justify-end gap-4 border-t border-border-muted pt-6">
+<button class="border border-border-muted text-on-surface-variant bg-surface-white font-ui-label text-ui-label py-2 px-6 rounded-DEFAULT hover:bg-surface-container-low transition-colors">
+                            Ignorer les alertes
+                        </button>
+<button class="bg-legal-navy text-on-primary font-ui-label text-ui-label py-2 px-6 rounded-DEFAULT hover:bg-on-primary-fixed-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span> Exporter le Rapport
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- MOBILE BOTTOM NAV BAR -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-2 px-4 z-50 md:hidden border-t border-border-muted bg-surface-white shadow-lg pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container-low scale-90 transition-transform rounded p-1" href="#">
+<span class="material-symbols-outlined text-[24px]">chat</span>
+<span class="font-metadata text-metadata mt-1">Assistant</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container-low scale-90 transition-transform rounded p-1" href="#">
+<span class="material-symbols-outlined text-[24px]">menu_book</span>
+<span class="font-metadata text-metadata mt-1">Codes</span>
+</a>
+<!-- ACTIVE TAB: Outils (Fallback for Analyse on mobile) -->
+<a class="flex flex-col items-center justify-center text-citation-gold font-bold active:bg-surface-container-low scale-90 transition-transform rounded p-1" href="#">
+<span class="material-symbols-outlined text-[24px] fill">construction</span>
+<span class="font-metadata text-metadata mt-1">Outils</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container-low scale-90 transition-transform rounded p-1" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="font-metadata text-metadata mt-1">Profil</span>
+</a>
+</nav>
+<style>
+        /* iOS Safe Area Support for Bottom Nav */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .pb-safe {
+                padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</body></html>

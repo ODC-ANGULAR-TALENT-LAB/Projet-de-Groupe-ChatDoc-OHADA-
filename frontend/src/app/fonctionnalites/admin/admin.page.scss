@@ -1,0 +1,438 @@
+.page {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1rem 0.75rem 3rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+h1 {
+  font-family: var(--police-serif);
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+h2 {
+  font-family: var(--police-serif);
+  font-size: 1rem;
+  margin: 0 0 0.6rem;
+}
+
+.intro {
+  margin: 0.3rem 0 1.5rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--gris-texte);
+}
+
+.bloc {
+  background: #fff;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  label {
+    font-size: 0.78rem;
+    color: var(--gris-texte);
+    margin-top: 0.5rem;
+  }
+
+  input,
+  select {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--gris-bordure);
+    border-radius: 6px;
+    background: #fff;
+    width: 100%;
+  }
+
+  button {
+    margin-top: 1rem;
+    align-self: flex-start;
+  }
+}
+
+.ligne {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  > div {
+    flex: 1;
+    min-width: 8rem;
+  }
+}
+
+.resume {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--bordure);
+
+  dt {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gris-texte);
+  }
+
+  dd {
+    margin: 0.15rem 0 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .sha {
+    font-size: 0.8rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 400;
+  }
+}
+
+.mauvais {
+  color: #9a2a2a;
+}
+
+.problemes {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+
+  li {
+    font-size: 0.82rem;
+    padding: 0.35rem 0.6rem;
+    border-left: 3px solid var(--gris-bordure);
+    margin-bottom: 0.3rem;
+    background: var(--fond);
+
+    strong {
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+    }
+
+    &.bloquant {
+      border-left-color: #9a2a2a;
+      color: #7a1f1f;
+    }
+  }
+}
+
+.apercu {
+  article {
+    border-left: 3px solid var(--or);
+    background: var(--fond-citation);
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .numero {
+    display: block;
+    font-family: var(--police-serif);
+    font-weight: 600;
+    color: var(--bleu-nuit);
+  }
+
+  .chemin {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--gris-texte);
+    margin-bottom: 0.35rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+}
+
+.decision {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bordure);
+}
+
+.statut {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--gris-texte);
+}
+
+.liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ligne-depot {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--bordure);
+  padding: 0.55rem 0.2rem;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--fond);
+  }
+
+  .nom {
+    flex: 1;
+    min-width: 10rem;
+    color: var(--bleu-nuit);
+  }
+
+  .chiffres {
+    font-size: 0.75rem;
+    color: var(--gris-texte);
+  }
+}
+
+.badge {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid currentcolor;
+  white-space: nowrap;
+
+  &.en_attente {
+    color: #8a6d1f;
+  }
+  &.valide {
+    color: var(--vert);
+  }
+  &.rejete {
+    color: var(--gris-texte);
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th {
+    text-align: left;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gris-texte);
+    border-bottom: 1px solid var(--bordure);
+    padding: 0.35rem 0.4rem;
+  }
+
+  td {
+    padding: 0.4rem;
+    border-bottom: 1px solid var(--bordure);
+  }
+
+  .incomplet {
+    background: #fdfbf3;
+  }
+
+  .valideur {
+    font-size: 0.75rem;
+    color: var(--gris-texte);
+  }
+}
+
+code {
+  font-size: 0.78rem;
+  background: var(--fond);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+
+.aide {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--gris-texte);
+  margin: 0.5rem 0;
+}
+
+.vide {
+  color: var(--gris-texte);
+  font-size: 0.85rem;
+
+  a {
+    color: var(--bleu-nuit);
+  }
+}
+
+.erreur {
+  color: #9a2a2a;
+  font-size: 0.85rem;
+  margin: 0.75rem 0 0;
+}
+
+.lien {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--bleu-nuit);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* --- Diff contre le corpus en vigueur ------------------------------ */
+
+.compteurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2);
+  margin: var(--e3) 0;
+}
+
+/* La couleur ne porte jamais seule l'information : chaque pastille
+   affiche aussi son libellé en toutes lettres. */
+.pastille {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid currentcolor;
+  white-space: nowrap;
+
+  &.modifie { color: var(--or-fonce); }
+  &.ajoute { color: var(--vert); }
+  &.abroge { color: #9a2a2a; }
+  &.inchange { color: var(--gris-texte); }
+}
+
+.diff {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+  margin: var(--e4) 0;
+
+  article {
+    background: var(--surface);
+    border: 1px solid var(--bordure);
+    border-left: 4px solid var(--gris-bordure);
+    border-radius: 0 var(--rayon-carte) var(--rayon-carte) 0;
+    padding: var(--e3) var(--e4);
+
+    &.modifie { border-left-color: var(--or); }
+    &.ajoute { border-left-color: var(--vert); }
+    &.abroge { border-left-color: #9a2a2a; }
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e2);
+    margin-bottom: var(--e2);
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: var(--e2);
+      cursor: pointer;
+      /* Cible tactile : la case seule fait 13 px. */
+      padding: 0.4rem 0;
+    }
+
+    input[type='checkbox'] {
+      width: 1.15rem;
+      height: 1.15rem;
+      accent-color: var(--bleu-nuit);
+    }
+
+    .numero {
+      font-family: var(--police-serif);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--bleu-nuit);
+    }
+  }
+}
+
+/* Le résumé est un confort de lecture : il est visuellement SUBORDONNÉ
+   aux deux textes, qui restent la seule source de vérité. */
+.resume {
+  margin: 0 0 var(--e3);
+  padding: var(--e2) var(--e3);
+  background: var(--surface-basse);
+  border-radius: var(--rayon);
+  font-size: 0.88rem;
+  color: var(--gris-texte);
+
+  .etiquette {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--texte-faible);
+    margin-bottom: 0.2rem;
+  }
+}
+
+.cote-a-cote {
+  display: grid;
+  gap: var(--e3);
+
+  h4 {
+    margin: 0 0 var(--e1);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--texte-faible);
+  }
+
+  p {
+    margin: 0;
+    font-family: var(--police-serif);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .ancien p { color: var(--gris-texte); }
+}
+
+@media (min-width: 900px) {
+  .cote-a-cote {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.tout-voir {
+  margin: var(--e4) 0;
+
+  summary {
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: var(--bleu-nuit);
+    padding: var(--e2) 0;
+  }
+}

@@ -1,0 +1,240 @@
+<!-- ================================================================ -->
+<!-- BARRE PUBLIQUE                                                    -->
+<!-- ================================================================ -->
+<header class="entete">
+  <a class="marque" routerLink="/">
+    <app-icone nom="balance" />
+    <span class="marque-nom">ChatDocs</span>
+    <span class="marque-suffixe">OHADA</span>
+  </a>
+
+  <nav class="liens" aria-label="Sections">
+    <a href="#professionnels">Fonctionnalités</a>
+    <a href="#fiabilite">Fiabilité</a>
+    <a routerLink="/methodologie">Méthodologie</a>
+  </nav>
+
+  <div class="acces">
+    <a class="lien-connexion" routerLink="/connexion">Connexion</a>
+    <a class="bouton-or" routerLink="/inscription">Essai gratuit</a>
+  </div>
+</header>
+
+<!-- ================================================================ -->
+<!-- HERO — fond bleu nuit sous un voile                               -->
+<!-- ================================================================ -->
+<section class="hero">
+  <!--
+    L'IMAGE DE FOND : une consultation dans un cabinet.
+
+    Photographie sous licence Pexels (usage commercial autorisé, sans
+    attribution requise). Sa provenance est consignée dans
+    public/images/SOURCES.md — un produit réel doit pouvoir répondre de
+    l'origine de ses visuels.
+
+    ELLE EST SERVIE DEPUIS LE DÉPÔT, jamais depuis un CDN : c'est ce qui
+    la rend disponible hors ligne et indépendante d'un lien qui casse.
+    Recadrée au format du hero et convertie en WebP, elle pèse 35 Ko.
+
+    `alt` vide et `aria-hidden` : c'est un décor. Le lecteur d'écran n'a
+    rien à en dire, et l'annoncer interromprait la lecture du titre.
+
+    `fetchpriority="high"` : elle est le premier plan visible de la
+    page ; la laisser en file d'attente ferait apparaître un aplat bleu
+    puis l'image, ce qui se voit.
+  -->
+  <img
+    class="fresque"
+    src="images/cabinet.webp"
+    alt=""
+    aria-hidden="true"
+    width="1600"
+    height="689"
+    fetchpriority="high"
+    decoding="async"
+  />
+
+  <!--
+    LE VOILE, PAR-DESSUS L'IMAGE. Trois couches : un halo doré en haut
+    à droite, un renfort bleu en bas à gauche, et un dégradé qui
+    assombrit le bas.
+
+    Ce n'est pas de la décoration. Sans lui, le portique passerait
+    derrière le titre et ferait tomber le contraste du texte blanc sous
+    le seuil lisible ; c'est le voile qui rend l'image utilisable comme
+    fond. Le halo, lui, conduit l'œil vers la démonstration.
+  -->
+  <div class="voile" aria-hidden="true"></div>
+
+  <div class="hero-contenu">
+    <div class="hero-texte">
+      <p class="badge">
+        <span class="point" aria-hidden="true"></span>
+        Recherche augmentée, citations vérifiées
+      </p>
+
+      <h1>
+        Le droit OHADA et la fiscalité camerounaise,
+        <em>preuve à l'appui</em>
+      </h1>
+
+      <p class="accroche">
+        Posez votre question en français courant. Chaque réponse cite
+        l'article qui la fonde, reproduit son texte officiel, et vous
+        laisse le vérifier. Quand le corpus ne permet pas de répondre,
+        l'assistant le dit.
+      </p>
+
+      <div class="actions">
+        <a class="bouton-or grand" routerLink="/inscription">
+          Commencer gratuitement
+          <app-icone nom="fleche" />
+        </a>
+        <a class="bouton-fantome grand" routerLink="/bibliotheque">
+          Explorer le corpus
+        </a>
+      </div>
+
+      <p class="mention">
+        5 questions par mois, sans carte bancaire. La bibliothèque des
+        textes reste consultable sans compte.
+      </p>
+    </div>
+
+    <!--
+      Une démonstration plutôt qu'une capture d'écran : c'est la
+      promesse du produit — réponse, article, extrait officiel — montrée
+      dans l'ordre où l'utilisateur la lira.
+    -->
+    <figure class="demonstration">
+      <figcaption class="fenetre-barre">
+        <span class="pastilles" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </span>
+        ChatDocs OHADA — exemple de réponse
+      </figcaption>
+
+      <div class="fenetre-corps">
+        <p class="question">
+          Quelle est la durée du bail à usage professionnel ?
+        </p>
+
+        <div class="reponse">
+          <p class="qui">
+            <app-icone nom="balance" />
+            Assistant
+          </p>
+          <p>
+            À défaut d'écrit ou de terme fixé, le bail à usage
+            professionnel est réputé conclu pour une durée indéterminée.
+          </p>
+
+          <blockquote class="citation">
+            <p class="reference">AUDCG — article 105</p>
+            <p class="extrait">
+              « À défaut d'écrit ou de terme fixé, le bail est réputé
+              conclu pour une durée indéterminée. »
+            </p>
+          </blockquote>
+        </div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- POUR QUI                                                          -->
+<!-- ================================================================ -->
+<section class="professionnels" id="professionnels">
+  <h2>Pensé pour ceux qui répondent de leurs réponses</h2>
+  <p class="sous-titre">
+    Trois métiers, un même besoin : retrouver l'article exact, vite, et
+    pouvoir le montrer.
+  </p>
+
+  <div class="grille">
+    @for (profil of profils; track profil.titre) {
+      <article class="carte">
+        <span class="vignette" aria-hidden="true">
+          <app-icone [nom]="profil.icone" />
+        </span>
+        <h3>{{ profil.titre }}</h3>
+        <p>{{ profil.besoin }}</p>
+      </article>
+    }
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- FIABILITÉ                                                         -->
+<!-- ================================================================ -->
+<section class="fiabilite" id="fiabilite">
+  <div class="fiabilite-contenu">
+    <div>
+      <h2>Une réponse sans article n'est pas une réponse</h2>
+      <p>
+        L'assistant n'écrit rien de mémoire. Il cherche dans un corpus
+        fermé de textes officiels, puis chaque citation qu'il produit est
+        <strong>confrontée mécaniquement</strong> au corpus avant de vous
+        être montrée. Une citation qui ne correspond à aucun article
+        n'est pas affichée.
+      </p>
+
+      <ul class="garanties">
+        @for (garantie of garanties; track garantie) {
+          <li>
+            <app-icone nom="valide" />
+            {{ garantie }}
+          </li>
+        }
+      </ul>
+
+      <a class="lien-clair" routerLink="/methodologie">
+        Voir la méthodologie et la provenance des textes
+        <app-icone nom="fleche" />
+      </a>
+    </div>
+
+    <aside class="corpus">
+      <p class="corpus-titre">Le corpus, aujourd'hui</p>
+      <dl>
+        @for (chiffre of chiffres(); track chiffre.libelle) {
+          <div>
+            <dt>{{ chiffre.libelle }}</dt>
+            <dd>{{ chiffre.valeur }}</dd>
+          </div>
+        }
+      </dl>
+      <p class="corpus-note">
+        Chaque texte porte sa source, sa version et sa date de
+        consolidation. Rien n'entre en base sans elles.
+      </p>
+    </aside>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- PIED                                                              -->
+<!-- ================================================================ -->
+<footer class="pied">
+  <div class="pied-contenu">
+    <a class="marque" routerLink="/">
+      <span class="marque-nom">ChatDocs</span>
+      <span class="marque-suffixe">OHADA</span>
+    </a>
+
+    <nav class="pied-liens" aria-label="Pied de page">
+      <a routerLink="/methodologie">Méthodologie</a>
+      <a routerLink="/journal">Mises à jour</a>
+      <a routerLink="/bibliotheque">Bibliothèque</a>
+      <a routerLink="/connexion">Connexion</a>
+    </nav>
+  </div>
+
+  <p class="avertissement">
+    ChatDocs OHADA est une aide à la recherche documentaire. Il ne
+    constitue ni une consultation juridique, ni un conseil fiscal, ni un
+    acte relevant d'une profession réglementée. Les décisions restent
+    celles du professionnel.
+  </p>
+</footer>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Génération de Document - Lex-Sovereign</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration (Provided) -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#4f5e81",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#241a00",
+                        "tertiary-container": "#00321a",
+                        "on-secondary-fixed-variant": "#584400",
+                        "secondary-container": "#fed255",
+                        "primary": "#041534",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#00210f",
+                        "surface-paper": "#F4F2EC",
+                        "citation-gold": "#C9A227",
+                        "secondary-fixed": "#ffe08e",
+                        "error": "#ba1a1a",
+                        "outline": "#75777f",
+                        "surface-dim": "#dcdad4",
+                        "inverse-on-surface": "#f3f1eb",
+                        "on-primary-fixed": "#0a1a3a",
+                        "tertiary-fixed-dim": "#86d8a2",
+                        "surface-bright": "#fbf9f3",
+                        "on-tertiary-fixed-variant": "#00522d",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#a1f5bc",
+                        "inverse-primary": "#b7c6ee",
+                        "surface-container": "#f0eee8",
+                        "primary-fixed": "#d9e2ff",
+                        "outline-variant": "#c5c6cf",
+                        "tertiary": "#001b0b",
+                        "surface-container-highest": "#e4e2dd",
+                        "primary-fixed-dim": "#b7c6ee",
+                        "surface": "#fbf9f3",
+                        "border-muted": "#D1CEC4",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1b1c18",
+                        "on-surface-variant": "#45464e",
+                        "legal-navy": "#1B2A4A",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c18",
+                        "inverse-surface": "#30312d",
+                        "validation-green": "#2A7D4F",
+                        "on-primary-fixed-variant": "#384668",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#735a00",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#755b00",
+                        "primary-container": "#1b2a4a",
+                        "surface-container-low": "#f5f3ed",
+                        "secondary-fixed-dim": "#ecc246",
+                        "on-primary-container": "#8392b7",
+                        "background": "#fbf9f3",
+                        "on-tertiary-container": "#51a170",
+                        "surface-variant": "#e4e2dd",
+                        "surface-container-high": "#eae8e2",
+                        "surface-white": "#FFFFFF"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "base-unit": "4px",
+                        "max-content-width": "800px",
+                        "sidebar-width": "280px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["\"Source Serif 4\""],
+                        "metadata": ["Inter"],
+                        "ui-medium": ["Inter"],
+                        "ui-label": ["Inter"],
+                        "ui-body": ["Inter"],
+                        "legal-article": ["\"Source Serif 4\""],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "legal-article-mobile": ["\"Source Serif 4\""]
+                    },
+                    "fontSize": {
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "metadata": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "ui-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "ui-label": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "ui-body": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "legal-article": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "legal-article-mobile": ["16px", { "lineHeight": "26px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom Scrollbar for preview area */
+        .preview-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .preview-scroll::-webkit-scrollbar-track {
+            background: theme('colors.surface-paper'); 
+        }
+        .preview-scroll::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant'); 
+            border-radius: theme('borderRadius.DEFAULT');
+        }
+        .preview-scroll::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline'); 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-ui-body text-ui-body h-screen flex overflow-hidden">
+<!-- Shared Component: SideNavBar -->
+<nav class="hidden md:flex fixed left-0 top-0 h-full w-sidebar-width bg-legal-navy shadow-[0_4px_20px_rgba(27,42,74,0.08)] flex-col py-6 z-50">
+<!-- Brand Header -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-white flex items-center justify-center">
+<span class="material-symbols-outlined text-legal-navy text-2xl icon-fill-1" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h1 class="text-ui-medium font-ui-medium font-bold text-citation-gold">ChatDocs OHADA</h1>
+<p class="text-metadata font-metadata text-on-primary/70">Expertise Juridique &amp; Fiscale</p>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-4 mb-6">
+<button class="w-full bg-citation-gold text-legal-navy font-ui-label text-ui-label py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-secondary-fixed transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                Nouveau Chat
+            </button>
+</div>
+<!-- Main Navigation Tabs -->
+<ul class="flex flex-col flex-1 gap-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-ui-label text-ui-label">Tableau de bord</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+<span class="font-ui-label text-ui-label">Bibliothèque</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+<span class="font-ui-label text-ui-label">Calculateurs</span>
+</a>
+</li>
+<!-- Active Tab: Documents -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 bg-on-primary-fixed-variant text-citation-gold border-l-4 border-citation-gold opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined icon-fill-1" data-icon="description">description</span>
+<span class="font-ui-label text-ui-label">Documents</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span class="font-ui-label text-ui-label">Analyse</span>
+</a>
+</li>
+</ul>
+<!-- Footer Navigation Tabs -->
+<ul class="flex flex-col gap-1 mt-auto">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-ui-label text-ui-label">Paramètres</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary-fixed-variant/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-ui-label text-ui-label">Aide</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Application Area -->
+<div class="flex-1 flex flex-col md:ml-sidebar-width h-full bg-background relative">
+<!-- Shared Component: TopAppBar -->
+<header class="flex justify-between items-center h-16 px-container-padding bg-surface-bright border-b border-border-muted z-40 shrink-0 w-full">
+<div class="flex items-center gap-6">
+<!-- Mobile Menu Icon -->
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="text-ui-medium font-ui-medium font-bold text-primary">Lex-Sovereign</span>
+</div>
+<nav class="hidden lg:flex items-center gap-6 h-full">
+<a class="text-on-surface-variant hover:text-primary transition-colors h-full flex items-center" href="#">Actualités</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors h-full flex items-center" href="#">Jurisprudence</a>
+<a class="text-primary border-b-2 border-citation-gold h-full flex items-center" href="#">Codes OHADA</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:scale-95 duration-100">
+<span class="material-symbols-outlined text-[28px]" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Document Generator Workspace -->
+<main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+<!-- Left Column: Intelligent Q&A Form -->
+<section class="w-full lg:w-[450px] flex-shrink-0 bg-surface-white border-r border-border-muted flex flex-col h-full z-10 overflow-y-auto">
+<!-- Form Header & Progress -->
+<div class="p-6 border-b border-border-muted bg-surface-container-lowest sticky top-0 z-20">
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span>
+<span class="font-ui-label text-ui-label cursor-pointer hover:text-primary">Retour à la bibliothèque</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-2">Statuts de SARL</h2>
+<p class="font-ui-body text-ui-body text-on-surface-variant mb-6 text-sm">Acte constitutif (OHADA)</p>
+<!-- Progress Bar -->
+<div class="flex items-center justify-between mb-2">
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Étape 2 sur 5</span>
+<span class="font-metadata text-metadata text-primary font-bold">20%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-citation-gold w-[20%] transition-all duration-300"></div>
+</div>
+</div>
+<!-- Form Content (The Q&A) -->
+<div class="p-6 flex-1">
+<h3 class="font-ui-medium text-ui-medium text-primary font-bold mb-6">Identification de la Société</h3>
+<form class="space-y-6">
+<!-- Text Input -->
+<div class="space-y-2">
+<label class="block font-ui-label text-ui-label text-on-surface" for="company_name">Dénomination sociale complète</label>
+<p class="font-metadata text-metadata text-on-surface-variant">Le nom officiel tel qu'il apparaîtra au RCCM.</p>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]" data-icon="business">business</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-white border border-border-muted rounded focus:border-citation-gold focus:ring-1 focus:ring-citation-gold outline-none transition-shadow font-ui-body text-ui-body text-on-surface placeholder:text-outline" id="company_name" placeholder="Ex: Entreprise S.A." type="text" value="AFRICA TRADE &amp; LOGISTICS"/>
+</div>
+</div>
+<!-- Radio Group -->
+<div class="space-y-3 pt-2">
+<label class="block font-ui-label text-ui-label text-on-surface">La société comporte-t-elle un sigle ?</label>
+<div class="flex gap-4">
+<label class="flex items-center gap-2 cursor-pointer p-3 border border-citation-gold bg-secondary-fixed/10 rounded w-full">
+<input checked="" class="text-citation-gold focus:ring-citation-gold" name="has_sigle" type="radio"/>
+<span class="font-ui-body text-ui-body text-primary font-medium">Oui</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer p-3 border border-border-muted hover:border-outline rounded w-full transition-colors">
+<input class="text-citation-gold focus:ring-citation-gold" name="has_sigle" type="radio"/>
+<span class="font-ui-body text-ui-body text-on-surface">Non</span>
+</label>
+</div>
+</div>
+<!-- Conditional Input -->
+<div class="space-y-2">
+<label class="block font-ui-label text-ui-label text-on-surface" for="sigle">Sigle</label>
+<input class="w-full px-4 py-2.5 bg-surface-white border border-border-muted rounded focus:border-citation-gold focus:ring-1 focus:ring-citation-gold outline-none font-ui-body text-ui-body text-on-surface" id="sigle" type="text" value="ATL"/>
+</div>
+<!-- Number Input -->
+<div class="space-y-2 pt-2">
+<label class="block font-ui-label text-ui-label text-on-surface" for="capital">Capital Social (en FCFA)</label>
+<p class="font-metadata text-metadata text-on-surface-variant">Minimum légal : 1 000 000 FCFA (selon législation nationale).</p>
+<div class="relative">
+<input class="w-full pl-4 pr-16 py-2.5 bg-surface-white border border-border-muted rounded focus:border-citation-gold focus:ring-1 focus:ring-citation-gold outline-none font-ui-body text-ui-body text-on-surface text-right" id="capital" type="text" value="5 000 000"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 font-ui-label text-ui-label text-on-surface-variant">FCFA</span>
+</div>
+</div>
+</form>
+</div>
+<!-- Form Footer Actions -->
+<div class="p-6 border-t border-border-muted bg-surface-container-lowest sticky bottom-0 z-20 flex justify-between gap-4">
+<button class="px-4 py-2 border border-border-muted text-on-surface font-ui-label text-ui-label rounded hover:bg-surface-variant transition-colors">
+                        Précédent
+                    </button>
+<button class="px-6 py-2 bg-legal-navy text-on-primary font-ui-label text-ui-label rounded hover:bg-primary-container transition-colors flex items-center gap-2 shadow-sm">
+                        Suivant
+                        <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Right Column: Real-time Document Preview -->
+<section class="flex-1 bg-surface-paper flex flex-col h-full overflow-hidden relative">
+<!-- Preview Toolbar -->
+<div class="h-14 border-b border-border-muted bg-surface-container-lowest flex items-center justify-between px-6 shrink-0 shadow-sm z-10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="visibility">visibility</span>
+<span class="font-ui-medium text-ui-medium text-primary">Aperçu en direct</span>
+<span class="ml-2 px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant font-metadata text-metadata rounded-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="sync">sync</span> Synchronisé
+                        </span>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded transition-colors" title="Télécharger PDF">
+<span class="material-symbols-outlined" data-icon="picture_as_pdf">picture_as_pdf</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded transition-colors" title="Télécharger Word">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 border border-citation-gold text-citation-gold font-ui-label text-ui-label rounded hover:bg-citation-gold/10 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="save">save</span>
+                            Sauvegarder
+                        </button>
+</div>
+</div>
+<!-- The Document Canvas -->
+<div class="flex-1 overflow-y-auto preview-scroll p-4 md:p-8 lg:p-12 flex justify-center">
+<!-- Paper Page -->
+<div class="bg-surface-white w-full max-w-[800px] min-h-[1100px] shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border-muted p-10 md:p-16 relative">
+<!-- Watermark/Brand subtle -->
+<div class="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
+<span class="material-symbols-outlined text-[200px]" data-icon="account_balance">account_balance</span>
+</div>
+<!-- Document Content (Serif Typography for Legal Text) -->
+<div class="font-legal-article text-legal-article text-on-surface space-y-8 relative z-10">
+<div class="text-center mb-16">
+<h1 class="font-headline-md text-[24px] uppercase font-bold tracking-wider mb-2">Statuts de Société à Responsabilité Limitée</h1>
+<div class="h-0.5 w-24 bg-citation-gold mx-auto mt-6"></div>
+</div>
+<!-- Legal Basis Block Style Pattern -->
+<div class="pl-4 border-l-4 border-citation-gold">
+<h3 class="font-bold text-[16px] uppercase tracking-wide mb-2 text-legal-navy">Article 1 : Forme</h3>
+<p class="text-justify leading-relaxed">
+                                    Il est formé entre les propriétaires des parts sociales ci-après créées et de celles qui pourraient l'être ultérieurement, une Société à Responsabilité Limitée régie par l'Acte Uniforme de l'OHADA relatif au Droit des Sociétés Commerciales et du G.I.E., ainsi que par les présents statuts.
+                                </p>
+</div>
+<div class="pl-4 border-l-4 border-citation-gold">
+<h3 class="font-bold text-[16px] uppercase tracking-wide mb-2 text-legal-navy">Article 2 : Dénomination Sociale</h3>
+<p class="text-justify leading-relaxed">
+                                    La Société a pour dénomination : <br/>
+<span class="inline-block bg-secondary-fixed/30 px-1 py-0.5 font-bold transition-all duration-300">AFRICA TRADE &amp; LOGISTICS</span>
+</p>
+<p class="text-justify leading-relaxed mt-4">
+                                    Son sigle est : <span class="inline-block bg-secondary-fixed/30 px-1 py-0.5 font-bold transition-all duration-300">ATL</span>
+</p>
+<p class="text-justify leading-relaxed mt-4 text-on-surface-variant/80 text-[16px]">
+                                    Dans tous les actes et documents émanant de la Société et destinés aux tiers, la dénomination sociale devra être précédée ou suivie immédiatement des mots "Société à Responsabilité Limitée" ou des initiales "S.A.R.L.", et de l'énonciation du capital social.
+                                </p>
+</div>
+<div class="pl-4 border-l border-border-muted hover:border-citation-gold transition-colors">
+<h3 class="font-bold text-[16px] uppercase tracking-wide mb-2 text-legal-navy">Article 3 : Objet Social</h3>
+<p class="text-justify leading-relaxed text-on-surface-variant italic">
+                                    [À compléter à l'étape suivante...]
+                                </p>
+</div>
+<div class="pl-4 border-l border-border-muted hover:border-citation-gold transition-colors">
+<h3 class="font-bold text-[16px] uppercase tracking-wide mb-2 text-legal-navy">Article 4 : Siège Social</h3>
+<p class="text-justify leading-relaxed text-on-surface-variant italic">
+                                    [À compléter à l'étape suivante...]
+                                </p>
+</div>
+<div class="pl-4 border-l-4 border-citation-gold">
+<h3 class="font-bold text-[16px] uppercase tracking-wide mb-2 text-legal-navy">Article 6 : Capital Social</h3>
+<p class="text-justify leading-relaxed">
+                                    Le capital social est fixé à la somme de <span class="inline-block bg-secondary-fixed/30 px-1 py-0.5 font-bold transition-all duration-300">Cinq Millions (5 000 000) de Francs CFA</span>.
+                                </p>
+<p class="text-justify leading-relaxed mt-4">
+                                    Il est divisé en <span class="font-bold">500</span> parts sociales de <span class="font-bold">10 000 FCFA</span> chacune, numérotées de 1 à 500, entièrement souscrites et libérées intégralement de leur valeur nominale, attribuées aux associés en proportion de leurs apports.
+                                </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Shared Component: BottomNavBar (Mobile Only) -->
+<!-- Suppressed based on logic rule: Document generation is a Task-Focused flow, 
+         implied linear progression (Next/Prev). Navigation shell should prioritize content canvas. 
+         However, keeping it as requested by standard JSON implementation for mobile completeness, 
+         but technically UX logic says to hide it during this specific task. 
+         I will include it but in reality, it might be hidden behind a full-screen mobile modal. -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center py-2 px-4 bg-surface-white border-t border-border-muted shadow-lg z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-low transition-transform scale-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-metadata text-metadata mt-1">Assistant</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-low transition-transform scale-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-metadata text-metadata mt-1">Codes</span>
+</a>
+<!-- Active Tab Mobile: Outils (Closest to document generation) -->
+<a class="flex flex-col items-center justify-center text-citation-gold font-bold active:bg-surface-container-low transition-transform scale-90 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined icon-fill-1" data-icon="construction">construction</span>
+<span class="font-metadata text-metadata mt-1">Outils</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-low transition-transform scale-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-metadata text-metadata mt-1">Profil</span>
+</a>
+</nav>
+</body></html>

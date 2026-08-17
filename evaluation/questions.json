@@ -1,0 +1,504 @@
+[
+  {
+    "_commentaire": "JEU D'EVALUATION — PROPOSITION A VALIDER. Chaque question ci-dessous est fondee sur un article REELLEMENT LU dans le corpus charge (verifie par evaluation/verifier_questions.py, qui compare chaque numero attendu au contenu en base). Aucun numero n'a ete devine. MAIS le cahier des charges (§10 et §15) exige une validation par un professionnel du domaine : relis chaque reponse_attendue contre le texte officiel avant de figer ce jeu. Une fois fige, il ne se modifie plus — c'est ce qui en fait une mesure et non un miroir.",
+    "_composition_attendue": {
+      "factuelle": 25,
+      "multi_articles": 10,
+      "formulation_indirecte": 5,
+      "piege_hors_corpus": 5,
+      "piege_actualite": 5,
+      "_total": 50
+    },
+    "_corpus_au": "9 actes uniformes, 2622 articles (AUA, AUCTMR, AUDCG, AUDCIF, AUM, AUPC, AUS, AUSCGIE, AUSCOOP)"
+  },
+  {
+    "id": 1,
+    "question": "Quel est le capital social minimum d'une SARL dans l'espace OHADA ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 311"
+    ],
+    "reponse_attendue": "1.000.000 FCFA au moins, sauf dispositions nationales contraires.",
+    "doit_refuser": false
+  },
+  {
+    "id": 2,
+    "question": "Quelle est la valeur nominale minimale d'une part sociale de SARL ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 311"
+    ],
+    "reponse_attendue": "5.000 FCFA : la valeur nominale des parts sociales ne peut lui être inférieure.",
+    "doit_refuser": false
+  },
+  {
+    "id": 3,
+    "question": "Quel est le capital social minimum d'une société anonyme ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 387"
+    ],
+    "reponse_attendue": "10.000.000 FCFA.",
+    "doit_refuser": false
+  },
+  {
+    "id": 4,
+    "question": "Combien de personnes faut-il au minimum pour créer une société commerciale ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 4"
+    ],
+    "reponse_attendue": "Deux ou plusieurs personnes ; la société peut toutefois être créée par une seule personne dans les cas prévus par l'Acte uniforme.",
+    "doit_refuser": false
+  },
+  {
+    "id": 5,
+    "question": "Deux époux peuvent-ils être associés dans la même société ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 9"
+    ],
+    "reponse_attendue": "Non, lorsqu'ils y seraient tenus des dettes sociales indéfiniment ou solidairement.",
+    "doit_refuser": false
+  },
+  {
+    "id": 6,
+    "question": "Sous quelle forme les statuts d'une société commerciale doivent-ils être établis ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 10"
+    ],
+    "reponse_attendue": "Par acte notarié ou par tout acte offrant des garanties d'authenticité dans l'État du siège, déposé avec reconnaissance d'écritures et de signatures.",
+    "doit_refuser": false
+  },
+  {
+    "id": 7,
+    "question": "De quoi les associés d'une SARL sont-ils responsables ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 309"
+    ],
+    "reponse_attendue": "Des dettes sociales à concurrence de leurs apports seulement.",
+    "doit_refuser": false
+  },
+  {
+    "id": 8,
+    "question": "Une société anonyme peut-elle avoir un seul actionnaire ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 385"
+    ],
+    "reponse_attendue": "Oui, la société anonyme peut ne comprendre qu'un seul actionnaire.",
+    "doit_refuser": false
+  },
+  {
+    "id": 9,
+    "question": "Combien d'associés faut-il pour constituer une société par actions simplifiée ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 853-1"
+    ],
+    "reponse_attendue": "Un ou plusieurs associés.",
+    "doit_refuser": false
+  },
+  {
+    "id": 10,
+    "question": "Combien de temps avant l'assemblée les états financiers doivent-ils être adressés aux commissaires aux comptes ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUSCGIE 140"
+    ],
+    "reponse_attendue": "Quarante-cinq jours au moins avant la date de l'assemblée générale.",
+    "doit_refuser": false
+  },
+  {
+    "id": 11,
+    "question": "Qui est commerçant au sens du droit OHADA ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 2"
+    ],
+    "reponse_attendue": "Celui qui fait de l'accomplissement d'actes de commerce par nature sa profession.",
+    "doit_refuser": false
+  },
+  {
+    "id": 12,
+    "question": "Un commerçant est-il tenu de tenir des livres de commerce ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 13"
+    ],
+    "reponse_attendue": "Oui, tout commerçant doit tenir des livres de commerce conformément à l'Acte uniforme relatif à la comptabilité des entreprises.",
+    "doit_refuser": false
+  },
+  {
+    "id": 13,
+    "question": "Dans quel délai une personne physique doit-elle demander son immatriculation au registre du commerce ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 44"
+    ],
+    "reponse_attendue": "Dans le premier mois de l'exercice de son activité.",
+    "doit_refuser": false
+  },
+  {
+    "id": 14,
+    "question": "Quel est le délai de prescription des obligations nées entre commerçants ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 16"
+    ],
+    "reponse_attendue": "Cinq ans, si elles ne sont pas soumises à des prescriptions plus courtes.",
+    "doit_refuser": false
+  },
+  {
+    "id": 15,
+    "question": "Les parties peuvent-elles modifier par contrat la durée de la prescription commerciale ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 29"
+    ],
+    "reponse_attendue": "Oui, mais sans la réduire à moins d'un an ni l'étendre à plus de dix ans.",
+    "doit_refuser": false
+  },
+  {
+    "id": 16,
+    "question": "Une interdiction d'exercer le commerce peut-elle être levée ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 11"
+    ],
+    "reponse_attendue": "Oui, l'interdiction temporaire de plus de 5 ans comme l'interdiction définitive peuvent être levées par la juridiction qui les a prononcées, sur requête de l'interdit.",
+    "doit_refuser": false
+  },
+  {
+    "id": 17,
+    "question": "Combien de temps faut-il avoir exploité un local pour avoir droit au renouvellement du bail professionnel ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 123"
+    ],
+    "reponse_attendue": "Deux ans d'exploitation conforme aux stipulations du bail.",
+    "doit_refuser": false
+  },
+  {
+    "id": 18,
+    "question": "Peut-on demander la résiliation d'un bail professionnel sans formalité préalable ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUDCG 133"
+    ],
+    "reponse_attendue": "Non, la demande en justice doit être précédée d'une mise en demeure.",
+    "doit_refuser": false
+  },
+  {
+    "id": 19,
+    "question": "Qu'est-ce qu'un cautionnement ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUS 13"
+    ],
+    "reponse_attendue": "Un contrat par lequel la caution s'engage envers le créancier à exécuter l'obligation du débiteur si celui-ci n'y satisfait pas.",
+    "doit_refuser": false
+  },
+  {
+    "id": 20,
+    "question": "Qu'est-ce qu'une garantie autonome ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUS 39"
+    ],
+    "reponse_attendue": "L'engagement par lequel le garant s'oblige, sur instructions du donneur d'ordre, à payer une somme déterminée au bénéficiaire.",
+    "doit_refuser": false
+  },
+  {
+    "id": 21,
+    "question": "Une personne physique peut-elle souscrire une garantie autonome ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUS 40"
+    ],
+    "reponse_attendue": "Non, à peine de nullité.",
+    "doit_refuser": false
+  },
+  {
+    "id": 22,
+    "question": "Qu'est-ce qu'une hypothèque ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUS 190"
+    ],
+    "reponse_attendue": "L'affectation d'un immeuble déterminé appartenant au constituant en garantie d'une ou plusieurs créances.",
+    "doit_refuser": false
+  },
+  {
+    "id": 23,
+    "question": "Qu'est-ce que la cessation des paiements ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUPC 25"
+    ],
+    "reponse_attendue": "L'état où le débiteur se trouve dans l'impossibilité de faire face à son passif exigible avec son actif disponible.",
+    "doit_refuser": false
+  },
+  {
+    "id": 24,
+    "question": "Dans quel délai la juridiction statue-t-elle sur la récusation d'un arbitre ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUA 8"
+    ],
+    "reponse_attendue": "Au plus tard dans un délai de trente jours.",
+    "doit_refuser": false
+  },
+  {
+    "id": 25,
+    "question": "Les informations échangées au cours d'une médiation sont-elles confidentielles ?",
+    "type": "factuelle",
+    "articles_attendus": [
+      "AUM 10"
+    ],
+    "reponse_attendue": "Oui, sauf convention contraire des parties ou divulgation exigée par la loi.",
+    "doit_refuser": false
+  },
+  {
+    "id": 26,
+    "question": "Quelle différence de capital minimum y a-t-il entre une SARL et une société anonyme ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUSCGIE 311",
+      "AUSCGIE 387"
+    ],
+    "reponse_attendue": "1.000.000 FCFA pour la SARL, 10.000.000 FCFA pour la société anonyme.",
+    "doit_refuser": false
+  },
+  {
+    "id": 27,
+    "question": "Quelles règles s'appliquent à une société par actions simplifiée en l'absence de disposition propre ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUSCGIE 853-1",
+      "AUSCGIE 853-3"
+    ],
+    "reponse_attendue": "Les statuts organisent librement la société ; à défaut, les règles de la société anonyme s'appliquent, à l'exception notamment de l'article 387 alinéa 1er et des articles 414 à 561.",
+    "doit_refuser": false
+  },
+  {
+    "id": 28,
+    "question": "Je viens d'ouvrir un commerce : quelles sont mes deux premières obligations légales ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUDCG 2",
+      "AUDCG 44"
+    ],
+    "reponse_attendue": "Être qualifié de commerçant par l'exercice habituel d'actes de commerce, et demander son immatriculation au registre du commerce dans le premier mois d'activité.",
+    "doit_refuser": false
+  },
+  {
+    "id": 29,
+    "question": "Quelle est la durée de la prescription commerciale et peut-on la modifier ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUDCG 16",
+      "AUDCG 29"
+    ],
+    "reponse_attendue": "Cinq ans par principe ; les parties peuvent l'aménager sans descendre sous un an ni dépasser dix ans.",
+    "doit_refuser": false
+  },
+  {
+    "id": 30,
+    "question": "Quels locaux relèvent du bail professionnel et à quelle condition le renouvellement est-il acquis ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUDCG 101",
+      "AUDCG 123"
+    ],
+    "reponse_attendue": "Les locaux à usage commercial, industriel, artisanal ou professionnel ; le renouvellement est acquis après deux ans d'exploitation conforme.",
+    "doit_refuser": false
+  },
+  {
+    "id": 31,
+    "question": "Quelle différence entre un cautionnement et une garantie autonome ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUS 13",
+      "AUS 39"
+    ],
+    "reponse_attendue": "Le cautionnement est accessoire à l'obligation du débiteur ; la garantie autonome crée un engagement distinct, payable sur demande.",
+    "doit_refuser": false
+  },
+  {
+    "id": 32,
+    "question": "Qui peut souscrire une garantie autonome et sous quelle forme ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUS 40",
+      "AUS 41"
+    ],
+    "reponse_attendue": "Pas une personne physique, à peine de nullité ; et elle doit être constatée par un écrit portant les mentions prescrites, également à peine de nullité.",
+    "doit_refuser": false
+  },
+  {
+    "id": 33,
+    "question": "Que décide la juridiction lorsqu'elle constate la cessation des paiements d'un débiteur ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUPC 25",
+      "AUPC 33"
+    ],
+    "reponse_attendue": "Elle ouvre soit le redressement judiciaire, soit la liquidation des biens, selon que le redressement paraît possible ou non.",
+    "doit_refuser": false
+  },
+  {
+    "id": 34,
+    "question": "Quel capital faut-il pour une SARL et comment les apports en nature y sont-ils évalués ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUSCGIE 311",
+      "AUSCGIE 312"
+    ],
+    "reponse_attendue": "1.000.000 FCFA au moins ; les statuts contiennent l'évaluation de chaque apport en nature, contrôlée par un commissaire aux apports.",
+    "doit_refuser": false
+  },
+  {
+    "id": 35,
+    "question": "Qu'est-ce qu'une société coopérative et à partir de quand sa durée court-elle ?",
+    "type": "multi_articles",
+    "articles_attendus": [
+      "AUSCOOP 4",
+      "AUSCOOP 26"
+    ],
+    "reponse_attendue": "Un groupement autonome de personnes réunies volontairement, dont la durée court à compter de l'immatriculation au Registre des Sociétés Coopératives.",
+    "doit_refuser": false
+  },
+  {
+    "id": 36,
+    "question": "Je veux monter une SARL avec un ami. Combien d'argent faut-il mettre au départ ?",
+    "type": "formulation_indirecte",
+    "articles_attendus": [
+      "AUSCGIE 311"
+    ],
+    "reponse_attendue": "1.000.000 FCFA de capital social au moins.",
+    "doit_refuser": false
+  },
+  {
+    "id": 37,
+    "question": "J'ai ouvert ma boutique le mois dernier. Est-ce que je dois faire une démarche quelque part ?",
+    "type": "formulation_indirecte",
+    "articles_attendus": [
+      "AUDCG 44"
+    ],
+    "reponse_attendue": "Oui, demander son immatriculation au registre du commerce dans le premier mois d'activité.",
+    "doit_refuser": false
+  },
+  {
+    "id": 38,
+    "question": "Un client ne m'a jamais payé une facture d'il y a six ans. Puis-je encore le poursuivre ?",
+    "type": "formulation_indirecte",
+    "articles_attendus": [
+      "AUDCG 16"
+    ],
+    "reponse_attendue": "Non en principe : les obligations nées entre commerçants se prescrivent par cinq ans.",
+    "doit_refuser": false
+  },
+  {
+    "id": 39,
+    "question": "Je loue un local pour mon atelier depuis trois ans. Le propriétaire peut-il refuser de continuer ?",
+    "type": "formulation_indirecte",
+    "articles_attendus": [
+      "AUDCG 123"
+    ],
+    "reponse_attendue": "Le droit au renouvellement est acquis dès deux ans d'exploitation conforme au bail.",
+    "doit_refuser": false
+  },
+  {
+    "id": 40,
+    "question": "Ma femme et moi voulons créer une entreprise ensemble. Y a-t-il quelque chose qui nous en empêche ?",
+    "type": "formulation_indirecte",
+    "articles_attendus": [
+      "AUSCGIE 9"
+    ],
+    "reponse_attendue": "Des époux ne peuvent être associés d'une société où ils seraient tenus des dettes indéfiniment ou solidairement.",
+    "doit_refuser": false
+  },
+  {
+    "id": 41,
+    "question": "Quel est le délai de préavis en cas de licenciement d'un salarié ?",
+    "type": "piege_hors_corpus",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 42,
+    "question": "Quelle peine encourt l'auteur d'un vol simple ?",
+    "type": "piege_hors_corpus",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 43,
+    "question": "Quelles sont les conditions du divorce par consentement mutuel ?",
+    "type": "piege_hors_corpus",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 44,
+    "question": "Quelle est la durée légale hebdomadaire du travail ?",
+    "type": "piege_hors_corpus",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 45,
+    "question": "Quelles sont les règles d'attribution d'un permis de construire ?",
+    "type": "piege_hors_corpus",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 46,
+    "question": "Quel est le taux normal de la TVA au Cameroun ?",
+    "type": "piege_actualite",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 47,
+    "question": "Quel est le barème de l'impôt sur le revenu des personnes physiques au Cameroun ?",
+    "type": "piege_actualite",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 48,
+    "question": "Que prévoit le code CIMA pour l'assurance automobile obligatoire ?",
+    "type": "piege_actualite",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 49,
+    "question": "Que dit le règlement CEMAC sur les transferts de devises hors de la zone ?",
+    "type": "piege_actualite",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 50,
+    "question": "Quelle est la position de la CCJA dans son arrêt le plus récent sur les sûretés ?",
+    "type": "piege_actualite",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  }
+]

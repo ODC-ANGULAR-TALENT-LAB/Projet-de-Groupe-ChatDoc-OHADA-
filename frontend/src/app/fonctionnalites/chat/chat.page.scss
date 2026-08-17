@@ -1,0 +1,270 @@
+/* Mobile-first : testé à 360 px dès le départ, pas à la fin.
+   La cible répond depuis son téléphone, entre deux réunions. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* 800 px : la mesure de lecture de la maquette. Au-delà, les lignes
+     d'un article de loi deviennent trop longues pour l'œil. */
+  max-width: var(--largeur-lecture);
+  margin: 0 auto;
+  padding: var(--e3);
+  width: 100%;
+}
+
+.entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e2);
+  flex-wrap: wrap;
+  margin-bottom: var(--e2);
+
+  h1 {
+    font-family: var(--police-serif);
+    font-size: 1.15rem;
+    margin: 0;
+  }
+}
+
+.quota {
+  font-size: 0.75rem;
+  color: var(--vert);
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  white-space: nowrap;
+
+  &.epuise {
+    color: var(--gris-texte);
+  }
+}
+
+.fil {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--e1) var(--e1) var(--e4);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- État vide --------------------------------------------------- */
+.accueil {
+  max-width: 34rem;
+  margin: var(--e8) auto;
+  text-align: center;
+  color: var(--gris-texte);
+
+  h2 {
+    margin: 0 0 var(--e3);
+    font-family: var(--police-serif);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--bleu-nuit);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+}
+
+.exemples {
+  list-style: none;
+  padding: 0;
+  margin: var(--e6) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  text-align: left;
+
+  button {
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon-carte);
+    padding: 0.7rem 0.85rem;
+    font: inherit;
+    font-size: 0.88rem;
+    color: var(--bleu-nuit);
+    cursor: pointer;
+    transition: border-color 160ms ease-out, background-color 160ms ease-out;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--or);
+      background: var(--fond-citation);
+    }
+  }
+}
+
+/* --- Attente ------------------------------------------------------ */
+.attente {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--gris-texte);
+  font-size: 0.85rem;
+}
+
+.point {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--or);
+  animation: pulsation 1.2s infinite ease-in-out;
+
+  &:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  &:nth-child(3) {
+    animation-delay: 0.3s;
+    margin-right: 0.35rem;
+  }
+}
+
+@keyframes pulsation {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .point {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* --- Composeur ---------------------------------------------------- */
+.composeur {
+  padding-top: var(--e2);
+}
+
+/* Un seul champ visuel : la zone de texte et le bouton vivent DANS la
+   même boîte, qui porte la bordure et l'anneau de focus. Deux boîtes
+   côte à côte, c'est la signature d'un formulaire ; une seule, celle
+   d'un composeur de conversation. */
+.saisie {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--e2);
+  padding: var(--e2);
+  background: var(--surface);
+  border: 1px solid var(--gris-bordure);
+  border-radius: var(--rayon-champ);
+  transition: border-color 160ms ease-out, box-shadow 160ms ease-out;
+
+  /* L'anneau de focus est porté par le conteneur, pas par la zone de
+     texte : sinon il apparaît à l'intérieur de la boîte et paraît
+     accidentel. */
+  &:focus-within {
+    border-color: var(--or);
+    box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
+  }
+
+  textarea {
+    flex: 1;
+    resize: none;
+    border: none;
+    background: none;
+    padding: 0.4rem 0.35rem;
+    font: inherit;
+    /* 16 px minimum : en dessous, iOS zoome à la mise au point. */
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--texte);
+    max-height: 40vh;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--texte-faible);
+    }
+  }
+}
+
+.envoyer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44 px : cible tactile réglementaire. */
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: var(--bleu-nuit);
+  color: #fff;
+  border: none;
+  border-radius: var(--rayon);
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+
+  --taille-icone: 1.15rem;
+
+  &:hover:not(:disabled) {
+    background: var(--bleu-nuit-clair);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.mention {
+  margin: var(--e2) 0 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--texte-faible);
+}
+
+/* --- Accès non connecté ------------------------------------------- */
+.acces {
+  max-width: 26rem;
+  margin: var(--e8) auto;
+
+  h2 {
+    font-family: var(--police-serif);
+    font-size: 1.5rem;
+    margin: 0 0 var(--e3);
+    color: var(--bleu-nuit);
+  }
+
+  .intro {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--gris-texte);
+    margin: 0 0 var(--e3);
+
+    a {
+      color: var(--bleu-nuit);
+    }
+  }
+}
+
+.lien-bouton {
+  display: inline-block;
+  text-decoration: none;
+  margin-bottom: var(--e4);
+}
+
+.erreur {
+  color: #9a2a2a;
+  font-size: 0.85rem;
+  margin: var(--e2) 0;
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding: var(--e6) var(--e6) var(--e4);
+  }
+}

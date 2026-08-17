@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>ChatDocs OHADA — chaque réponse cite son article</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+        content="Le droit OHADA et la fiscalité camerounaise, en questions-réponses sourcées.">
+  <meta name="theme-color" content="#1B2A4A">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
+
+  <!-- Préchargement des deux seules graisses présentes sur TOUTE page :
+       Inter 400 pour l'interface, Source Serif 4 600 pour les titres et
+       les références d'articles. Sans cela, le navigateur ne les
+       découvre qu'après avoir analysé la feuille de style, et le texte
+       bascule sous les yeux du lecteur.
+
+       On s'arrête à deux : précharger chaque graisse ferait télécharger
+       d'emblée des fichiers que la page courante n'emploie pas, ce qui
+       retarderait précisément ce qu'on cherche à accélérer. Les autres
+       arrivent à la demande, via unicode-range. -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="polices/inter-400-latin.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="polices/source-serif-4-600-latin.woff2">
+</head>
+<body>
+  <app-root></app-root>
+  <noscript>
+    ChatDocs OHADA a besoin de JavaScript pour fonctionner. Activez-le dans
+    votre navigateur, puis rechargez la page.
+  </noscript>
+</body>
+</html>

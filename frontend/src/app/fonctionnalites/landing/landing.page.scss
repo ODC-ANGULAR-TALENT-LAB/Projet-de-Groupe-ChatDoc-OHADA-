@@ -1,0 +1,631 @@
+:host {
+  display: block;
+  background: var(--fond);
+}
+
+.marque {
+  display: inline-flex;
+  align-items: baseline;
+  /* Flex plutôt qu'une espace : Angular supprime les blancs entre
+     éléments à la compilation, et « ChatDocs » et « OHADA » se
+     retrouveraient soudés. */
+  gap: 0.28em;
+  font-family: var(--police-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  line-height: 1.1;
+
+  app-icone {
+    align-self: center;
+    color: var(--or);
+  }
+}
+
+.marque-suffixe {
+  color: var(--or);
+}
+
+/* ------------------------------------------------------------------ */
+/* Barre publique                                                      */
+/* ------------------------------------------------------------------ */
+
+.entete {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e4);
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--e4) var(--e4);
+
+  .marque-nom {
+    color: #fff;
+  }
+
+  .liens {
+    display: none;
+    gap: var(--e5);
+
+    a {
+      color: var(--sur-nuit-faible);
+      font-size: 0.9rem;
+      text-decoration: none;
+
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
+
+  .acces {
+    display: flex;
+    align-items: center;
+    gap: var(--e3);
+  }
+}
+
+.lien-connexion {
+  color: var(--sur-nuit);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--or);
+  }
+}
+
+.bouton-or,
+.bouton-fantome {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  /* 44 px de haut au minimum : c'est la cible tactile confortable, et
+     ces boutons sont les seuls chemins vers le produit. */
+  min-height: 44px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--rayon);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.bouton-or {
+  color: var(--bleu-encre);
+  background: var(--or);
+  border: 1px solid var(--or);
+
+  &:hover {
+    background: #d9b43a;
+    border-color: #d9b43a;
+  }
+}
+
+.bouton-fantome {
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  &:hover {
+    border-color: var(--or);
+    color: var(--or);
+  }
+}
+
+.grand {
+  min-height: 52px;
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero                                                                */
+/* ------------------------------------------------------------------ */
+
+.hero {
+  position: relative;
+  /* Le fond porte la barre publique : les deux forment un seul bloc
+     bleu nuit, sans couture visible. */
+  margin-top: -84px;
+  padding: 84px 0 0;
+  background: var(--bleu-encre);
+  color: var(--sur-nuit);
+  overflow: hidden;
+}
+
+/* L'IMAGE DE FOND. Elle reste à pleine opacité : c'est le voile, par
+   dessus, qui règle le contraste du texte. L'affaiblir ici la réduirait
+   à un grisé sans relief tout en obligeant quand même à voiler. */
+.fresque {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Ancrée à droite : c'est là que se trouve la personne assise en
+     face, donc le sujet. Sur un écran étroit, le recadrage automatique
+     partirait du centre et couperait justement ce qui raconte la
+     scène. */
+  object-position: 62% 50%;
+  pointer-events: none;
+}
+
+/* LE VOILE, PAR-DESSUS L'IMAGE. Trois couches :
+   — un halo doré en haut à droite, qui amène l'œil vers la
+     démonstration plutôt que de décorer le vide ;
+   — un renfort bleu en bas à gauche ;
+   — un dégradé sombre en bas, qui garantit le contraste du texte
+     quelle que soit la hauteur à laquelle il tombe.
+
+   C'est ce voile qui rend le portique utilisable comme fond : sans lui,
+   ses traits passeraient derrière le titre et feraient tomber le
+   contraste du texte blanc sous le seuil lisible. */
+.voile {
+  position: absolute;
+  inset: 0;
+  background:
+    /* Halo doré : il conduit l'œil vers la démonstration, à droite. */
+    radial-gradient(
+      52rem 34rem at 78% 20%,
+      rgba(201, 162, 39, 0.18),
+      transparent 62%
+    ),
+    /* Le voile de lecture. Dense à gauche, où se trouve le texte ;
+       transparent à droite, où l'édifice doit rester visible. Un voile
+       uniforme aurait obligé à choisir entre un texte lisible et une
+       image visible — celui-ci donne les deux. */
+      linear-gradient(
+        100deg,
+        rgba(4, 21, 52, 0.68) 0%,
+        rgba(4, 21, 52, 0.5) 34%,
+        rgba(4, 21, 52, 0.2) 62%,
+        rgba(4, 21, 52, 0.08) 100%
+      ),
+    /* Assombrissement du bas : il assoit l'image et raccorde le hero à
+       la section suivante sans couture. */
+      linear-gradient(180deg, rgba(4, 21, 52, 0.5) 0%, transparent 28%),
+    linear-gradient(180deg, transparent 62%, rgba(4, 21, 52, 0.9) 100%);
+  pointer-events: none;
+}
+
+/* Sur téléphone, le texte occupe toute la largeur : le voile doit être
+   dense partout, sinon les dernières lignes tombent sur les colonnes. */
+@media (max-width: 899px) {
+  .voile {
+    background:
+      radial-gradient(
+        30rem 22rem at 80% 12%,
+        rgba(201, 162, 39, 0.16),
+        transparent 60%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(4, 21, 52, 0.74) 0%,
+        rgba(4, 21, 52, 0.66) 55%,
+        rgba(4, 21, 52, 0.86) 100%
+      );
+  }
+}
+
+.hero-contenu {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--e8);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--e8) var(--e4) calc(var(--e8) * 1.5);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  margin: 0 0 var(--e5);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--or);
+  background: rgba(201, 162, 39, 0.1);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  border-radius: 999px;
+
+  .point {
+    width: 6px;
+    height: 6px;
+    background: var(--or);
+    border-radius: 50%;
+  }
+}
+
+.hero-texte {
+  h1 {
+    margin: 0 0 var(--e4);
+    font-family: var(--police-serif);
+    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: #fff;
+
+    em {
+      display: block;
+      font-style: normal;
+      color: var(--or);
+    }
+  }
+}
+
+.accroche {
+  max-width: 34rem;
+  margin: 0 0 var(--e6);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--sur-nuit);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e3);
+  margin-bottom: var(--e4);
+}
+
+.mention {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--sur-nuit-faible);
+}
+
+/* ------------------------------------------------------------------ */
+/* La démonstration                                                    */
+/* ------------------------------------------------------------------ */
+
+.demonstration {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--rayon-carte);
+  box-shadow: 0 24px 60px rgba(4, 21, 52, 0.45);
+  overflow: hidden;
+}
+
+.fenetre-barre {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  font-size: 0.76rem;
+  color: var(--gris-texte);
+  background: var(--surface-basse);
+  border-bottom: 1px solid var(--bordure);
+}
+
+.pastilles {
+  display: inline-flex;
+  gap: 6px;
+
+  i {
+    width: 9px;
+    height: 9px;
+    background: var(--gris-bordure);
+    border-radius: 50%;
+  }
+}
+
+.fenetre-corps {
+  padding: var(--e4);
+}
+
+.question {
+  max-width: 88%;
+  margin: 0 0 var(--e4) auto;
+  padding: var(--e3);
+  font-size: 0.9rem;
+  color: #fff;
+  background: var(--bleu-nuit);
+  border-radius: var(--rayon) var(--rayon) 0 var(--rayon);
+}
+
+.reponse {
+  p {
+    margin: 0 0 var(--e2);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--texte);
+  }
+
+  .qui {
+    display: flex;
+    align-items: center;
+    gap: var(--e2);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--or-fonce);
+  }
+}
+
+/* L'extrait officiel : serif et fond crème, pour qu'on ne le confonde
+   jamais avec le commentaire de l'assistant. C'est la règle qui vaut
+   partout dans le produit. */
+.citation {
+  margin: var(--e3) 0 0;
+  padding: var(--e3);
+  background: var(--fond-citation);
+  border-left: 3px solid var(--or);
+  border-radius: 0 var(--rayon) var(--rayon) 0;
+
+  .reference {
+    margin: 0 0 var(--e1);
+    font-family: var(--police-serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bleu-nuit);
+  }
+
+  .extrait {
+    margin: 0;
+    font-family: var(--police-serif);
+    font-size: 0.88rem;
+    font-style: italic;
+    line-height: 1.65;
+    color: var(--texte);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Pour qui                                                            */
+/* ------------------------------------------------------------------ */
+
+.professionnels {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(var(--e8) * 1.4) var(--e4);
+  text-align: center;
+
+  h2 {
+    margin: 0 0 var(--e3);
+    font-family: var(--police-serif);
+    font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+    color: var(--bleu-nuit);
+  }
+}
+
+.sous-titre {
+  max-width: 38rem;
+  margin: 0 auto calc(var(--e8) * 0.8);
+  color: var(--gris-texte);
+  line-height: 1.7;
+}
+
+.grille {
+  display: grid;
+  gap: var(--e4);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  text-align: left;
+}
+
+.carte {
+  padding: var(--e5);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-carte);
+
+  h3 {
+    margin: 0 0 var(--e2);
+    font-family: var(--police-serif);
+    font-size: 1.1rem;
+    color: var(--bleu-nuit);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--gris-texte);
+  }
+}
+
+.vignette {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--e3);
+  color: var(--or-fonce);
+  background: var(--or-pale);
+  border-radius: var(--rayon);
+}
+
+/* ------------------------------------------------------------------ */
+/* Fiabilité                                                           */
+/* ------------------------------------------------------------------ */
+
+.fiabilite {
+  background: var(--bleu-nuit);
+  color: var(--sur-nuit);
+}
+
+.fiabilite-contenu {
+  display: grid;
+  gap: var(--e8);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(var(--e8) * 1.4) var(--e4);
+
+  h2 {
+    margin: 0 0 var(--e4);
+    font-family: var(--police-serif);
+    font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+    color: #fff;
+  }
+
+  p {
+    margin: 0 0 var(--e5);
+    line-height: 1.75;
+    color: var(--sur-nuit);
+  }
+
+  strong {
+    color: var(--or);
+  }
+}
+
+.garanties {
+  margin: 0 0 var(--e5);
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e3);
+    margin-bottom: var(--e3);
+    font-size: 0.94rem;
+    line-height: 1.6;
+  }
+
+  app-icone {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--or);
+  }
+}
+
+.lien-clair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  color: var(--or);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.corpus {
+  align-self: start;
+  padding: var(--e5);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--rayon-carte);
+
+  .corpus-titre {
+    margin: 0 0 var(--e4);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--or);
+  }
+
+  dl {
+    margin: 0 0 var(--e4);
+    display: grid;
+    gap: var(--e4);
+  }
+
+  dt {
+    font-size: 0.82rem;
+    color: var(--sur-nuit-faible);
+  }
+
+  dd {
+    margin: var(--e1) 0 0;
+    font-family: var(--police-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    /* Chiffres à chasse fixe : deux nombres l'un sous l'autre doivent
+       s'aligner, sinon la carte a l'air bancale. */
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+  }
+
+  .corpus-note {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--sur-nuit-faible);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Pied                                                                */
+/* ------------------------------------------------------------------ */
+
+.pied {
+  background: var(--bleu-encre);
+  color: var(--sur-nuit-faible);
+
+  .marque-nom {
+    color: #fff;
+  }
+}
+
+.pied-contenu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e4);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--e6) var(--e4) var(--e4);
+}
+
+.pied-liens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e5);
+
+  a {
+    color: var(--sur-nuit-faible);
+    font-size: 0.86rem;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--or);
+    }
+  }
+}
+
+.avertissement {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--e4) var(--e4) var(--e6);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Poste de travail                                                    */
+/* ------------------------------------------------------------------ */
+
+@media (min-width: 900px) {
+  .entete .liens {
+    display: flex;
+  }
+
+  .hero-contenu,
+  .fiabilite-contenu {
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: center;
+  }
+
+  .corpus dl {
+    grid-template-columns: 1fr 1fr;
+  }
+}

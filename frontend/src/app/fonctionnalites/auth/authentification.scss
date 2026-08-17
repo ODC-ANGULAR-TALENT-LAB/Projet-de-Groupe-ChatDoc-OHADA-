@@ -1,0 +1,282 @@
+/* Gabarit commun aux pages Connexion et Inscription.
+   Les deux se ressemblent volontairement : passer de l'une à l'autre ne
+   doit pas donner l'impression de changer de site. */
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--fond);
+}
+
+.gabarit {
+  display: grid;
+  min-height: 100dvh;
+}
+
+/* ------------------------------------------------------------------ */
+/* Colonne de gauche : le formulaire                                   */
+/* ------------------------------------------------------------------ */
+
+.colonne-formulaire {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--e6) var(--e4);
+}
+
+.enveloppe {
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
+}
+
+.marque {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  margin-bottom: var(--e8);
+  font-family: var(--police-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  color: var(--bleu-nuit);
+}
+
+.marque-suffixe {
+  color: var(--or-fonce);
+}
+
+h1 {
+  margin: 0 0 var(--e2);
+  font-family: var(--police-serif);
+  font-size: 1.75rem;
+  color: var(--bleu-nuit);
+}
+
+.intro {
+  margin: 0 0 var(--e6);
+  line-height: 1.7;
+  color: var(--gris-texte);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+}
+
+label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--texte);
+}
+
+input[type='email'],
+input[type='password'] {
+  padding: 0.7rem 0.75rem;
+  font: inherit;
+  /* 16 px au minimum : en dessous, iOS agrandit la page au focus et
+     l'utilisateur se retrouve à devoir dézoomer pour continuer. */
+  font-size: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--gris-bordure);
+  border-radius: var(--rayon);
+
+  &:focus-visible {
+    outline: 2px solid var(--bleu-nuit);
+    outline-offset: 1px;
+    border-color: var(--bleu-nuit);
+  }
+}
+
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+  margin-bottom: var(--e3);
+}
+
+.aide {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--gris-texte);
+}
+
+.erreur {
+  margin: 0 0 var(--e3);
+  padding: var(--e2) var(--e3);
+  font-size: 0.85rem;
+  color: #8c2f2f;
+  background: #fbf4f2;
+  border-left: 3px solid #a94442;
+  border-radius: var(--rayon);
+}
+
+.principal {
+  min-height: 48px;
+  margin-top: var(--e2);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--bleu-nuit);
+  border: 0;
+  border-radius: var(--rayon);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--bleu-nuit-clair);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.separateur {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  margin: var(--e5) 0;
+  color: var(--gris-texte);
+  font-size: 0.8rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--bordure);
+  }
+}
+
+.google {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.bascule {
+  margin: var(--e6) 0 0;
+  font-size: 0.9rem;
+  color: var(--gris-texte);
+
+  a {
+    color: var(--bleu-nuit);
+    font-weight: 600;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Colonne de droite : la promesse, sous voile                         */
+/* ------------------------------------------------------------------ */
+
+.colonne-promesse {
+  /* Masquée sur téléphone : sur un petit écran, l'utilisateur vient
+     pour se connecter, pas pour lire un argumentaire. Le faire défiler
+     avant d'atteindre le formulaire serait une faute. */
+  display: none;
+  position: relative;
+  padding: var(--e8) var(--e6);
+  background: var(--bleu-encre);
+  color: var(--sur-nuit);
+  overflow: hidden;
+}
+
+/* Le même voile que la page d'accueil : halo doré et assombrissement
+   du bas. La continuité visuelle dit que c'est le même produit. */
+.voile {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      40rem 30rem at 75% 15%,
+      rgba(201, 162, 39, 0.2),
+      transparent 62%
+    ),
+    linear-gradient(180deg, transparent 50%, rgba(4, 21, 52, 0.92) 100%);
+  pointer-events: none;
+}
+
+.promesse {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  max-width: 30rem;
+  margin: 0 auto;
+
+  h2 {
+    margin: 0 0 var(--e4);
+    font-family: var(--police-serif);
+    font-size: 1.9rem;
+    line-height: 1.25;
+    color: #fff;
+  }
+
+  > p {
+    margin: 0 0 var(--e6);
+    line-height: 1.75;
+  }
+}
+
+.points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e3);
+    margin-bottom: var(--e3);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  app-icone {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--or);
+  }
+}
+
+.citation-demo {
+  margin: var(--e6) 0 0;
+  padding: var(--e4);
+  background: rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--or);
+  border-radius: 0 var(--rayon) var(--rayon) 0;
+
+  p {
+    margin: 0;
+    font-family: var(--police-serif);
+    font-size: 0.92rem;
+    font-style: italic;
+    line-height: 1.7;
+    color: #fff;
+  }
+
+  cite {
+    display: block;
+    margin-top: var(--e2);
+    font-family: var(--police-interface);
+    font-size: 0.78rem;
+    font-style: normal;
+    color: var(--or);
+  }
+}
+
+@media (min-width: 960px) {
+  .gabarit {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .colonne-promesse {
+    display: block;
+  }
+}

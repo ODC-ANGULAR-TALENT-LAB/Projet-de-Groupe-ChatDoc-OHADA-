@@ -1,0 +1,335 @@
+ARCHITECTURE TECHNIQUE
+ChatDocs OHADA - v1.0 * Document de conception pour le d�veloppement
+1.	Vue d'ensemble
+ 
+Les grands blocs du syst�me et leurs responsabilit�s.
+  NAVIGATEUR (mobile / desktop)
+  +----------------------------------------------+
+  |  Angular 18  --  PWA                          |
+  |  Chat . Bibliotheque . Article . Historique   |
+  +-----------------------+----------------------+
+                          |  HTTPS / JSON (+ JWT)
+  +-----------------------v----------------------+
+  |  API  FastAPI  (Python)                       |
+  |   +----------------------------------------+  |
+  |   | AuthService    comptes, JWT, quota     |  |
+  |   | SearchService  recherche hybride       |  |
+  |   | RagService     orchestration reponse   |  |
+  |   | LlmProvider    <- interface unique     |  |
+  |   +----------------------------------------+  |
+  +--------+--------------------------+----------+
+           |                          |
+  +--------v---------+     +----------v----------+
+  | PostgreSQL       |     |  API LLM externe    |
+  | + pgvector       |     |  (fournisseur       |
+  | articles, users, |     |   interchangeable)  |
+  | conversations    |     +---------------------+
+  +------------------+
+  HORS LIGNE (scripts, executes par l'auteur)
+  +----------------------------------------------+
+  | Ingestion : PDF officiel -> articles -> base  |
+  | + generation des embeddings                   |
+  +----------------------------------------------+
+Principe directeur : le frontend ne contient aucune logique juridique et n'appelle jamais le LLM directement. 
+Toute la cha�ne de raisonnement, la cl� d'API et le contr�le du quota vivent c�t� serveur. L'ingestion du corpus 
+est un processus hors ligne, d�clench� manuellement - jamais pendant qu'un utilisateur attend une r�ponse.
+2.	Pipeline d'ingestion (hors ligne)
+ 
+Comment un PDF officiel devient un corpus interrogeable. Ex�cut� une fois par texte, puis � chaque mise � jour.
+�tape
+Traitement
+Sortie
+1. Collecte
+T�l�chargement du PDF officiel, calcul d'une empreinte
+SHA-256, archivage horodat�
+Fichier source + fiche de provenance
+2. Extraction
+pdfplumber pour le texte natif ; Tesseract (OCR) si le PDF est 
+scann�
+Texte brut pagin�
+3. D�coupage
+D�tection des en-t�tes (LIVRE / TITRE / CHAPITRE / 
+SECTION / Article N) par expressions r�guli�res ; reconstitution 
+du chemin hi�rarchique
+Liste d'articles avec chemin
+4.
+Consolidation
+Application des textes modificatifs ; cl�ture des anciennes 
+versions (dateAbrogation) et cr�ation des nouvelles
+Articles en vigueur + historique
+�tape
+Traitement
+Sortie
+5. V�rification
+Contr�les automatiques (num�rotation continue, articles vides, 
+longueurs aberrantes) puis relecture humaine des articles 
+modifi�s
+Rapport de contr�le valid�
+6.
+Embeddings
+Vectorisation de chaque article (contenu + chemin hi�rarchique 
+en pr�fixe) ; insertion dans pgvector
+Corpus interrogeable
+Point d'attention : le pr�fixe hi�rarchique inject� avant vectorisation (" CGI > Livre I > Titre II > Article 92 : ... 
+") am�liore nettement la pertinence de la recherche, car un article isol� est souvent incompr�hensible hors de 
+son contexte.
+3.	Pipeline de requ�te (RAG)
+ 
+Le trajet d'une question, de la saisie � la r�ponse sourc�e.
+1. QUESTION       "Quel est le delai de convocation d'une AG ordinaire de SARL ?"
+        |         v 2. QUOTA          verification du quota mensuel de 
+l'utilisateur (sinon 402)
+        |         v 3. 
+RECHERCHE      hybride :
+a)	vectorielle  -> embedding de la question, pgvector cosinus
+b)	lexicale     -> PostgreSQL full-text (French)
+c)	fusion RRF   -> score combine, top 8 articles        |         v 4. SEUIL          si meilleur 
+score < seuil  ->  REFUS (aucun appel LLM, cout nul)
+        |         v 5. PROMPT         systeme strict + les 8 articles en 
+contexte (numerotes)
+        |         v 6. LLM            temperature 0.1, 
+reponse imposee en JSON
+        |         v 7. VALIDATION     chaque id d'article cite existe-t-il dans 
+le contexte fourni ?                     non  ->  reponse rejetee, refus renvoye         
+|         v
+8. REPONSE        JSON { reponse, citations[], mise_en_garde } + decompte du quota
+Format de r�ponse impos� au mod�le
+{
+  "reponse": "texte en francais, sans citation inventee",
+  "citations": [ { "article_id": 4127, "extrait": "...", "pourquoi": "..." } ],
+  "confiance": "elevee | moyenne | insuffisante",
+  "mise_en_garde": "texte optionnel"
+}
+L'�tape 7 est la garantie centrale du produit. Le mod�le ne peut citer que des articles pr�sents dans le 
+contexte qu'on lui a fourni ; toute citation d'un identifiant absent fait rejeter la r�ponse enti�re. C'est m�canique, 
+pas d�claratif - et c'est ce qui rend le crit�re " z�ro r�ponse invent�e " r�ellement v�rifiable.
+4.	Sch�ma de base de donn�es
+ 
+PostgreSQL 16 + extension pgvector. Une seule base pour le corpus et l'applicatif.
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE TABLE texte (   id              SERIAL PRIMARY KEY,   sigle           
+VARCHAR(20)  NOT NULL,        -- AUSCGIE, CGI, CIMA...   titre           
+TEXT         NOT NULL,   type            VARCHAR(30)  NOT NULL,        -
+- acte_uniforme | code   version         VARCHAR(50)  NOT NULL,        -
+- "LF 2026"   date_consolidation DATE      NOT NULL,   source_url      
+TEXT, source_sha256 CHAR(64), valide_par VARCHAR(120) );
+CREATE TABLE article (   id              SERIAL PRIMARY KEY,   texte_id        INT  
+NOT NULL REFERENCES texte(id),   numero          VARCHAR(30) NOT NULL,         -- 
+"92", "18 bis"   chemin          TEXT NOT NULL,                -- "Livre I > Titre 
+II > Chap. 3"   contenu         TEXT NOT NULL,   date_entree_vigueur DATE NOT 
+NULL,   date_abrogation     DATE,                     -- NULL = en vigueur   
+embedding       VECTOR(1536),   recherche_fts   TSVECTOR );
+CREATE INDEX idx_article_vec  ON article
+       USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX idx_article_fts  ON article USING gin (recherche_fts);
+CREATE INDEX idx_article_actif ON article (texte_id)
+       WHERE date_abrogation IS NULL;
+CREATE TABLE utilisateur (   id SERIAL PRIMARY KEY, email CITEXT 
+UNIQUE NOT NULL,   mot_de_passe_hash TEXT NOT NULL, plan VARCHAR(20) 
+DEFAULT 'gratuit',   quota_restant INT DEFAULT 5, quota_reinit_le DATE 
+);
+CREATE TABLE conversation (   id SERIAL PRIMARY KEY, utilisateur_id INT 
+REFERENCES utilisateur(id),   titre TEXT, cree_le TIMESTAMPTZ DEFAULT 
+now() );
+CREATE TABLE message (   id SERIAL PRIMARY KEY, conversation_id INT 
+REFERENCES conversation(id),   role VARCHAR(10) NOT NULL, contenu TEXT 
+NOT NULL,   cree_le TIMESTAMPTZ DEFAULT now() );
+CREATE TABLE citation (   message_id INT REFERENCES 
+message(id),   article_id INT REFERENCES 
+article(id),   extrait TEXT, PRIMARY KEY 
+(message_id, article_id)
+);
+R�gle absolue : aucun UPDATE sur le contenu d'un article. Une modification l�gale cl�ture l'ancienne ligne
+(date_abrogation) et en ins�re une nouvelle. C'est ce qui rend l'historique consultable et les retours arri�re 
+possibles.
+5.	Contrats d'API
+ 
+Points d'entr�e REST expos�s par le backend.
+M�thode & route
+R�le
+R�ponse
+POST /auth/inscription
+Cr�ation de compte
+201 + JWT
+POST /auth/connexion
+Authentification
+200 + JWT
+POST /chat/question
+C�ur du produit : question ? r�ponse sourc�e.
+Corps : {question, conversation_id?}
+200 r�ponse + citations * 402 quota 
+�puis� * 422 hors corpus
+M�thode & route
+R�le
+R�ponse
+GET /conversations
+Liste des conversations de l'utilisateur
+200 liste
+GET /conversations/{id}
+D�tail avec messages et citations
+200 objet
+GET /textes
+Corpus disponible, versions et dates de 
+consolidation
+200 liste
+GET
+/textes/{id}/sommaire
+Arborescence du texte
+200 arbre
+GET /articles/{id}
+Article complet, chemin, voisins 
+pr�c�dent/suivant
+200 objet
+GET /recherche?q=
+Recherche plein texte classique, sans LLM
+(gratuite, hors quota)
+200 r�sultats
+GET /moi/quota
+Quota restant et date de r�initialisation
+200 objet
+6.	Architecture Angular
+ 
+Organisation du frontend en composants autonomes (standalone).
+src/app/   core/     services/       api.service.ts . auth.service.ts . 
+chat.service.ts                     corpus.service.ts . quota.service.ts     
+interceptors/   jwt.interceptor.ts . erreur.interceptor.ts     guards/         
+auth.guard.ts     models/         article.model.ts . message.model.ts . 
+citation.model.ts   fonctionnalites/     accueil/        accueil.page.ts     
+chat/           chat.page.ts                     composants/ bulle-message . 
+bloc-base-legale                                 champ-question . 
+indicateur-quota     bibliotheque/   bibliotheque.page.ts . sommaire-arbre     
+article/        article.page.ts . fil-ariane     historique/     
+historique.page.ts     methodologie/   methodologie.page.ts   partage/          
+composants/ bouton . carte . avertissement-deonto   app.routes.ts     (lazy 
+loading par fonctionnalite)
+Choix structurants
+�	�tat applicatif par signals (Angular 18) plut�t qu'une librairie externe : le p�rim�tre ne justifie pas NgRx.
+�	Un service = une responsabilit�. ChatService g�re le fil de conversation ; CorpusService met en cache 
+les textes et articles d�j� lus (ils ne changent pas pendant une session).
+�	Le composant bloc-base-legale est r�utilis� partout : c'est la signature visuelle du produit, il ne doit 
+exister qu'une seule fois dans le code.
+�	R�ponse en streaming : affichage progressif du texte, puis apparition des citations une fois la validation 
+serveur termin�e - jamais l'inverse, pour ne pas afficher une citation qui serait ensuite rejet�e.
+�	Service worker (@angular/pwa) : cache des assets et des articles consult�s ; le chat exige la connexion, 
+la biblioth�que non.
+7.	S�curit� et confidentialit�
+ 
+Mesures inscrites d�s la conception.
+Domaine
+Mesure
+Cl� LLM
+Stock�e en variable d'environnement serveur, jamais transmise au navigateur ; aucun appel direct 
+du frontend vers le fournisseur
+Mots de passe
+Hachage bcrypt (co�t 12) ; aucune r�cup�ration en clair possible
+Sessions
+JWT court (30 min) + jeton de rafra�chissement ; invalidation � la d�connexion
+Secret 
+professionnel
+Contenu des questions non exploit� au-del� de l'historique de l'utilisateur ; effacement � la demande
+; clause de non-entra�nement exig�e du fournisseur LLM
+Injection de 
+prompt
+La question utilisateur est pass�e en message s�par�, jamais concat�n�e au prompt syst�me ; les 
+articles du contexte sont d�limit�s explicitement
+Abus / co�t
+Limitation de d�bit par IP et par compte ; quota d�compt� c�t� serveur uniquement ; refus avant 
+appel LLM si le score de pertinence est insuffisant
+Transport
+HTTPS obligatoire, en-t�tes de s�curit� (HSTS, CSP), CORS restreint au domaine du frontend
+8.	Environnements et d�ploiement
+ 
+Cha�ne de livraison.
+Environnement
+Composition
+Usage
+Local
+Docker Compose : PostgreSQL+pgvector, API
+FastAPI, Angular en mode dev
+D�veloppement quotidien et d�mo de 
+secours
+Pr�production
+Branche formateur d�ploy�e automatiquement
+Revue par le formateur
+Production /
+d�mo
+Frontend sur Vercel * API + PostgreSQL sur Railway 
+ou Render
+Lien public du Demo Day
+Plan B d�mo : l'instance Docker Compose locale est maintenue op�rationnelle en permanence. Si 
+l'h�bergement gratuit tombe le jour J, la d�monstration se fait en local, sans d�pendance r�seau autre que 
+l'appel LLM - et des captures d'�cran couvrent m�me ce cas.
+9.	Strat�gie de tests
+ 
+Ce qui est test�, et pourquoi c'est l� que se joue la cr�dibilit�.
+Niveau
+P�rim�tre
+Outil
+Unitaire - backend
+Fusion des scores de recherche, seuil de refus, validation 
+des citations, d�compte du quota
+pytest
+Unitaire - frontend
+Services Angular, formatage des r�ponses, rendu du bloc 
+base l�gale
+Jasmine / Karma
+Int�gration
+Parcours API complet question ? r�ponse sur une base de 
+test r�duite
+pytest + base �ph�m�re
+�valuation m�tier
+50 questions-r�ponses valid�es par un professionnel, 
+dont 5 questions pi�ges hors corpus devant produire un 
+refus. Taux de citations correctes mesur� et publi�.
+Script d�di�, rejou� � chaque 
+�volution du pipeline
+Bout en bout
+Parcours principal : poser une question, ouvrir une citation, 
+revenir au chat
+Playwright (si le temps le permet)
+Le jeu d'�valuation m�tier n'est pas un test parmi d'autres : c'est le seul qui mesure la promesse du produit. Il 
+doit �tre constitu� avant l'optimisation du pipeline, sinon il sera inconsciemment �crit pour �tre r�ussi.
+10.	S�quence de d�veloppement recommand�e
+ 
+Ordre de construction, du plus risqu� au plus confortable.
+Ordre
+Travail
+Pourquoi � ce moment
+1
+Script d'ingestion sur un seul texte (AUSCGIE) + base + 
+embeddings
+Sans corpus propre, rien d'autre n'a de sens
+2
+Recherche hybride en ligne de commande, sans interface 
+ni LLM
+V�rifier que les bons articles remontent avant 
+d'ajouter de la complexit�
+3
+Jeu d'�valuation de 50 questions r�dig� et fig�
+Constitu� avant l'optimisation, jamais apr�s
+4
+Endpoint /chat/question complet avec validation des 
+citations
+Le c�ur du produit, testable sans interface
+5
+Frontend Angular : chat, bloc base l�gale, lecture d'article
+L'interface habille une logique d�j� prouv�e
+6
+Biblioth�que, historique, comptes et quota
+Confort, sans risque technique
+7
+PWA, export PDF, calculateurs, polissage
+Finition - sacrifiable si le temps manque
+La logique de cet ordre : les trois premi�res �tapes ne produisent aucun �cran visible, ce qui est 
+psychologiquement inconfortable - mais elles �liminent tout le risque technique du projet. Construire 
+l'interface en premier donnerait l'illusion d'avancer tout en laissant intact le seul vrai danger : un moteur qui ne 
+trouve pas les bons articles.
+	ChatDocs OHADA - Architecture technique	Angular Talent Lab 2026 * ODC Douala
+
+	ChatDocs OHADA - Architecture technique	Angular Talent Lab 2026 * ODC Douala
+
+Page 1
+Page 2
+	ChatDocs OHADA - Architecture technique	Angular Talent Lab 2026 * ODC Douala
+
+Page 1

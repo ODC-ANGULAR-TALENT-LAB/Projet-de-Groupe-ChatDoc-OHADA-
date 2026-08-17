@@ -1,0 +1,216 @@
+.page {
+  height: 100%;
+  overflow-y: auto;
+  max-width: var(--largeur-lecture);
+  margin: 0 auto;
+  padding: var(--e4) var(--e3) var(--e8);
+}
+
+header {
+  margin-bottom: var(--e6);
+
+  h1 {
+    margin: 0 0 var(--e2);
+    font-family: var(--police-serif);
+    font-size: 1.6rem;
+    color: var(--bleu-nuit);
+  }
+}
+
+.intro {
+  margin: 0;
+  color: var(--gris-texte);
+  line-height: 1.65;
+}
+
+.groupe {
+  margin-bottom: var(--e8);
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--e2);
+    margin: 0 0 var(--e3);
+    font-family: var(--police-serif);
+    font-size: 1.15rem;
+    color: var(--bleu-nuit);
+  }
+}
+
+.alerte h2 app-icone {
+  color: var(--or-fonce);
+}
+
+.explication {
+  margin: 0 0 var(--e4);
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: var(--gris-texte);
+}
+
+.carte {
+  margin-bottom: var(--e3);
+  padding: var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-carte);
+}
+
+/* Un filet doré marque ce qui demande une relecture. La couleur ne
+   porte pas seule l'information : la pastille la nomme en toutes
+   lettres juste au-dessus. */
+.a-revoir {
+  border-left: 3px solid var(--or);
+}
+
+.etat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e2);
+  margin: 0 0 var(--e2);
+}
+
+.pastille {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+
+  &.revise {
+    color: var(--or-fonce);
+    background: var(--or-pale);
+  }
+
+  &.abroge {
+    color: #8c2f2f;
+    background: #f7ebe8;
+  }
+}
+
+.versions {
+  font-size: 0.76rem;
+  color: var(--gris-texte);
+}
+
+.reference {
+  display: inline-block;
+  font-family: var(--police-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--bleu-nuit);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.chemin {
+  margin: var(--e1) 0 0;
+  font-size: 0.76rem;
+  color: var(--gris-texte);
+}
+
+.apercu {
+  margin: var(--e2) 0 0;
+  font-family: var(--police-serif);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--texte);
+}
+
+.note {
+  margin: var(--e3) 0 0;
+  padding: var(--e2) var(--e3);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  background: var(--surface-basse);
+  border-radius: var(--rayon);
+
+  span {
+    font-weight: 600;
+    color: var(--gris-texte);
+  }
+}
+
+.retirer {
+  margin-top: var(--e3);
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--gris-texte);
+  background: none;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  cursor: pointer;
+
+  &:hover {
+    color: #8c2f2f;
+    border-color: #d9b8b2;
+  }
+}
+
+/* L'état vide ne dit pas seulement « rien » : il dit quoi faire. Un
+   écran vide sans issue est un cul-de-sac. */
+.vide-illustre {
+  padding: var(--e8) var(--e4);
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--gris-bordure);
+  border-radius: var(--rayon-carte);
+
+  app-icone {
+    color: var(--gris-bordure);
+    --taille-icone: 2.5rem;
+  }
+
+  p {
+    margin: var(--e3) 0 0;
+    color: var(--texte);
+  }
+
+  .aide {
+    max-width: 26rem;
+    margin: var(--e2) auto var(--e5);
+    font-size: 0.86rem;
+    line-height: 1.65;
+    color: var(--gris-texte);
+  }
+
+  .principal {
+    display: inline-block;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--bleu-nuit);
+    border-radius: var(--rayon);
+    text-decoration: none;
+  }
+}
+
+.vide,
+.attente {
+  color: var(--gris-texte);
+}
+
+.erreur {
+  padding: var(--e2) var(--e3);
+  font-size: 0.88rem;
+  color: #8c2f2f;
+  background: #fbf4f2;
+  border-left: 3px solid #a94442;
+  border-radius: var(--rayon);
+}
+
+.confidentialite {
+  margin: var(--e6) 0 0;
+  padding-top: var(--e4);
+  border-top: 1px solid var(--bordure);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--gris-texte);
+}

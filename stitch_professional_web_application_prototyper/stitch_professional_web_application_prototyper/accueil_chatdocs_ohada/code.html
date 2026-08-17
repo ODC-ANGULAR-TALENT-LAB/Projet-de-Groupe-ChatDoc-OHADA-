@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChatDocs OHADA - Votre Assistant Juridique et Fiscal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#75777f",
+                    "on-surface": "#1b1c18",
+                    "inverse-surface": "#30312d",
+                    "secondary": "#755b00",
+                    "on-surface-variant": "#45464e",
+                    "on-tertiary-fixed": "#00210f",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#735a00",
+                    "tertiary-fixed": "#a1f5bc",
+                    "background": "#fbf9f3",
+                    "inverse-on-surface": "#f3f1eb",
+                    "surface-paper": "#F4F2EC",
+                    "primary-fixed": "#d9e2ff",
+                    "surface-container-high": "#eae8e2",
+                    "border-muted": "#D1CEC4",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#0a1a3a",
+                    "surface-tint": "#4f5e81",
+                    "surface-dim": "#dcdad4",
+                    "tertiary": "#001b0b",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#00321a",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f5f3ed",
+                    "primary-container": "#1b2a4a",
+                    "on-primary-fixed-variant": "#384668",
+                    "validation-green": "#2A7D4F",
+                    "surface-white": "#FFFFFF",
+                    "on-background": "#1b1c18",
+                    "on-primary-container": "#8392b7",
+                    "on-secondary-fixed": "#241a00",
+                    "on-tertiary-fixed-variant": "#00522d",
+                    "surface": "#fbf9f3",
+                    "citation-gold": "#C9A227",
+                    "tertiary-fixed-dim": "#86d8a2",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#e4e2dd",
+                    "primary-fixed-dim": "#b7c6ee",
+                    "secondary-container": "#fed255",
+                    "inverse-primary": "#b7c6ee",
+                    "secondary-fixed": "#ffe08e",
+                    "surface-bright": "#fbf9f3",
+                    "outline-variant": "#c5c6cf",
+                    "on-tertiary-container": "#51a170",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#ecc246",
+                    "legal-navy": "#1B2A4A",
+                    "on-secondary-fixed-variant": "#584400",
+                    "surface-container": "#f0eee8",
+                    "surface-variant": "#e4e2dd",
+                    "primary": "#041534"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "max-content-width": "800px",
+                    "gutter": "16px",
+                    "base-unit": "4px",
+                    "container-padding": "24px",
+                    "sidebar-width": "280px"
+            },
+            "fontFamily": {
+                    "legal-article-mobile": [
+                            "\"Source Serif 4\""
+                    ],
+                    "headline-md": [
+                            "\"Source Serif 4\""
+                    ],
+                    "ui-medium": [
+                            "Inter"
+                    ],
+                    "metadata": [
+                            "Inter"
+                    ],
+                    "legal-article": [
+                            "\"Source Serif 4\""
+                    ],
+                    "ui-label": [
+                            "Inter"
+                    ],
+                    "ui-body": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "\"Source Serif 4\""
+                    ]
+            },
+            "fontSize": {
+                    "legal-article-mobile": [
+                            "16px",
+                            {
+                                    "lineHeight": "26px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "ui-medium": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "metadata": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "legal-article": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "ui-label": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "ui-body": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-ui-body antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-inverse-surface border-b border-border-muted dark:border-outline fixed top-0 w-full z-50 transition-colors duration-200">
+<div class="flex justify-between items-center w-full px-gutter py-base-unit max-w-full">
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-display-lg text-legal-navy dark:text-primary-fixed-dim whitespace-nowrap">ChatDocs OHADA</span>
+</div>
+<!-- Desktop Nav Links -->
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-ui-label text-ui-label text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors px-3 py-2 rounded-DEFAULT" href="#">Bibliothèque</a>
+<a class="font-ui-label text-ui-label text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors px-3 py-2 rounded-DEFAULT" href="#">Calculateurs</a>
+<a class="font-ui-label text-ui-label text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors px-3 py-2 rounded-DEFAULT" href="#">Aide</a>
+</nav>
+<div class="flex items-center gap-2">
+<button aria-label="Compte" class="p-2 text-primary dark:text-inverse-primary hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow pt-24 pb-16 px-gutter md:px-container-padding flex flex-col items-center">
+<!-- Hero Section -->
+<section class="w-full max-w-max-content-width flex flex-col items-center text-center mt-12 mb-20">
+<h1 class="font-display-lg text-display-lg text-legal-navy mb-6">Expertise Juridique &amp; Fiscale OHADA</h1>
+<p class="font-legal-article text-legal-article text-on-surface-variant mb-10 max-w-2xl">L'intelligence artificielle au service des professionnels du droit. Accédez instantanément à la jurisprudence, aux actes uniformes et à la doctrine fiscale consolidée.</p>
+<!-- Search/Question Input -->
+<div class="w-full max-w-3xl relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+</div>
+<input class="w-full bg-surface-white border border-border-muted rounded-xl py-4 pl-12 pr-16 text-on-surface font-ui-medium text-ui-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-citation-gold focus:border-transparent transition-all placeholder-outline-variant" placeholder="Posez votre question sur le droit OHADA ou la fiscalité camerounaise..." type="text"/>
+<button class="absolute inset-y-2 right-2 bg-legal-navy text-on-primary hover:bg-primary-container px-4 rounded-lg font-ui-label text-ui-label transition-colors">
+                    Chercher
+                </button>
+</div>
+<div class="mt-4 flex gap-4 text-sm text-outline font-metadata text-metadata">
+<span>Ex: "Quelles sont les conditions de validité d'une SAS selon l'AUSCGIE ?"</span>
+<span class="hidden sm:inline">Ex: "Taux de l'IS au Cameroun en 2024"</span>
+</div>
+</section>
+<!-- Persona Cards (Bento-ish Grid) -->
+<section class="w-full max-w-max-content-width mb-20">
+<h2 class="font-headline-md text-headline-md text-legal-navy mb-8 border-b border-border-muted pb-4">Conçu pour les Professionnels</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Avocat -->
+<div class="bg-surface-white border border-border-muted rounded-xl p-6 relative overflow-hidden group hover:border-citation-gold transition-colors">
+<div class="absolute top-0 left-0 w-1 h-full bg-citation-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-legal-navy" data-icon="gavel">gavel</span>
+</div>
+<h3 class="font-ui-medium text-ui-medium text-legal-navy mb-2">Avocats &amp; Juristes</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">Préparez vos conclusions plus rapidement. Recherche jurisprudentielle avancée et citations exactes avec liens vers les sources.</p>
+</div>
+<!-- Expert-comptable -->
+<div class="bg-surface-white border border-border-muted rounded-xl p-6 relative overflow-hidden group hover:border-citation-gold transition-colors">
+<div class="absolute top-0 left-0 w-1 h-full bg-citation-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-legal-navy" data-icon="account_balance">account_balance</span>
+</div>
+<h3 class="font-ui-medium text-ui-medium text-legal-navy mb-2">Experts-Comptables</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">Gagnez du temps sur vos consultations fiscales. Accès immédiat au Code Général des Impôts consolidé et aux directives CEMAC.</p>
+</div>
+<!-- Entrepreneur -->
+<div class="bg-surface-white border border-border-muted rounded-xl p-6 relative overflow-hidden group hover:border-citation-gold transition-colors">
+<div class="absolute top-0 left-0 w-1 h-full bg-citation-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-legal-navy" data-icon="domain">domain</span>
+</div>
+<h3 class="font-ui-medium text-ui-medium text-legal-navy mb-2">Entrepreneurs</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">Sécurisez vos décisions d'affaires. Comprenez vos obligations légales et fiscales avant de consulter votre conseil.</p>
+</div>
+</div>
+</section>
+<!-- Dernières Mises à Jour (Legal Basis Block Style) -->
+<section class="w-full max-w-max-content-width mb-12">
+<h2 class="font-headline-md text-headline-md text-legal-navy mb-8 border-b border-border-muted pb-4">Dernières Mises à Jour Documentaires</h2>
+<div class="flex flex-col gap-4">
+<!-- Update 1 -->
+<div class="bg-surface-white border border-border-muted rounded-lg p-5 flex items-start gap-4 hover:bg-surface-container-lowest transition-colors cursor-pointer border-l-4 border-l-citation-gold">
+<div class="mt-1">
+<span class="material-symbols-outlined text-citation-gold" data-icon="menu_book">menu_book</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-center mb-1">
+<span class="font-ui-label text-ui-label text-legal-navy">Loi de Finances 2026</span>
+<span class="font-metadata text-metadata text-outline">Ajouté il y a 2 jours</span>
+</div>
+<h4 class="font-legal-article text-legal-article text-on-surface mb-2">CGI 2026 Consolidé (Cameroun)</h4>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">Intégration complète des nouvelles dispositions fiscales concernant l'impôt sur les sociétés et la TVA numérique.</p>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Update 2 -->
+<div class="bg-surface-white border border-border-muted rounded-lg p-5 flex items-start gap-4 hover:bg-surface-container-lowest transition-colors cursor-pointer border-l-4 border-l-surface-dim hover:border-l-citation-gold">
+<div class="mt-1">
+<span class="material-symbols-outlined text-surface-tint" data-icon="gavel">gavel</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-center mb-1">
+<span class="font-ui-label text-ui-label text-legal-navy">Jurisprudence CCJA</span>
+<span class="font-metadata text-metadata text-outline">Ajouté la semaine dernière</span>
+</div>
+<h4 class="font-legal-article text-legal-article text-on-surface mb-2">Arrêt N° 045/2025</h4>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">Nouvelle interprétation des clauses léonines dans les statuts de SAS selon l'Acte Uniforme sur les Sociétés Commerciales.</p>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-highest border-t border-border-muted dark:border-outline mt-auto">
+<div class="w-full py-8 px-gutter flex flex-col md:flex-row justify-between items-center max-w-max-content-width mx-auto gap-4">
+<div class="text-center md:text-left">
+<span class="font-ui-label text-ui-label uppercase tracking-widest text-on-surface-variant block mb-2">ChatDocs OHADA</span>
+<p class="font-metadata text-metadata text-on-surface-variant dark:text-on-surface">© 2024 ChatDocs OHADA. Tous droits réservés. L'IA peut faire des erreurs. Vérifiez les sources légales. Aide à la recherche documentaire, ne constitue pas un conseil juridique.</p>
+</div>
+<nav class="flex flex-wrap justify-center gap-4 md:gap-6 mt-4 md:mt-0">
+<a class="font-metadata text-metadata text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Conditions d'Utilisation</a>
+<a class="font-metadata text-metadata text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Politique de Confidentialité</a>
+<a class="font-metadata text-metadata text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Mentions Légales</a>
+</nav>
+</div>
+</footer>
+</body></html>

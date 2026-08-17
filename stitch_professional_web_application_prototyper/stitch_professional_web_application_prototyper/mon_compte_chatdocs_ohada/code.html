@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChatDocs OHADA - Tableau de Bord</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#75777f",
+                      "on-surface": "#1b1c18",
+                      "inverse-surface": "#30312d",
+                      "secondary": "#755b00",
+                      "on-surface-variant": "#45464e",
+                      "on-tertiary-fixed": "#00210f",
+                      "on-primary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#735a00",
+                      "tertiary-fixed": "#a1f5bc",
+                      "background": "#fbf9f3",
+                      "inverse-on-surface": "#f3f1eb",
+                      "surface-paper": "#F4F2EC",
+                      "primary-fixed": "#d9e2ff",
+                      "surface-container-high": "#eae8e2",
+                      "border-muted": "#D1CEC4",
+                      "on-error-container": "#93000a",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed": "#0a1a3a",
+                      "surface-tint": "#4f5e81",
+                      "surface-dim": "#dcdad4",
+                      "tertiary": "#001b0b",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#00321a",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f5f3ed",
+                      "primary-container": "#1b2a4a",
+                      "on-primary-fixed-variant": "#384668",
+                      "validation-green": "#2A7D4F",
+                      "surface-white": "#FFFFFF",
+                      "on-background": "#1b1c18",
+                      "on-primary-container": "#8392b7",
+                      "on-secondary-fixed": "#241a00",
+                      "on-tertiary-fixed-variant": "#00522d",
+                      "surface": "#fbf9f3",
+                      "citation-gold": "#C9A227",
+                      "tertiary-fixed-dim": "#86d8a2",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e4e2dd",
+                      "primary-fixed-dim": "#b7c6ee",
+                      "secondary-container": "#fed255",
+                      "inverse-primary": "#b7c6ee",
+                      "secondary-fixed": "#ffe08e",
+                      "surface-bright": "#fbf9f3",
+                      "outline-variant": "#c5c6cf",
+                      "on-tertiary-container": "#51a170",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#ecc246",
+                      "legal-navy": "#1B2A4A",
+                      "on-secondary-fixed-variant": "#584400",
+                      "surface-container": "#f0eee8",
+                      "surface-variant": "#e4e2dd",
+                      "primary": "#041534"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "max-content-width": "800px",
+                      "gutter": "16px",
+                      "base-unit": "4px",
+                      "container-padding": "24px",
+                      "sidebar-width": "280px"
+              },
+              "fontFamily": {
+                      "legal-article-mobile": [
+                              "\"Source Serif 4\""
+                      ],
+                      "headline-md": [
+                              "\"Source Serif 4\""
+                      ],
+                      "ui-medium": [
+                              "Inter"
+                      ],
+                      "metadata": [
+                              "Inter"
+                      ],
+                      "legal-article": [
+                              "\"Source Serif 4\""
+                      ],
+                      "ui-label": [
+                              "Inter"
+                      ],
+                      "ui-body": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "\"Source Serif 4\""
+                      ]
+              },
+              "fontSize": {
+                      "legal-article-mobile": [
+                              "16px",
+                              {
+                                      "lineHeight": "26px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "ui-medium": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "metadata": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "legal-article": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "ui-label": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "ui-body": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-ui-body text-ui-body bg-background text-on-background flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-legal-navy dark:bg-primary text-on-primary dark:text-on-primary-fixed font-ui-medium text-ui-medium font-display-lg text-display-lg text-citation-gold fixed left-0 top-0 h-full w-sidebar-width shadow-md dark:shadow-none shadow-md hidden md:flex flex-col justify-between py-container-padding z-40">
+<div>
+<div class="px-6 mb-8 flex items-center gap-4">
+<img alt="Profile picture" class="w-12 h-12 rounded-full object-cover border-2 border-citation-gold" data-alt="A professional headshot of a legal advisor in a modern, well-lit office setting. The person is wearing a tailored navy suit and exudes authority and competence. The lighting is crisp, emphasizing a trustworthy and institutional atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBGKIgiPrY5eZBLnkqCyO-KwJwsbWU_y1O9kEayA2dm7jiCyaNKcAKlILVaLh6B7qRFsD61IKgwD0x32fMnf7dl-qKaYI-ARaGBf2LtPkcOuRF4tgh_lQSOGW1E9BJWt_Nlluperc6bF1eTb9VvTmFMjAgKzNx6NOB3n7rn4igraT0onJ-wGwpMCN4rSS2DkpGQC9xIog9E-1_6FayLZ-heP8_kcLeno3yMROJt2jX8k6i13Sp_CQ4"/>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-primary leading-tight">Lex-Sovereign</h2>
+<p class="font-metadata text-metadata text-primary-fixed-dim">Conseiller Juridique Senior</p>
+</div>
+</div>
+<div class="px-4 space-y-2">
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 px-4 py-3 flex items-center gap-3 transition-all hover:bg-primary-container/20 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">add_box</span>
+<span>Nouveau Chat</span>
+</a>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 px-4 py-3 flex items-center gap-3 transition-all hover:bg-primary-container/20 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">library_books</span>
+<span>Bibliothèque</span>
+</a>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 px-4 py-3 flex items-center gap-3 transition-all hover:bg-primary-container/20 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">calculate</span>
+<span>Calculateurs</span>
+</a>
+<a class="bg-primary-container text-on-primary-container border-l-4 border-citation-gold px-4 py-3 flex items-center gap-3 hover:bg-primary-container/20 rounded-r-DEFAULT" href="#" style="transform: scale(0.99); transition: all 150ms;">
+<span class="material-symbols-outlined" data-weight="fill">settings</span>
+<span class="font-bold">Paramètres</span>
+</a>
+</div>
+</div>
+<div class="px-4 space-y-4">
+<button class="w-full py-3 px-4 bg-citation-gold text-legal-navy font-ui-label text-ui-label rounded-DEFAULT flex justify-center items-center gap-2 hover:bg-secondary-fixed transition-colors">
+                Passer à Pro
+            </button>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 px-4 py-3 flex items-center gap-3 transition-all hover:bg-primary-container/20 rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Déconnexion</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-sidebar-width h-full overflow-y-auto bg-background">
+<!-- TopNavBar (Mobile mainly, but included for completeness) -->
+<header class="bg-surface dark:bg-inverse-surface text-primary dark:text-inverse-primary font-ui-label text-ui-label font-display-lg text-display-lg text-legal-navy dark:text-primary-fixed-dim docked full-width top-0 z-50 border-b border-border-muted dark:border-outline flat no shadows flex justify-between items-center w-full px-gutter py-base-unit max-w-full md:hidden sticky">
+<span class="font-headline-md text-headline-md">ChatDocs OHADA</span>
+<button class="text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</header>
+<div class="max-w-max-content-width mx-auto px-gutter py-8 md:py-12 space-y-12">
+<header>
+<h1 class="font-headline-md text-headline-md text-legal-navy mb-2">Tableau de Bord</h1>
+<p class="text-on-surface-variant">Gérez votre compte et consultez votre historique de recherche.</p>
+</header>
+<!-- Quota Section -->
+<section class="bg-surface-white border border-border-muted rounded-lg p-6">
+<div class="flex justify-between items-end mb-4">
+<div>
+<h3 class="font-ui-label text-ui-label text-legal-navy uppercase tracking-wider mb-1">Quota Mensuel</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant">Plan Gratuit</p>
+</div>
+<div class="text-right">
+<span class="font-headline-md text-headline-md text-legal-navy">3/5</span>
+<span class="font-ui-label text-ui-label text-on-surface-variant ml-1">questions restantes</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2.5 mb-2">
+<div class="bg-citation-gold h-2.5 rounded-full" style="width: 40%"></div>
+</div>
+<div class="flex justify-between mt-4">
+<p class="font-metadata text-metadata text-on-surface-variant">Renouvellement le 1er du mois</p>
+<a class="font-ui-label text-ui-label text-citation-gold hover:underline" href="#">Voir les offres Pro</a>
+</div>
+</section>
+<!-- Grid Layout for History and Favorites -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- History Section -->
+<section>
+<div class="flex items-center gap-2 border-b-2 border-border-muted pb-2 mb-6">
+<span class="material-symbols-outlined text-legal-navy">history</span>
+<h3 class="font-headline-md text-headline-md text-legal-navy text-[22px]">Dernières recherches</h3>
+</div>
+<div class="space-y-4">
+<!-- History Item 1 -->
+<div class="bg-surface-white border border-border-muted rounded-DEFAULT p-4 hover:border-citation-gold transition-colors cursor-pointer border-l-4 border-l-transparent hover:border-l-citation-gold">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-ui-medium text-ui-medium text-on-surface line-clamp-2">Conditions de validité d'un contrat de bail commercial (Acte Uniforme)</h4>
+</div>
+<div class="flex items-center gap-4 font-metadata text-metadata text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_today</span> 24 Oct 2023</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat_bubble_outline</span> 4 msgs</span>
+</div>
+</div>
+<!-- History Item 2 -->
+<div class="bg-surface-white border border-border-muted rounded-DEFAULT p-4 hover:border-citation-gold transition-colors cursor-pointer border-l-4 border-l-transparent hover:border-l-citation-gold">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-ui-medium text-ui-medium text-on-surface line-clamp-2">Procédure de recouvrement de créances simplifiée</h4>
+</div>
+<div class="flex items-center gap-4 font-metadata text-metadata text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_today</span> 20 Oct 2023</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat_bubble_outline</span> 2 msgs</span>
+</div>
+</div>
+</div>
+<a class="block text-center mt-4 font-ui-label text-ui-label text-legal-navy hover:text-citation-gold transition-colors" href="#">Voir tout l'historique</a>
+</section>
+<!-- Favorites Section -->
+<section>
+<div class="flex items-center gap-2 border-b-2 border-border-muted pb-2 mb-6">
+<span class="material-symbols-outlined text-legal-navy" data-weight="fill">bookmark</span>
+<h3 class="font-headline-md text-headline-md text-legal-navy text-[22px]">Favoris</h3>
+</div>
+<div class="space-y-4">
+<!-- Favorite Item 1 (Legal Basis Block style) -->
+<div class="bg-surface-white border border-border-muted rounded-DEFAULT border-l-4 border-l-citation-gold p-4 relative group">
+<button class="absolute top-4 right-4 text-outline hover:text-citation-gold opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-weight="fill">bookmark</span>
+</button>
+<h4 class="font-ui-label text-ui-label text-legal-navy mb-1">Article 101</h4>
+<p class="font-legal-article text-legal-article text-on-surface line-clamp-2">Acte uniforme portant sur le droit commercial général</p>
+</div>
+<!-- Favorite Item 2 -->
+<div class="bg-surface-white border border-border-muted rounded-DEFAULT border-l-4 border-l-citation-gold p-4 relative group">
+<button class="absolute top-4 right-4 text-outline hover:text-citation-gold opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-weight="fill">bookmark</span>
+</button>
+<h4 class="font-ui-label text-ui-label text-legal-navy mb-1">Article 25</h4>
+<p class="font-legal-article text-legal-article text-on-surface line-clamp-2">Acte uniforme relatif au droit des sociétés commerciales et du groupement d'intérêt économique</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Settings Section -->
+<section class="bg-surface-white border border-border-muted rounded-lg p-6">
+<div class="flex items-center gap-2 border-b border-border-muted pb-4 mb-6">
+<span class="material-symbols-outlined text-legal-navy">manage_accounts</span>
+<h3 class="font-headline-md text-headline-md text-legal-navy text-[22px]">Informations du compte</h3>
+</div>
+<form class="space-y-6 max-w-2xl">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block font-ui-label text-ui-label text-on-surface mb-2" for="firstName">Prénom</label>
+<input class="w-full bg-surface-white border border-border-muted rounded-DEFAULT px-4 py-2 font-ui-body text-ui-body focus:outline-none focus:ring-2 focus:ring-citation-gold focus:border-transparent" id="firstName" type="text" value="Lex"/>
+</div>
+<div>
+<label class="block font-ui-label text-ui-label text-on-surface mb-2" for="lastName">Nom</label>
+<input class="w-full bg-surface-white border border-border-muted rounded-DEFAULT px-4 py-2 font-ui-body text-ui-body focus:outline-none focus:ring-2 focus:ring-citation-gold focus:border-transparent" id="lastName" type="text" value="Sovereign"/>
+</div>
+</div>
+<div>
+<label class="block font-ui-label text-ui-label text-on-surface mb-2" for="email">Adresse Email</label>
+<input class="w-full bg-surface-white border border-border-muted rounded-DEFAULT px-4 py-2 font-ui-body text-ui-body focus:outline-none focus:ring-2 focus:ring-citation-gold focus:border-transparent" id="email" type="email" value="lex.sovereign@cabinet-juridique.com"/>
+</div>
+<div class="pt-4 border-t border-border-muted">
+<h4 class="font-ui-medium text-ui-medium text-legal-navy mb-4">Sécurité</h4>
+<button class="border border-border-muted hover:border-citation-gold text-on-surface font-ui-label text-ui-label py-2 px-4 rounded-DEFAULT transition-colors bg-surface-white" type="button">
+                            Modifier le mot de passe
+                        </button>
+</div>
+<div class="flex justify-end pt-6">
+<button class="bg-legal-navy text-surface-white font-ui-label text-ui-label py-3 px-6 rounded-DEFAULT hover:bg-primary transition-colors" type="submit">
+                            Enregistrer les modifications
+                        </button>
+</div>
+</form>
+</section>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-highest text-on-surface-variant dark:text-on-surface font-metadata text-metadata font-ui-label text-ui-label uppercase tracking-widest full-width bottom-0 border-t border-border-muted dark:border-outline flat w-full py-8 px-gutter flex flex-col md:flex-row justify-between items-center max-w-max-content-width mx-auto mt-12">
+<div class="mb-4 md:mb-0 text-center md:text-left">
+                © 2024 ChatDocs OHADA. Tous droits réservés. L'IA peut faire des erreurs. Vérifiez les sources légales.
+            </div>
+<div class="flex flex-wrap justify-center gap-4">
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Conditions d'Utilisation</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Politique de Confidentialité</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Mentions Légales</a>
+</div>
+</footer>
+</main>
+</body></html>

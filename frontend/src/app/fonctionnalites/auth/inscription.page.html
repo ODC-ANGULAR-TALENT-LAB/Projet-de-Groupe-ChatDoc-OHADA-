@@ -1,0 +1,115 @@
+<div class="gabarit">
+  <section class="colonne-formulaire">
+    <div class="enveloppe">
+      <a class="marque" routerLink="/">
+        <span class="marque-nom">ChatDocs</span>
+        <span class="marque-suffixe">OHADA</span>
+      </a>
+
+      <h1>Créer un compte</h1>
+      <p class="intro">
+        Gratuit, sans carte bancaire. La bibliothèque des textes reste
+        consultable même sans compte.
+      </p>
+
+      @if (erreur()) {
+        <p class="erreur" role="alert">{{ erreur() }}</p>
+      }
+
+      <form (ngSubmit)="creer()">
+        <div class="champ">
+          <label for="email">Adresse e-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            required
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+          />
+        </div>
+
+        <div class="champ">
+          <label for="mdp">Mot de passe</label>
+          <!--
+            « new-password » : c'est ce qui permet au gestionnaire de
+            mots de passe d'en proposer un solide, plutôt que de tenter
+            de remplir avec un mot de passe existant.
+          -->
+          <input
+            id="mdp"
+            name="mdp"
+            type="password"
+            autocomplete="new-password"
+            [attr.minlength]="longueurMinimale"
+            [attr.aria-describedby]="
+              motDePasseTropCourt() ? 'mdp-erreur' : 'mdp-aide'
+            "
+            required
+            [ngModel]="motDePasse()"
+            (ngModelChange)="motDePasse.set($event)"
+            (blur)="motDePasseTouche.set(true)"
+          />
+          @if (motDePasseTropCourt()) {
+            <p id="mdp-erreur" class="erreur" role="alert">
+              {{ longueurMinimale }} caractères au minimum.
+            </p>
+          } @else {
+            <p id="mdp-aide" class="aide">
+              {{ longueurMinimale }} caractères au minimum.
+            </p>
+          }
+        </div>
+
+        <button type="submit" class="principal" [disabled]="!peutEnvoyer()">
+          {{ occupe() ? 'Création…' : 'Créer mon compte' }}
+        </button>
+      </form>
+
+      <div class="separateur"><span>ou</span></div>
+
+      <div class="google">
+        <div #boutonGoogle></div>
+      </div>
+      @if (google.erreur(); as messageGoogle) {
+        <p class="aide">{{ messageGoogle }}</p>
+      }
+
+      <p class="bascule">
+        Vous avez déjà un compte ?
+        <a routerLink="/connexion">Se connecter</a>
+      </p>
+    </div>
+  </section>
+
+  <aside class="colonne-promesse">
+    <div class="voile" aria-hidden="true"></div>
+
+    <div class="promesse">
+      <h2>Le droit OHADA, preuve à l'appui</h2>
+      <p>
+        Posez votre question en français courant. Chaque réponse cite
+        l'article qui la fonde et reproduit son texte officiel.
+      </p>
+
+      <ul class="points">
+        @for (avantage of avantages; track avantage) {
+          <li>
+            <app-icone nom="valide" />
+            {{ avantage }}
+          </li>
+        }
+      </ul>
+
+      <blockquote class="citation-demo">
+        <p>
+          « À défaut d'écrit ou de terme fixé, le bail est réputé conclu
+          pour une durée indéterminée. »
+        </p>
+        <cite>AUDCG — article 105</cite>
+      </blockquote>
+    </div>
+  </aside>
+</div>

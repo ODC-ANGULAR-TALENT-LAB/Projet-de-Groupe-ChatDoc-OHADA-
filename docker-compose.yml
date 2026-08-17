@@ -1,0 +1,29 @@
+# ChatDocs OHADA - environnement local
+# La base tourne dans Docker : rien a installer sur la machine, et
+# l'environnement est identique a celui du serveur.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: chatdocs_db
+    environment:
+      POSTGRES_USER: chatdocs
+      POSTGRES_PASSWORD: chatdocs_local
+      POSTGRES_DB: chatdocs
+    # Cote hote : 5435 et non 5432. Sur la machine de developpement,
+    # 5432 est pris par un PostgreSQL 17 installe en service Windows,
+    # 5433 et 5434 par les conteneurs d'autres projets.
+    # Dans le conteneur, le port reste 5432.
+    ports: ["5435:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Les scripts de ce dossier sont joues UNE SEULE FOIS, a la
+      # creation du volume. Pour les rejouer : docker compose down -v
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatdocs -d chatdocs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

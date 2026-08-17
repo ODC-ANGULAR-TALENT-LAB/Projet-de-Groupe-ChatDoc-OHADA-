@@ -1,0 +1,112 @@
+<section class="page">
+  <header>
+    <h1>Mes favoris</h1>
+    <p class="intro">
+      Les articles que vous suivez, vos notes personnelles, et l'alerte
+      quand un texte que vous suivez est révisé.
+    </p>
+  </header>
+
+  @if (!auth.connecte()) {
+    <p class="vide">
+      Les favoris demandent un compte.
+      <a routerLink="/connexion">Se connecter</a>
+    </p>
+  } @else if (chargement()) {
+    <p class="attente" role="status">Chargement…</p>
+  } @else if (erreur()) {
+    <p class="erreur" role="alert">{{ erreur() }}</p>
+  } @else if (!favoris().length) {
+    <div class="vide-illustre">
+      <app-icone nom="favori" />
+      <p>Aucun favori pour l'instant.</p>
+      <p class="aide">
+        Depuis un article, le bouton <strong>Mettre en favori</strong> le
+        garde ici et vous prévient s'il change.
+      </p>
+      <a class="principal" routerLink="/bibliotheque">Parcourir les textes</a>
+    </div>
+  } @else {
+    <!--
+      LES ARTICLES QUI ONT BOUGÉ PASSENT DEVANT. C'est le seul groupe qui
+      demande une action ; le noyer au milieu des autres reviendrait à ne
+      pas alerter du tout.
+    -->
+    @if (aRevoir().length) {
+      <section class="groupe alerte">
+        <h2>
+          <app-icone nom="veille" />
+          À revoir — {{ aRevoir().length }}
+        </h2>
+        <p class="explication">
+          Le texte porteur a été révisé depuis que vous avez marqué ces
+          articles. Nous ne résumons pas ce qui a changé : ouvrez
+          l'article pour en juger.
+        </p>
+
+        @for (favori of aRevoir(); track favori.article_id) {
+          <article class="carte a-revoir">
+            <p class="etat">
+              @if (favori.article_abroge) {
+                <span class="pastille abroge">Article abrogé</span>
+              } @else {
+                <span class="pastille revise">Texte révisé</span>
+              }
+              <span class="versions">
+                vu en « {{ favori.version_vue }} », désormais «
+                {{ favori.version_courante }} »
+              </span>
+            </p>
+
+            <a class="reference" [routerLink]="['/article', favori.article_id]">
+              {{ favori.sigle }} — article {{ favori.numero }}
+            </a>
+            @if (favori.chemin) {
+              <p class="chemin">{{ favori.chemin }}</p>
+            }
+            <p class="apercu">{{ favori.apercu }}</p>
+
+            @if (favori.note) {
+              <p class="note"><span>Votre note :</span> {{ favori.note }}</p>
+            }
+
+            <button type="button" class="retirer" (click)="retirer(favori.article_id)">
+              Retirer des favoris
+            </button>
+          </article>
+        }
+      </section>
+    }
+
+    @if (inchanges().length) {
+      <section class="groupe">
+        <h2>Suivis — {{ inchanges().length }}</h2>
+
+        @for (favori of inchanges(); track favori.article_id) {
+          <article class="carte">
+            <a class="reference" [routerLink]="['/article', favori.article_id]">
+              {{ favori.sigle }} — article {{ favori.numero }}
+            </a>
+            @if (favori.chemin) {
+              <p class="chemin">{{ favori.chemin }}</p>
+            }
+            <p class="apercu">{{ favori.apercu }}</p>
+
+            @if (favori.note) {
+              <p class="note"><span>Votre note :</span> {{ favori.note }}</p>
+            }
+
+            <button type="button" class="retirer" (click)="retirer(favori.article_id)">
+              Retirer des favoris
+            </button>
+          </article>
+        }
+      </section>
+    }
+
+    <p class="confidentialite">
+      Vos notes sont <strong>privées</strong>. Elles ne sont visibles ni
+      des autres utilisateurs, ni de l'équipe qui tient le corpus.
+    </p>
+  }
+</section>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChatDocs OHADA - Tarifs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#241a00",
+                        "validation-green": "#2A7D4F",
+                        "secondary-fixed-dim": "#ecc246",
+                        "surface-container": "#f0eee8",
+                        "secondary": "#755b00",
+                        "inverse-surface": "#30312d",
+                        "on-tertiary-container": "#51a170",
+                        "surface-container-highest": "#e4e2dd",
+                        "surface-tint": "#4f5e81",
+                        "primary": "#041534",
+                        "tertiary-container": "#00321a",
+                        "on-surface": "#1b1c18",
+                        "surface-container-low": "#f5f3ed",
+                        "on-tertiary-fixed-variant": "#00522d",
+                        "on-secondary-container": "#735a00",
+                        "on-primary-fixed-variant": "#384668",
+                        "surface-variant": "#e4e2dd",
+                        "on-background": "#1b1c18",
+                        "surface": "#fbf9f3",
+                        "on-tertiary-fixed": "#00210f",
+                        "outline-variant": "#c5c6cf",
+                        "border-muted": "#D1CEC4",
+                        "secondary-fixed": "#ffe08e",
+                        "tertiary": "#001b0b",
+                        "on-primary-container": "#8392b7",
+                        "on-tertiary": "#ffffff",
+                        "surface-white": "#FFFFFF",
+                        "primary-container": "#1b2a4a",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#584400",
+                        "primary-fixed-dim": "#b7c6ee",
+                        "tertiary-fixed": "#a1f5bc",
+                        "on-secondary": "#ffffff",
+                        "outline": "#75777f",
+                        "on-surface-variant": "#45464e",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f3f1eb",
+                        "on-primary-fixed": "#0a1a3a",
+                        "secondary-container": "#fed255",
+                        "legal-navy": "#1B2A4A",
+                        "surface-bright": "#fbf9f3",
+                        "surface-container-high": "#eae8e2",
+                        "inverse-primary": "#b7c6ee",
+                        "surface-paper": "#F4F2EC",
+                        "tertiary-fixed-dim": "#86d8a2",
+                        "on-error-container": "#93000a",
+                        "citation-gold": "#C9A227",
+                        "error-container": "#ffdad6",
+                        "background": "#fbf9f3",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dcdad4",
+                        "primary-fixed": "#d9e2ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sidebar-width": "280px",
+                        "max-content-width": "800px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "base-unit": "4px"
+                    },
+                    "fontFamily": {
+                        "legal-article-mobile": ["\"Source Serif 4\""],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "ui-medium": ["Inter"],
+                        "ui-body": ["Inter"],
+                        "ui-label": ["Inter"],
+                        "legal-article": ["\"Source Serif 4\""],
+                        "metadata": ["Inter"],
+                        "headline-md": ["\"Source Serif 4\""]
+                    },
+                    "fontSize": {
+                        "legal-article-mobile": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "ui-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "ui-body": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "ui-label": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "legal-article": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "metadata": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-ui-body font-ui-body min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-padding h-16 bg-surface/95 backdrop-blur-sm border-b border-border-muted dark:border-outline-variant flat no shadows transition-all duration-200 active:scale-95 bg-surface dark:bg-primary-container text-primary dark:text-primary-fixed">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">ChatDocs OHADA</div>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-ui-medium text-ui-medium text-on-surface-variant dark:text-on-primary-container hover:text-primary dark:hover:text-primary-fixed hover:opacity-80 transition-opacity" href="#">Fonctionnalités</a>
+<a class="font-ui-medium text-ui-medium text-citation-gold font-bold border-b-2 border-citation-gold pb-1 hover:opacity-80 transition-opacity" href="#">Tarifs</a>
+<a class="font-ui-medium text-ui-medium text-on-surface-variant dark:text-on-primary-container hover:text-primary dark:hover:text-primary-fixed hover:opacity-80 transition-opacity" href="#">FAQ</a>
+</nav>
+<button class="bg-legal-navy text-on-primary px-4 py-2 rounded font-ui-medium text-ui-medium hover:opacity-80 transition-opacity hidden md:block">Connexion</button>
+<button class="md:hidden p-2 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</header>
+<main class="flex-grow pt-24 pb-16 px-gutter md:px-container-padding flex flex-col items-center">
+<div class="max-w-[1000px] w-full text-center mb-16">
+<h1 class="font-display-lg text-display-lg text-legal-navy mb-4">Investissez dans la Précision Juridique</h1>
+<p class="font-legal-article text-legal-article text-on-surface-variant max-w-2xl mx-auto">Choisissez le plan adapté à votre pratique. Des réponses sourcées basées sur la jurisprudence OHADA, accessibles partout.</p>
+</div>
+<!-- Pricing Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[1000px] w-full mb-20">
+<!-- Gratuit -->
+<div class="bg-surface-white border border-border-muted rounded-lg p-6 flex flex-col hover:shadow-lg transition-shadow">
+<h3 class="font-headline-md text-headline-md text-legal-navy mb-2">Gratuit</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant mb-6 h-12">Pour découvrir la puissance de l'analyse juridique IA.</p>
+<div class="mb-6 border-b border-surface-container-high pb-6">
+<span class="font-display-lg text-display-lg text-legal-navy">0 FCFA</span>
+<span class="font-ui-body text-ui-body text-on-surface-variant">/mois</span>
+</div>
+<ul class="flex-grow mb-8 space-y-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-validation-green" data-icon="check_circle">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">5 questions par mois</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-validation-green" data-icon="check_circle">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Accès aux Actes Uniformes de base</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-validation-green" data-icon="check_circle">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Historique de base (7 jours)</span>
+</li>
+</ul>
+<button class="w-full bg-surface-container text-legal-navy border border-border-muted px-4 py-3 rounded font-ui-medium text-ui-medium hover:bg-surface-container-high transition-colors">Commencer gratuitement</button>
+</div>
+<!-- Pro -->
+<div class="bg-surface-white border-2 border-citation-gold rounded-lg p-6 flex flex-col relative shadow-[0_4px_20px_rgba(27,42,74,0.08)] transform md:-translate-y-4">
+<div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-citation-gold text-white font-ui-label text-ui-label px-3 py-1 rounded-full uppercase tracking-wider">Populaire</div>
+<h3 class="font-headline-md text-headline-md text-legal-navy mb-2">Pro</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant mb-6 h-12">Pour les avocats, juristes d'entreprise et consultants.</p>
+<div class="mb-6 border-b border-surface-container-high pb-6">
+<span class="font-display-lg text-display-lg text-legal-navy">10 000 FCFA</span>
+<span class="font-ui-body text-ui-body text-on-surface-variant">/mois</span>
+</div>
+<ul class="flex-grow mb-8 space-y-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-citation-gold" data-icon="check_circle" data-weight="fill">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface font-ui-medium text-ui-medium">Questions illimitées</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-citation-gold" data-icon="check_circle" data-weight="fill">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Accès complet à la jurisprudence CCJA</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-citation-gold" data-icon="check_circle" data-weight="fill">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Génération de brouillons de contrats</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-citation-gold" data-icon="check_circle" data-weight="fill">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Historique illimité</span>
+</li>
+</ul>
+<button class="w-full bg-legal-navy text-on-primary px-4 py-3 rounded font-ui-medium text-ui-medium hover:opacity-90 transition-opacity mb-4">S'abonner - Pro</button>
+<!-- Payment Methods Highlight -->
+<div class="text-center">
+<span class="font-metadata text-metadata text-on-surface-variant block mb-2">Paiement facile et sécurisé via :</span>
+<div class="flex justify-center gap-4 items-center">
+<div class="bg-orange-500 text-white font-ui-label text-[10px] px-2 py-1 rounded">Orange Money</div>
+<div class="bg-yellow-400 text-black font-ui-label text-[10px] px-2 py-1 rounded">MTN MoMo</div>
+</div>
+</div>
+</div>
+<!-- Cabinet -->
+<div class="bg-surface-white border border-border-muted rounded-lg p-6 flex flex-col hover:shadow-lg transition-shadow">
+<h3 class="font-headline-md text-headline-md text-legal-navy mb-2">Cabinet</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant mb-6 h-12">Pour les équipes nécessitant collaboration et contrôle.</p>
+<div class="mb-6 border-b border-surface-container-high pb-6">
+<span class="font-display-lg text-display-lg text-legal-navy text-[32px]">Sur Mesure</span>
+</div>
+<ul class="flex-grow mb-8 space-y-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-validation-green" data-icon="check_circle">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Tout du plan Pro</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-validation-green" data-icon="check_circle">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Gestion centralisée des licences</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-validation-green" data-icon="check_circle">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Partage de dossiers et recherches</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-validation-green" data-icon="check_circle">check_circle</span>
+<span class="font-ui-body text-ui-body text-on-surface">Support prioritaire dédié</span>
+</li>
+</ul>
+<button class="w-full bg-surface-white text-citation-gold border border-citation-gold px-4 py-3 rounded font-ui-medium text-ui-medium hover:bg-surface-container-low transition-colors">Contacter l'équipe</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-container-padding flex flex-col md:flex-row justify-between items-center gap-6 bg-legal-navy dark:bg-primary-container border-t border-primary-container flat no shadows text-on-primary dark:text-on-primary-fixed">
+<div class="font-headline-md text-headline-md text-white">ChatDocs OHADA</div>
+<nav class="flex flex-wrap gap-4 md:gap-6 justify-center">
+<a class="font-ui-body text-ui-body text-surface-variant/80 hover:text-white hover:text-citation-gold transition-colors cursor-pointer" href="#">Mentions Légales</a>
+<a class="font-ui-body text-ui-body text-surface-variant/80 hover:text-white hover:text-citation-gold transition-colors cursor-pointer" href="#">Confidentialité</a>
+<a class="font-ui-body text-ui-body text-surface-variant/80 hover:text-white hover:text-citation-gold transition-colors cursor-pointer" href="#">Conditions d'Utilisation</a>
+<a class="font-ui-body text-ui-body text-surface-variant/80 hover:text-white hover:text-citation-gold transition-colors cursor-pointer" href="#">Contact</a>
+</nav>
+<div class="font-ui-body text-ui-body text-surface-variant/60 text-center md:text-right">
+            © 2024 ChatDocs OHADA. Tous droits réservés. Expertise juridique et fiscale.
+        </div>
+</footer>
+</body></html>

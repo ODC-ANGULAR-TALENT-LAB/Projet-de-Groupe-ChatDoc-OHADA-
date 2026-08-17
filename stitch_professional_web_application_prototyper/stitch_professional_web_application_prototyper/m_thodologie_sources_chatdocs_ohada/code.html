@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Méthodologie - ChatDocs OHADA</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts (Inter & Source Serif 4) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config Injection -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#755b00",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#b7c6ee",
+                        "secondary-fixed": "#ffe08e",
+                        "outline": "#75777f",
+                        "primary-fixed": "#d9e2ff",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ecc246",
+                        "on-secondary-fixed-variant": "#584400",
+                        "tertiary": "#001b0b",
+                        "surface-paper": "#F4F2EC",
+                        "primary-fixed-dim": "#b7c6ee",
+                        "on-secondary-fixed": "#241a00",
+                        "surface-bright": "#fbf9f3",
+                        "surface-container-highest": "#e4e2dd",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#384668",
+                        "on-tertiary-container": "#51a170",
+                        "inverse-on-surface": "#f3f1eb",
+                        "surface-white": "#FFFFFF",
+                        "on-tertiary-fixed": "#00210f",
+                        "legal-navy": "#1B2A4A",
+                        "primary": "#041534",
+                        "on-background": "#1b1c18",
+                        "surface-tint": "#4f5e81",
+                        "secondary-container": "#fed255",
+                        "on-surface-variant": "#45464e",
+                        "background": "#fbf9f3",
+                        "surface-container-high": "#eae8e2",
+                        "surface-container-low": "#f5f3ed",
+                        "validation-green": "#2A7D4F",
+                        "on-secondary-container": "#735a00",
+                        "surface-container": "#f0eee8",
+                        "tertiary-fixed": "#a1f5bc",
+                        "surface": "#fbf9f3",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#dcdad4",
+                        "tertiary-fixed-dim": "#86d8a2",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#30312d",
+                        "surface-variant": "#e4e2dd",
+                        "border-muted": "#D1CEC4",
+                        "primary-container": "#1b2a4a",
+                        "on-primary-fixed": "#0a1a3a",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c5c6cf",
+                        "on-tertiary-fixed-variant": "#00522d",
+                        "on-surface": "#1b1c18",
+                        "tertiary-container": "#00321a",
+                        "on-primary-container": "#8392b7",
+                        "citation-gold": "#C9A227"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "max-content-width": "800px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "sidebar-width": "280px",
+                        "base-unit": "4px"
+                    },
+                    "fontFamily": {
+                        "ui-body": ["Inter"],
+                        "legal-article": ["\"Source Serif 4\""],
+                        "ui-label": ["Inter"],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "ui-medium": ["Inter"],
+                        "metadata": ["Inter"],
+                        "legal-article-mobile": ["\"Source Serif 4\""],
+                        "display-lg": ["\"Source Serif 4\""]
+                    },
+                    "fontSize": {
+                        "ui-body": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "legal-article": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "ui-label": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "ui-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "metadata": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "legal-article-mobile": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-paper text-on-surface font-ui-body antialiased flex min-h-screen">
+<!-- Shared Component: SideNavBar -->
+<nav class="hidden md:flex flex-col justify-between py-container-padding fixed left-0 top-0 h-full w-sidebar-width bg-legal-navy shadow-md z-40">
+<div>
+<!-- Header -->
+<div class="px-container-padding mb-8">
+<h1 class="font-display-lg text-display-lg text-citation-gold">Lex-Sovereign</h1>
+<p class="font-ui-medium text-ui-medium text-on-primary-container mt-1">Conseiller Juridique Senior</p>
+</div>
+<!-- Tabs -->
+<ul class="flex flex-col gap-1 px-2">
+<li>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 hover:bg-primary-container/20 px-4 py-3 flex items-center gap-3 transition-all rounded-lg font-ui-medium text-ui-medium" href="#">
+<span class="material-symbols-outlined" data-icon="add_box">add_box</span>
+                        Nouveau Chat
+                    </a>
+</li>
+<li>
+<!-- Active State Fallback (Closest match to Library/Documentation) -->
+<a class="bg-primary-container text-on-primary-container border-l-4 border-citation-gold px-4 py-3 flex items-center gap-3 scale-[0.99] duration-150 font-ui-medium text-ui-medium rounded-r-lg" href="#">
+<span class="material-symbols-outlined" data-icon="library_books" data-weight="fill" style="font-variation-settings: 'FILL' 1;">library_books</span>
+                        Bibliothèque
+                    </a>
+</li>
+<li>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 hover:bg-primary-container/20 px-4 py-3 flex items-center gap-3 transition-all rounded-lg font-ui-medium text-ui-medium" href="#">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+                        Calculateurs
+                    </a>
+</li>
+<li>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 hover:bg-primary-container/20 px-4 py-3 flex items-center gap-3 transition-all rounded-lg font-ui-medium text-ui-medium" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                        Historique
+                    </a>
+</li>
+<li>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 hover:bg-primary-container/20 px-4 py-3 flex items-center gap-3 transition-all rounded-lg font-ui-medium text-ui-medium" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Paramètres
+                    </a>
+</li>
+</ul>
+</div>
+<div class="px-2">
+<!-- CTA Button -->
+<div class="px-2 mb-4">
+<button class="w-full bg-surface-white text-legal-navy font-ui-medium py-3 rounded-lg hover:bg-surface-variant transition-colors">Passer à Pro</button>
+</div>
+<ul>
+<li>
+<a class="text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant/10 hover:bg-primary-container/20 px-4 py-3 flex items-center gap-3 transition-all rounded-lg font-ui-medium text-ui-medium" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                        Déconnexion
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 md:ml-sidebar-width flex flex-col min-h-screen">
+<!-- Shared Component: TopNavBar -->
+<header class="bg-surface sticky top-0 z-30 border-b border-border-muted flex justify-between items-center w-full px-gutter py-base-unit max-w-full">
+<div class="flex items-center gap-4">
+<!-- Mobile Logo / Title fallback -->
+<span class="md:hidden font-display-lg text-display-lg text-legal-navy text-[24px]">ChatDocs OHADA</span>
+</div>
+<nav class="hidden md:flex items-center gap-8 font-ui-label text-ui-label">
+<a class="text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors px-2 py-1 rounded" href="#">Bibliothèque</a>
+<a class="text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors px-2 py-1 rounded" href="#">Calculateurs</a>
+<!-- Active Navigation Match for Help/Methodology -->
+<a class="text-primary font-bold border-b-2 border-citation-gold pb-1 opacity-80 duration-200" href="#">Aide</a>
+</nav>
+<div class="flex items-center">
+<button class="text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<main class="flex-1 w-full max-w-max-content-width mx-auto px-gutter md:px-container-padding py-12">
+<!-- Header Section -->
+<section class="mb-16">
+<h1 class="font-display-lg text-display-lg text-legal-navy mb-6">Méthodologie &amp; Transparence</h1>
+<p class="font-legal-article text-legal-article text-on-surface-variant leading-relaxed">
+                    ChatDocs OHADA utilise une architecture d'Intelligence Artificielle spécialisée, conçue pour assister les professionnels du droit dans leurs recherches complexes. Notre approche privilégie l'exactitude textuelle et la traçabilité documentaire plutôt que la simple génération créative.
+                </p>
+</section>
+<!-- RAG Pipeline Section (Bento Grid Style) -->
+<section class="mb-16">
+<h2 class="font-headline-md text-headline-md text-legal-navy mb-8 border-b border-border-muted pb-4">Le Pipeline RAG (Retrieval-Augmented Generation)</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Step 1 -->
+<div class="bg-surface-white border border-border-muted rounded-lg p-6 hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-surface-container-low rounded-full flex items-center justify-center mb-4 border border-border-muted">
+<span class="material-symbols-outlined text-primary" data-icon="manage_search">manage_search</span>
+</div>
+<h3 class="font-ui-medium text-ui-medium text-legal-navy mb-2 font-bold">1. Extraction (Retrieval)</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">
+                            Le système interroge une base vectorielle fermée contenant exclusivement les corpus officiels pour isoler les articles et alinéas pertinents à votre requête.
+                        </p>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-white border border-border-muted rounded-lg p-6 hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-surface-container-low rounded-full flex items-center justify-center mb-4 border border-border-muted">
+<span class="material-symbols-outlined text-primary" data-icon="account_tree">account_tree</span>
+</div>
+<h3 class="font-ui-medium text-ui-medium text-legal-navy mb-2 font-bold">2. Augmentation (Context)</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">
+                            Les textes bruts extraits sont injectés dans le contexte du modèle linguistique, forçant l'IA à ancrer son raisonnement uniquement sur la jurisprudence et la doctrine sourcées.
+                        </p>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-white border border-border-muted rounded-lg p-6 hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-surface-container-low rounded-full flex items-center justify-center mb-4 border border-border-muted">
+<span class="material-symbols-outlined text-primary" data-icon="gavel">gavel</span>
+</div>
+<h3 class="font-ui-medium text-ui-medium text-legal-navy mb-2 font-bold">3. Génération (Synthesis)</h3>
+<p class="font-ui-body text-ui-body text-on-surface-variant text-sm">
+                            La réponse est formulée avec un style juridique sobre, incluant systématiquement les références exactes (Actes, Articles, Numéros) sous forme de blocs de citation vérifiables.
+                        </p>
+</div>
+</div>
+</section>
+<!-- Corpus Provenance Table -->
+<section class="mb-16">
+<h2 class="font-headline-md text-headline-md text-legal-navy mb-8 border-b border-border-muted pb-4">Provenance du Corpus Actif</h2>
+<div class="bg-surface-white border border-border-muted rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-border-muted">
+<th class="font-ui-label text-ui-label text-on-surface py-4 px-6 uppercase tracking-wider text-xs">Source Documentaire</th>
+<th class="font-ui-label text-ui-label text-on-surface py-4 px-6 uppercase tracking-wider text-xs">Nature du Texte</th>
+<th class="font-ui-label text-ui-label text-on-surface py-4 px-6 uppercase tracking-wider text-xs">Autorité Émettrice</th>
+<th class="font-ui-label text-ui-label text-on-surface py-4 px-6 uppercase tracking-wider text-xs text-right">Dernière MaJ</th>
+</tr>
+</thead>
+<tbody class="font-ui-body text-ui-body text-on-surface-variant">
+<tr class="border-b border-border-muted hover:bg-surface-paper transition-colors">
+<td class="py-4 px-6 font-medium text-legal-navy">Actes Uniformes OHADA</td>
+<td class="py-4 px-6">Législation Communautaire</td>
+<td class="py-4 px-6">Secrétariat Permanent OHADA</td>
+<td class="py-4 px-6 text-right font-metadata">Q4 2023</td>
+</tr>
+<tr class="border-b border-border-muted hover:bg-surface-paper transition-colors">
+<td class="py-4 px-6 font-medium text-legal-navy">Code Général des Impôts</td>
+<td class="py-4 px-6">Législation Fiscale Nationale</td>
+<td class="py-4 px-6">DGI (République du Cameroun)</td>
+<td class="py-4 px-6 text-right font-metadata">Loi de Finances 2024</td>
+</tr>
+<tr class="border-b border-border-muted hover:bg-surface-paper transition-colors">
+<td class="py-4 px-6 font-medium text-legal-navy">Jurisprudence CCJA</td>
+<td class="py-4 px-6">Arrêts &amp; Décisions</td>
+<td class="py-4 px-6">Cour Commune de Justice et d'Arbitrage</td>
+<td class="py-4 px-6 text-right font-metadata">Janvier 2024</td>
+</tr>
+<tr class="hover:bg-surface-paper transition-colors">
+<td class="py-4 px-6 font-medium text-legal-navy">Conventions Bilatérales</td>
+<td class="py-4 px-6">Traités Fiscaux</td>
+<td class="py-4 px-6">États Membres CEMAC</td>
+<td class="py-4 px-6 text-right font-metadata">Archive Consolidée</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Limitations / Legal Basis Style Block -->
+<section class="mb-12">
+<!-- Signature Component Pattern: Bloc Base Légale -->
+<div class="bg-surface-white border border-border-muted border-l-4 border-l-citation-gold rounded-r-lg p-8 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-citation-gold" data-icon="warning">warning</span>
+<h3 class="font-headline-md text-headline-md text-legal-navy">Limites de l'Outil &amp; Qualification</h3>
+</div>
+<div class="font-legal-article text-legal-article text-on-surface-variant space-y-4">
+<p>
+                            ChatDocs OHADA est un outil d'assistance à la recherche documentaire et d'analyse préliminaire. Il a pour vocation d'accélérer l'accès aux textes officiels et de mettre en lumière des corrélations juridiques complexes.
+                        </p>
+<p>
+<strong>Cependant, les réponses générées par cet outil ne constituent en aucun cas une consultation ou un avis juridique formel.</strong> L'interprétation finale, la qualification des faits et l'application des textes à un cas d'espèce demeurent la prérogative exclusive du professionnel du droit humain (Avocat, Juriste d'entreprise, Notaire, Conseil Fiscal). L'utilisateur s'engage à vérifier systématiquement les textes cités dans leurs sources originelles.
+                        </p>
+</div>
+</div>
+</section>
+</main>
+<!-- Shared Component: Footer -->
+<footer class="bg-surface-container-low border-t border-border-muted w-full py-8 px-gutter flex flex-col md:flex-row justify-between items-center max-w-max-content-width mx-auto">
+<div class="mb-4 md:mb-0 text-center md:text-left">
+<p class="font-metadata text-metadata text-on-surface-variant">
+                    © 2024 ChatDocs OHADA. Tous droits réservés. L'IA peut faire des erreurs. Vérifiez les sources légales.
+                </p>
+</div>
+<div class="flex gap-6 font-ui-label text-ui-label uppercase tracking-widest text-[10px]">
+<a class="text-on-surface-variant hover:text-primary transition-colors Standard link hover transitions" href="#">Conditions d'Utilisation</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors Standard link hover transitions" href="#">Politique de Confidentialité</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors Standard link hover transitions" href="#">Mentions Légales</a>
+</div>
+</footer>
+</div>
+</body></html>

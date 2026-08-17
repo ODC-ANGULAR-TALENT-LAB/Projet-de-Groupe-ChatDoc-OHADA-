@@ -1,0 +1,53 @@
+[
+  {
+    "_commentaire": "MODELE A REMPLIR - ce fichier n'est PAS le jeu d'evaluation. Copie-le en questions.json et remplace chaque entree par une vraie question dont TU as verifie la reponse dans le texte officiel. Ne devine jamais un numero d'article : une question fondee sur un article inexistant fausse la mesure dans le sens le plus dangereux, celui qui te rassure.",
+    "_composition_attendue": {
+      "factuelle": 25,
+      "multi_articles": 10,
+      "formulation_indirecte": 5,
+      "piege_hors_corpus": 5,
+      "piege_actualite": 5,
+      "_total": 50
+    }
+  },
+  {
+    "id": 1,
+    "question": "<question factuelle dont la reponse tient dans un seul article : un delai, un taux, un nombre minimum>",
+    "type": "factuelle",
+    "articles_attendus": ["<numero d'article verifie dans le PDF officiel>"],
+    "reponse_attendue": "<la reponse, en une phrase>",
+    "doit_refuser": false
+  },
+  {
+    "id": 26,
+    "question": "<question dont la reponse exige de combiner deux ou trois articles>",
+    "type": "multi_articles",
+    "articles_attendus": ["<numero>", "<numero>"],
+    "reponse_attendue": "<la reponse>",
+    "doit_refuser": false
+  },
+  {
+    "id": 36,
+    "question": "<la meme question qu'une factuelle, mais posee comme un vrai utilisateur la poserait, sans vocabulaire juridique>",
+    "type": "formulation_indirecte",
+    "articles_attendus": ["<numero>"],
+    "reponse_attendue": "<la reponse>",
+    "doit_refuser": false
+  },
+  {
+    "id": 41,
+    "question": "<question de droit du travail ou de droit penal : hors corpus, l'assistant DOIT refuser>",
+    "type": "piege_hors_corpus",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  },
+  {
+    "id": 46,
+    "question": "<question portant sur un texte non ingere : refus attendu egalement>",
+    "type": "piege_actualite",
+    "articles_attendus": [],
+    "reponse_attendue": "",
+    "doit_refuser": true
+  }
+]

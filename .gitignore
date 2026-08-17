@@ -1,0 +1,36 @@
+# --- Secrets : ne JAMAIS commiter ---------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Python -------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# --- Node / Angular (phase F) -------------------------------------
+node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*
+
+# --- Corpus et fichiers sources (phase B) -------------------------
+# Les PDF officiels et les textes extraits sont volumineux et se
+# retelechargent depuis leur source ; seule la fiche de provenance
+# (.provenance.json) est suivie par Git.
+sources/*
+!sources/*.provenance.json
+backend/ingestion/sortie/
+
+# --- Donnees Docker -----------------------------------------------
+pgdata/
+
+# --- Outils et systeme --------------------------------------------
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

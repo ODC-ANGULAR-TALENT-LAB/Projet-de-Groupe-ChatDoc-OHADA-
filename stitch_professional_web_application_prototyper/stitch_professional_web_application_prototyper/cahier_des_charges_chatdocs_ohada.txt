@@ -1,0 +1,871 @@
+CHATDOCS OHADA
+Le droit OHADA et la fiscalit� camerounaise, en questions-r�ponses sourc�es.
+0. En-t�te du document
+Identification du projet, de son auteur et de la version du document.
+Rubrique
+Information
+Projet
+ChatDocs OHADA - l'assistant IA de recherche juridique et fiscale pour l'espace OHADA. 
+Slogan : " Chaque r�ponse cite son article. "
+Auteur
+Christian - projet individuel
+Version / Date
+v4.0 - 10 ao�t 2026 (p�rim�tre fonctionnel complet, feuille de route par phases, 
+vulgarisation et protection juridique)
+Formateur r�f�rent
+[� compl�ter - formateur ATL 2026]
+Cohorte
+Angular Talent Lab 2026 - Orange Digital Center, Douala
+1. Pr�sentation et contexte
+Poser le d�cor : dans quel cadre se situe le projet et pourquoi il a du sens maintenant.
+Le droit des affaires des 17 �tats membres de l'OHADA repose sur un corpus ferm� et harmonis� : les actes uniformes 
+(soci�t�s commerciales, comptabilit� SYSCOHADA, s�ret�s, proc�dures collectives, droit commercial g�n�ral...), auxquels 
+s'ajoutent, au Cameroun, le Code g�n�ral des imp�ts r�vis� � chaque loi de finances, le code CIMA pour l'assurance et les 
+r�glements CEMAC. Ces textes gouvernent la vie quotidienne de milliers de professionnels : experts-comptables, DAF, 
+avocats d'affaires, notaires, cr�ateurs d'entreprise, �tudiants.
+Or l'acc�s � ces textes reste archa�que : PDF de centaines de pages dispers�s sur des sites divers, versions obsol�tes qui 
+circulent, recherche par Ctrl+F, aucune consolidation fiable du CGI apr�s chaque loi de finances. Trouver la base l�gale 
+exacte d'une question simple - d�lai, formalisme, taux, sanction - prend des heures ou se paie en consultation. Les IA 
+g�n�ralistes, elles, r�pondent avec assurance mais sans garantie : articles invent�s, versions p�rim�es, confusion entre 
+droits fran�ais et OHADA. Le corpus �tant ferm�, stable et parfaitement d�limit�, il constitue le cas d'usage id�al d'un 
+assistant IA � r�ponses strictement sourc�es (RAG). C'est le pari de ChatDocs OHADA.
+1 bis. Le projet en mots simples
+Expliquer le projet sans vocabulaire technique - support de pr�sentation orale et de vulgarisation.
+Le probl�me. Au Cameroun, il existe des livres de r�gles que les entreprises doivent respecter : combien d'imp�ts payer, 
+comment cr�er une soci�t�, quels papiers sont obligatoires, quels d�lais tenir. Ces r�gles sont �crites dans de gros 
+documents officiels - des centaines de pages, en PDF, �parpill�s sur diff�rents sites. Quand un comptable ou un chef 
+d'entreprise a une question simple, il doit fouiller l�-dedans pendant des heures, ou payer quelqu'un pour lui r�pondre. Pire 
+: ces r�gles changent chaque ann�e, et beaucoup de gens travaillent avec des versions p�rim�es sans le savoir.
+L'id�e. Une application o� l'on pose sa question comme on la poserait � un ami, et qui r�pond en montrant le passage exact 
+du document officiel qui justifie la r�ponse. C'est comme avoir quelqu'un qui a lu tous ces livres, qui donne la r�ponse, et 
+qui ouvre le livre � la bonne page pour prouver qu'il ne raconte pas n'importe quoi.
+Pourquoi ce n'est pas Google, ni une IA classique. Google renvoie des sites au hasard, souvent avec de vieilles informations 
+: il faut encore chercher. Une IA classique donne une r�ponse qui a l'air juste, mais dont on ne peut pas v�rifier l'origine - 
+et il lui arrive d'inventer des r�gles qui n'existent pas, avec beaucoup d'assurance. Pour un comptable, une r�ponse 
+inv�rifiable ne vaut rien : il devra de toute fa�on aller contr�ler dans le document officiel. Cette application, elle, montre le 
+texte. La personne voit noir sur blanc ce que dit la r�gle, et peut l'utiliser directement dans son travail.
+Ce que l'application fait concr�tement
+�	Elle r�pond aux questions et montre le texte officiel qui prouve la r�ponse.
+�	On peut cliquer sur ce texte pour le lire en entier, dans son contexte.
+�	Elle dit " je ne sais pas " quand la question sort de ce qu'elle conna�t, au lieu d'inventer. C'est le point le plus important 
+: on lui fait confiance parce qu'elle ne ment jamais.
+�	Elle contient une biblioth�que de tous ces documents officiels, rang�s et lisibles.
+�	Elle garde les anciennes questions, pour y revenir plus tard.
+�	Elle pr�vient toujours qu'elle aide � chercher, mais qu'elle ne remplace pas un avocat.
+�	Elle calcule les imp�ts, v�rifie les documents qu'on lui envoie, et pr�vient quand une r�gle change.
+Comment elle sait tout cela. On prend les documents officiels - ceux publi�s par l'�tat et les organisations officielles, qui 
+sont gratuits et publics. On les d�coupe en petits morceaux (une r�gle = un morceau), on les range dans une base de 
+donn�es, et l'application va chercher les bons morceaux avant de r�pondre. Le travail difficile n'est pas l� : c'est de tenir 
+cette biblioth�que � jour et propre. Chaque ann�e les imp�ts changent, il faut tout remettre � jour et v�rifier. C'est long, 
+c'est ingrat, et c'est pr�cis�ment pour cela que peu de gens le feront - c'est ce qui prot�ge le projet de la concurrence.
+Comment cela gagne de l'argent. Les utilisateurs paient un abonnement. Pas pour le logiciel - pour la certitude que 
+l'information est la bonne aujourd'hui. Les cabinets comptables et les avocats financent d�j� des revues juridiques 
+co�teuses : le budget existe.
+En une phrase : une application qui r�pond aux questions sur les r�gles des entreprises, et qui montre toujours la preuve de 
+ce qu'elle avance.
+2. Probl�me et objectifs
+Nommer pr�cis�ment le probl�me r�solu et fixer des objectifs clairs et mesurables.
+Probl�me : les professionnels du droit et du chiffre de l'espace OHADA perdent un temps consid�rable � retrouver la base 
+l�gale exacte de leurs questions dans des textes volumineux, dispers�s et mal consolid�s - et les IA g�n�ralistes ne sont 
+pas fiables sur ce corpus.
+Objectif principal : r�pondre � toute question de droit OHADA ou de fiscalit� camerounaise en langage naturel, en citant 
+syst�matiquement l'article exact et son extrait officiel, en moins de 10 secondes.
+Objectifs secondaires :
+�	Garantir z�ro r�ponse " invent�e " : toute affirmation juridique est adoss�e � un extrait du corpus, sinon l'assistant 
+d�clare ne pas savoir.
+�	Offrir une biblioth�que consolid�e et navigable des textes (actes uniformes + CGI � jour de la loi de finances en 
+vigueur).
+�	Fournir des calculateurs fiscaux reli�s aux articles qui les fondent (IS, TVA, IRPP...).
+�	Positionner l'outil comme aide � la recherche documentaire, jamais comme conseil juridique (cadrage d�ontologique 
+explicite).
+2 bis. Positionnement concurrentiel
+Justifier pourquoi l'utilisateur choisira cette solution plut�t que Google ou une IA g�n�raliste.
+La question centrale de ce projet n'est pas technique mais strat�gique : pourquoi un professionnel utiliserait-il ChatDocs 
+plut�t qu'une recherche Google ou une IA g�n�raliste gratuite ? La r�ponse tient en un mot : la v�rifiabilit�.
+Crit�re
+Recherche Google
+IA g�n�raliste
+ChatDocs OHADA
+Temps de r�ponse
+30 min � 2 h de fouille dans 
+des PDF
+Imm�diat
+Moins de 10 secondes
+Source de la r�ponse
+Blogs, forums, PDF dispers�s 
+de version inconnue
+Opaque - impossible de 
+savoir sur quoi elle s'appuie
+Extrait exact de l'article, 
+cliquable, dans une version 
+dat�e
+Fiabilit�
+Variable ; textes souvent 
+abrog�s ou p�rim�s
+R�ponse fluide mais 
+inv�rifiable ; articles parfois 
+inexistants ; confusion 
+fr�quente droit fran�ais / 
+OHADA
+Aucune affirmation sans 
+citation ; refus explicite hors 
+corpus
+Mise � jour
+Aucune consolidation du CGI 
+apr�s loi de finances
+Entra�n�e sur des versions 
+anciennes qui circulent en 
+ligne
+Corpus consolid� et dat�, mis 
+� jour � chaque loi de finances
+Exploitabilit� 
+professionnelle
+Nulle sans rev�rification dans 
+le texte
+Nulle : le professionnel doit 
+de toute fa�on retourner 
+v�rifier
+Directe : la r�ponse est citable 
+dans une note de travail
+
+Trois avantages que les outils g�n�ralistes n'auront pas
+�	Le corpus consolid� et dat�. Le CGI camerounais est r�vis� � chaque loi de finances et il n'existe nulle part en ligne de 
+version consolid�e fiable. Ce travail d'ingestion et de v�rification est ingrat, continu, et constitue la v�ritable barri�re � 
+l'entr�e du projet.
+�	Le refus explicite. Quand la question sort du corpus, l'assistant le dit au lieu d'inventer. Pour un professionnel, savoir 
+que l'outil ne ment jamais vaut plus que savoir qu'il r�pond toujours.
+�	L'int�gration au flux de travail m�tier. Export PDF sourc� pour les dossiers, calculateurs reli�s aux articles du CGI, 
+historique par mission : un outil m�tier, non un chat g�n�raliste.
+Cible et consentement � payer. Pour un usage occasionnel, une IA gratuite reste " assez bonne " - ce n'est pas la cible. Le 
+march� payant est celui des professionnels pour qui le co�t d'une erreur est �lev� : un comptable qui applique un taux de 
+TVA erron�, un juriste qui cite un article abrog�, un dirigeant qui rate une �ch�ance d�clarative. Ces utilisateurs financent 
+d�j� des revues juridiques on�reuses ou des consultations ponctuelles.
+Limite assum�e et d�fense durable. Les mod�les g�n�ralistes dot�s de recherche web progressent vite : la technique du 
+RAG est reproductible et ne constitue pas un avantage d�fendable � long terme. La d�fense durable repose sur trois actifs 
+non techniques : le corpus consolid� et v�rifi�, la confiance construite avec la profession locale, et la distribution - devenir 
+l'outil recommand� par les ordres professionnels, les cabinets et les facult�s. La technologie est le produit ; le corpus et la 
+confiance sont l'entreprise.
+2 ter. Sources et gouvernance du corpus
+�tablir d'o� viennent les donn�es, comment elles sont v�rifi�es et comment elles restent � jour.
+Principe juridique. Les textes officiels - lois, codes, actes uniformes, r�glements - ne sont pas prot�g�s par le droit 
+d'auteur : ce sont des actes destin�s � �tre connus de tous. Leur reproduction est donc licite. En revanche, les �ditions 
+comment�es, annot�es ou enrichies d'un �diteur sont prot�g�es. La ligne rouge du projet est stricte : seul le texte brut 
+officiel est ing�r�, jamais le contenu �ditorial d'un tiers.
+Sources primaires par corpus
+Corpus
+Source officielle
+Nature de la publication
+Actes uniformes OHADA
+Journal Officiel de l'OHADA * Secr�tariat 
+Permanent (ohada.org)
+Textes et versions consolid�es apr�s 
+r�vision
+SYSCOHADA r�vis�
+Acte uniforme relatif au droit comptable et � 
+l'information financi�re - OHADA
+M�me source que les actes uniformes
+Code G�n�ral des Imp�ts 
+(Cameroun)
+Direction G�n�rale des Imp�ts * Journal Officiel de 
+la R�publique du Cameroun
+CGI et lois de finances annuelles ; 
+consolidation � reconstituer
+Code CIMA
+Conf�rence Interafricaine des March�s 
+d'Assurances * Conseil des Ministres
+Code et r�glements modificatifs
+Textes CEMAC
+Commission de la CEMAC
+R�glements et directives communautaires
+
+Cha�ne d'ingestion - de la source brute au corpus exploitable
+�	1. Collecte - t�l�chargement du document officiel et archivage horodat� du fichier source (preuve de provenance).
+�	2. OCR si n�cessaire - beaucoup de textes circulent en PDF scann�s ; l'OCR introduit des erreurs sur les chiffres et 
+num�ros d'articles, d'o� une relecture obligatoire.
+�	3. D�coupage par article - avec reconstitution du chemin hi�rarchique (livre ? titre ? chapitre ? section ? article) : 
+c'est l'�tape qui rend les citations exactes possibles.
+�	4. Consolidation - application des modifications successives au texte de base (" l'article 92 est modifi� comme suit " 
+impose de reconstruire l'article dans son �tat en vigueur).
+�	5. V�rification humaine - relecture par �chantillonnage, et syst�matique sur tout article modifi�. Validation par un 
+professionnel du domaine.
+Ce travail repr�sente plusieurs semaines pour un corpus initial propre. C'est pr�cis�ment ce qui d�courage les concurrents 
+- et donc ce qui constitue la barri�re � l'entr�e du projet.
+Versionnement et mise � jour
+�	Aucun article n'est jamais �cras� : chaque article porte une date d'entr�e en vigueur et, le cas �ch�ant, une date 
+d'abrogation. Une modification cl�ture l'ancienne version et en cr�e une nouvelle.
+�	B�n�fice direct : l'historique devient consultable (" quel �tait le taux en 2024 ? " - question fr�quente pour les 
+exercices ant�rieurs et les redressements), la tra�abilit� est totale, et un retour arri�re reste possible en cas d'ingestion 
+d�fectueuse.
+�	Deux rythmes distincts : le corpus de r�f�rence �volue rarement mais massivement (une loi de finances par an au 1er 
+janvier ; une r�vision d'acte uniforme tous les 5 � 10 ans) - pr�visible donc planifiable. L'actualit� r�glementaire 
+(circulaires, doctrine administrative, jurisprudence CCJA) �volue en continu mais n'a pas la m�me force juridique : 
+traitement s�par� en v2.
+�	Back-office d'ingestion (v2) : d�p�t du nouveau texte, comparaison automatique avec la base, pr�sentation d'un diff 
+article par article (ajout� / modifi� / abrog� / inchang�), validation humaine, puis recalcul des seuls embeddings 
+concern�s. Sur une loi de finances touchant 30 � 60 articles, quelques jours de travail au lieu de plusieurs semaines de 
+ressaisie.
+�	Notification cibl�e (v2) : le versionnement permet d'alerter pr�cis�ment les utilisateurs ayant consult� ou mis en favori 
+un article modifi� - fonctionnalit� de fid�lisation majeure.
+Transparence affich�e � l'utilisateur
+�	Chaque texte affiche sa version et sa date de consolidation ; chaque r�ponse porte la mention " � jour au [date] ".
+�	Une page Journal des mises � jour liste chaque modification avec un r�sum� en langage clair de ce qui change.
+�	Une table de provenance publi�e en page M�thodologie : pour chaque texte, la source officielle, la r�f�rence de 
+publication, la date du document source, la date d'ingestion, la version consolid�e et le validateur. Cette table est aussi 
+la protection du projet : toute r�ponse contest�e peut �tre remont�e � sa source exacte.
+�	Un bandeau signale les p�riodes de transition (" la loi de finances entre en vigueur le 1er janvier ; corpus mis � jour 
+sous 15 jours ").
+Interdits absolus
+�	Scraper des bases juridiques commerciales (�diteurs priv�s) : conditions d'utilisation contraires et mise en forme 
+�ditoriale prot�g�e.
+�	Laisser le mod�le " compl�ter " un article manquant ou incertain - faute mortelle pour le produit.
+�	Ing�rer des PDF trouv�s au hasard sans v�rification d'origine ni de date : c'est le probl�me m�me que le projet pr�tend 
+r�soudre.
+Position assum�e : dans plusieurs �tats de l'espace OHADA, l'acc�s num�rique aux textes officiels reste imparfait (versions 
+manquantes, publications tardives). Le projet assume donc un corpus initial restreint mais int�gralement v�rifi� plut�t que 
+large et approximatif - seul positionnement tenable pour un outil dont l'argument central est la fiabilit�.
+3. P�rim�tre du projet
+Tracer la fronti�re entre ce que l'application fera et ce qu'elle ne fera pas.
+Inclus (dans ce projet)
+Exclu (hors p�rim�tre)
+Chat IA avec citations d'articles (RAG strict) sur l'ensemble 
+du corpus
+Conseil juridique personnalis� sur un cas d'esp�ce - l'outil 
+informe, il ne conseille pas
+Corpus complet : actes uniformes OHADA, SYSCOHADA, CGI 
+Cameroun, code CIMA, textes CEMAC
+Repr�sentation ou accompagnement devant une 
+administration ou une juridiction
+Biblioth�que navigable, versionn�e, avec historique des 
+versions d'article
+D�p�t automatis� de d�clarations aupr�s de la DGI ou d'un 
+greffe
+Analyse de conformit� des documents envoy�s par 
+l'utilisateur
+Garantie de conformit� juridique du document produit 
+(obligation de moyens)
+G�n�rateur de documents types conformes aux mentions 
+obligatoires
+Tenue de comptabilit� ou production d'�tats financiers
+Calculateurs fiscaux reli�s aux articles du CGI
+Traduction anglaise du corpus (chantier distinct, phase 
+ult�rieure)
+Veille : journal des mises � jour et alertes cibl�es sur les 
+articles suivis
+Jurisprudence des juridictions nationales de premi�re 
+instance
+Back-office interne d'ingestion et de validation du corpus
+
+Espace cabinet multi-utilisateurs et abonnements Mobile 
+Money
+
+4. Utilisateurs cibles (personas)
+Savoir pour qui l'on con�oit : portraits types et besoins.
+Profil
+Qui c'est
+Ce dont il a besoin
+L'expert-comptable / le 
+DAF
+Professionnel du chiffre, manipule SYSCOHADA 
+et le CGI au quotidien, r�pond aux questions de 
+ses clients ou de sa direction
+Retrouver en secondes la base l�gale exacte 
+(article, taux, d�lai) et la citer dans ses notes 
+sans risque d'erreur
+L'avocat d'affaires / le 
+juriste
+R�dige actes et consultations, v�rifie le 
+formalisme OHADA (AG, cessions, garanties)
+V�rifier un point pr�cis de droit des soci�t�s ou 
+des s�ret�s avec l'extrait officiel, comme pr�-
+recherche avant analyse
+L'entrepreneur
+Cr�e ou g�re une SARL, sans juriste interne, 
+budget limit�
+Des r�ponses simples et fiables sur ses 
+obligations : formalit�s, d�lais, imp�ts � payer, 
+sanctions encourues
+L'�tudiant
+Droit, comptabilit� (DECOFI, licence), pr�pare 
+examens et m�moires
+Comprendre les textes et retrouver 
+rapidement les articles � citer dans ses travaux
+5. Fonctionnalit�s (prioris�es - m�thode MoSCoW)
+Lister les fonctionnalit�s et les classer par priorit�. Le MVP = uniquement les " Must ".
+Priorit�
+Fonctionnalit�s
+Must (socle)
+Chat juridique sourc� : question en langage naturel ? r�ponse structur�e (r�ponse directe ? base 
+l�gale ? extrait exact de l'article ? points d'attention) * Citations cliquables ouvrant l'article 
+complet dans son contexte * Refus explicite quand le corpus ne permet pas de r�pondre - 
+fonctionnalit� revendiqu�e, non subie * Biblioth�que navigable des textes (sommaire, lecture 
+article par article, version et date affich�es) * Historique des conversations * Avertissement 
+d�ontologique permanent : aide documentaire, pas un avis juridique * Compte utilisateur et quota 
+freemium (5 questions/mois)
+Should (produit 
+complet)
+Analyse de conformit� de documents : l'utilisateur d�pose ses statuts, un contrat, un PV d'AG ; 
+l'outil v�rifie les mentions obligatoires, les clauses manquantes et les d�lais, et signale chaque 
+�cart avec l'article applicable * G�n�rateur de documents types : statuts, PV d'AG, contrat de 
+travail, mise en demeure, bail commercial - pr�-remplis par questions-r�ponses, conformes aux 
+mentions obligatoires, export Word et PDF * Calculateurs fiscaux : TVA, IS, IRPP, droits 
+d'enregistrement, patente - chaque r�sultat d�taillant les articles du CGI appliqu�s * Veille et 
+alertes : journal des mises � jour en langage clair, notification cibl�e des utilisateurs ayant consult� 
+ou mis en favori un article modifi� * Back-office d'ingestion (interne) : d�p�t d'un texte, diff article 
+par article, validation humaine, recalcul des embeddings concern�s * Recherche plein texte 
+classique, favoris et annotations personnelles * Export PDF d'une r�ponse sourc�e, avec mention 
+de la version du corpus utilis�e
+Could (extension)
+Proc�dures guid�es pas-�-pas : cr�er une SARL, tenir une AG annuelle, augmenter le capital, 
+licencier dans les r�gles, d�clarations mensuelles - documents requis, d�lais, co�ts officiels et 
+article de r�f�rence � chaque �tape * Espace cabinet : multi-utilisateurs, historique par dossier 
+client, export dans les notes de consultation, marque blanche * Abonnements Mobile Money 
+(Orange Money / MTN MoMo via agr�gateur) et facturation conforme * Jurisprudence CCJA 
+int�gr�e au corpus * Historique des versions d'un article (" quel �tait le taux en 2024 ? ") et 
+comparaison de deux articles c�te � c�te * Version anglophone du corpus et de l'interface
+Won't (exclu par 
+principe)
+Conseil juridique personnalis� sur un cas d'esp�ce * D�p�t automatis� de d�clarations aupr�s d'une 
+administration * Garantie de conformit� du document produit (obligation de moyens, jamais de 
+r�sultat) * Tenue de comptabilit� ou production d'�tats financiers
+5 bis. Feuille de route par phases
+S�quencer la livraison : l'ambition compl�te du produit, livr�e par �tapes tenables.
+Le p�rim�tre fonctionnel ci-dessus d�crit le produit complet. Il ne sera pas livr� d'un bloc : la contrainte de temps de 
+l'auteur (voir section 16 bis) impose un s�quencement strict. Chaque phase produit une application utilisable et 
+d�montrable ; aucune phase ne d�pend de la suivante pour avoir de la valeur.
+Phase
+Contenu
+Horizon
+Objectif atteint
+P1 - Socle (livrable 
+ATL)
+Chat sourc�, citations cliquables, refus explicite, 
+biblioth�que, historique, comptes et quota. 
+Corpus restreint : AUSCGIE + Livre TVA du CGI, 
+int�gralement v�rifi�.
+8 semaines
+Le produit est d�montrable et 
+sa promesse centrale est 
+prouv�e
+P2 - Corpus complet
+Ingestion du reste du corpus (AUDCG, AUPC, 
+SYSCOHADA, CGI complet, code CIMA) via le 
+back-office d'ingestion avec diff et validation 
+humaine ; journal des mises � jour.
++3 mois
+Le corpus couvre les besoins 
+r�els d'un professionnel
+P3 - Outils m�tier
+Calculateurs fiscaux, analyse de conformit� des 
+documents d�pos�s, g�n�rateur de documents 
+types, export PDF sourc�, veille et alertes 
+cibl�es.
++4 mois
+L'outil s'int�gre au flux de 
+travail quotidien et justifie 
+l'abonnement
+P4 - Passage � 
+l'�chelle
+Espace cabinet multi-utilisateurs, abonnements 
+Mobile Money, proc�dures guid�es, 
+jurisprudence CCJA, version anglophone.
++6 mois
+Le produit devient une 
+entreprise commercialisable 
+dans l'espace OHADA
+R�gle de s�quencement : aucune fonctionnalit� d'une phase ult�rieure n'est entam�e tant que la phase en cours n'est pas 
+termin�e et d�ploy�e. Cette discipline est la principale protection du projet contre l'�parpillement - risque identifi� 
+comme le plus probable en section 16 bis.
+6. User stories
+D�crire chaque fonctionnalit� du point de vue de l'utilisateur : " En tant que [r�le], je veux [action] afin de [b�n�fice]. "
+�	En tant qu'expert-comptable, je veux poser une question fiscale en fran�ais courant afin d'obtenir le taux ou le d�lai 
+applicable avec l'article du CGI qui le fonde.
+�	En tant qu'avocat, je veux cliquer sur la citation d'une r�ponse afin de lire l'article complet dans son contexte avant de 
+le citer.
+�	En tant qu'entrepreneur, je veux demander mes obligations apr�s cr�ation de ma SARL afin de conna�tre les formalit�s 
+et �ch�ances sans payer une consultation.
+�	En tant qu'utilisateur, je veux que l'assistant me dise clairement quand il ne sait pas afin de ne jamais m'appuyer sur 
+une r�ponse invent�e.
+�	En tant qu'�tudiant, je veux naviguer dans l'AUSCGIE par sommaire afin de r�viser un chapitre pr�cis.
+�	En tant qu'utilisateur, je veux retrouver mes conversations pass�es afin de reprendre une recherche entam�e.
+�	En tant que DAF, je veux calculer un IS avec le d�tail des articles appliqu�s afin de justifier le calcul dans mon dossier de 
+travail.
+�	En tant qu'utilisateur, je veux exporter une r�ponse sourc�e en PDF afin de la joindre � une note interne.
+�	En tant qu'entrepreneur, je veux d�poser mes statuts afin que l'outil me signale les mentions obligatoires manquantes 
+et l'article qui les impose.
+�	En tant que juriste, je veux g�n�rer un PV d'assembl�e g�n�rale par questions-r�ponses afin d'obtenir un document 
+conforme aux mentions obligatoires.
+�	En tant qu'expert-comptable, je veux �tre alert� quand un article que j'ai mis en favori est modifi� afin de ne jamais 
+travailler sur un texte p�rim�.
+�	En tant qu'utilisateur, je veux consulter la version d'un article telle qu'elle �tait en 2024 afin de traiter un exercice 
+ant�rieur ou un redressement.
+�	En tant que responsable de cabinet, je veux rattacher les recherches de mes collaborateurs � un dossier client afin de 
+tracer le travail r�alis�.
+�	En tant qu'administrateur du corpus, je veux d�poser une nouvelle loi de finances et valider un diff article par article 
+afin de mettre le corpus � jour sans tout ressaisir.
+7. Arborescence et �crans
+Lister les pages de l'application et la navigation de l'une � l'autre.
+�cran / page
+Contenu principal
+Accueil
+Proposition de valeur, champ de question imm�diat, exemples de questions par persona, 
+avertissement d�ontologique
+Chat
+Fil de conversation, r�ponses structur�es avec blocs " Base l�gale " repliables, citations 
+cliquables, boutons copier / exporter
+Biblioth�que
+Liste des textes du corpus avec version et date de consolidation ; sommaire arborescent 
+de chaque texte
+Lecture d'article
+Texte officiel de l'article, fil d'Ariane (acte ? livre ? titre ? chapitre), navigation article 
+pr�c�dent/suivant, favori
+Calculateurs
+Formulaires TVA et IS, r�sultat d�taill�, articles du CGI appliqu�s
+Historique
+Conversations pass�es, recherche, reprise d'une conversation
+Compte
+Connexion e-mail, quota restant, pr�f�rences
+Analyse de document
+D�p�t d'un fichier, rapport de conformit� : points conformes, �carts d�tect�s, article 
+applicable pour chaque �cart
+G�n�rateur de documents
+Choix d'un mod�le, formulaire guid� question par question, aper�u, export Word / PDF
+Journal des mises � jour
+Liste chronologique des modifications du corpus, r�sum� en langage clair, articles 
+impact�s
+Mes alertes
+Articles suivis, notifications re�ues, pr�f�rences de fr�quence
+Espace cabinet
+Membres de l'organisation, dossiers clients, recherches rattach�es, abonnement et 
+facturation
+Back-office (interne)
+D�p�t d'un texte source, diff article par article, validation ou correction, publication de la 
+version, table de provenance
+M�thodologie
+Comment les r�ponses sont produites, limites de l'outil, sources et dates de mise � jour 
+du corpus
+Navigation : Accueil ? Chat (parcours principal). Biblioth�que, Calculateurs et Historique accessibles depuis le menu lat�ral. 
+Chaque citation du Chat m�ne � l'�cran Lecture d'article.
+8. Mod�le de donn�es
+D�crire les objets manipul�s par l'application : base des interfaces TypeScript et de l'API.
+Entit�
+Champs
+Description
+Texte
+id, titre, sigle (AUSCGIE...), type (acte uniforme / 
+code), version, dateConsolidation
+Un texte officiel du corpus
+Article
+id, texteId, numero, cheminSommaire, contenu, 
+embedding
+Unit� de d�coupage du corpus - 
+granularit� des citations
+Conversation
+id, userId, titre, dateCreation, messages[]
+Un fil de questions-r�ponses
+Message
+id, conversationId, role (user/assistant), contenu, 
+citations[]
+Un tour de la conversation
+Citation
+messageId, articleId, extrait, pertinence
+Lien entre une r�ponse et un article source
+Utilisateur
+id, email, dateInscription, quotaMensuelRestant, plan
+Compte et quota freemium
+Favori / Annotation
+userId, articleId, note, date
+Article �pingl� ou annot� par l'utilisateur
+VersionArticle
+articleId, numeroVersion, dateEntreeVigueur, 
+dateAbrogation, texteModificatif
+�tat successif d'un article - aucun n'est 
+jamais �cras�
+SourceProvenance
+texteId, sourceOfficielle, referencePublication, 
+dateDocument, dateIngestion, validateur
+Tra�abilit� de chaque texte, publi�e en 
+page M�thodologie
+DocumentAnalyse
+id, userId, nomFichier, type, dateAnalyse, 
+pointsConformite[]
+Une analyse de conformit� demand�e par 
+l'utilisateur
+PointConformite
+analyseId, libelle, statut (conforme / �cart / � v�rifier), 
+articleId, recommandation
+Un point v�rifi� dans le document d�pos�
+ModeleDocument
+id, type, libelle, champs[], mentionsObligatoires[], 
+articlesReference[]
+Un mod�le du g�n�rateur de documents
+Alerte
+userId, articleId, dateNotification, versionAvant, 
+versionApres, lu
+Notification cibl�e sur un article suivi
+Organisation
+id, nom, membres[], dossiers[], plan, abonnement
+Un cabinet dans l'espace multi-utilisateurs
+SignalementErreur
+id, messageId, userId, motif, statut, 
+correctionApportee, date
+Signalement d'une r�ponse contest�e - 
+pi�ce de la proc�dure qualit�
+9. Parcours utilisateur principal
+Le sc�nario cl� de l'application, �tape par �tape, pour v�rifier sa fluidit�.
+�tape
+Action
+1
+L'expert-comptable ouvre ChatDocs OHADA et tape : " Quel est le d�lai de convocation d'une AG ordinaire de 
+SARL ? "
+2
+L'assistant recherche les articles pertinents dans le corpus (AUSCGIE) et affiche la r�ponse en moins de 10 
+secondes
+3
+La r�ponse indique le d�lai, le formalisme, puis le bloc " Base l�gale " avec l'extrait exact de l'article et sa 
+r�f�rence
+4
+Il clique sur la citation : l'article s'ouvre en pleine page dans son contexte (chapitre, articles voisins)
+5
+Il revient au chat, pose une question de suivi (" et pour une SA ? ") - le contexte est conserv�
+6
+Il exporte la r�ponse sourc�e en PDF et la classe dans son dossier de travail
+10. Sp�cifications techniques
+Pr�ciser avec quoi le projet sera construit : technologies, donn�es, services, h�bergement.
+Aspect
+Choix technique
+Frontend
+Angular 18 (standalone components, signals), Angular CLI, TypeScript strict ; SCSS + Angular 
+Material (th�me personnalis�) ; rendu Markdown des r�ponses
+Backend
+API REST FastAPI (Python) - orchestration du pipeline RAG, gestion des comptes et quotas ; 
+alternative Spring Boot si mutualisation avec d'autres projets
+Base de donn�es
+PostgreSQL + extension pgvector : articles, embeddings, utilisateurs, conversations - une 
+seule base pour tout
+Pipeline RAG
+1) Corpus d�coup� par article (jamais par page) avec chemin de sommaire ; 2) embeddings 
+stock�s dans pgvector ; 3) recherche hybride (vecteurs + mots-cl�s) ; 4) appel LLM via API avec 
+les articles pertinents en contexte et consigne stricte : r�pondre uniquement � partir des 
+extraits fournis, sinon refuser ; 5) la r�ponse renvoie les identifiants d'articles cit�s ? citations 
+cliquables
+LLM
+API d'un mod�le du march� (cl� serveur, jamais expos�e c�t� client) ; temp�rature basse ; 
+r�ponses structur�es en JSON (r�ponse, citations, mise en garde)
+Authentification
+Compte e-mail + mot de passe (JWT) ; quota mensuel d�compt� c�t� serveur
+H�bergement
+Frontend : Vercel * Backend + PostgreSQL : Railway ou Render (offre gratuite suffisante pour la 
+d�mo)
+Ingestion du corpus
+Scripts Python : OCR (Tesseract) pour les PDF scann�s, d�coupage par article, reconstitution du 
+chemin hi�rarchique ; moteur de diff comparant un texte d�pos� � la version en base ; 
+traitement en t�ches de fond car l'ingestion est longue
+Analyse de documents
+Extraction du texte des fichiers d�pos�s (docx, PDF), confrontation aux mentions obligatoires 
+du mod�le correspondant, restitution point par point avec l'article applicable ; fichier supprim� 
+apr�s analyse
+G�n�ration de documents
+Mod�les param�tr�s c�t� serveur, export Word (docx) et PDF ; chaque mention obligatoire 
+reli�e � l'article qui la fonde
+Notifications
+Job planifi� d�tectant les articles modifi�s et les utilisateurs concern�s ; envoi e-mail, 
+extension WhatsApp / SMS en phase 4
+Multi-utilisateurs
+Mod�le organisation ? membres ? dossiers ; cloisonnement strict des donn�es par 
+organisation
+Paiement (phase 4)
+Agr�gateur Mobile Money local (Orange Money / MTN MoMo) ; abonnements annuels 
+privil�gi�s faute de pr�l�vement automatique natif
+Journalisation
+Chaque r�ponse est journalis�e avec la version du corpus utilis�e et les articles cit�s - permet 
+de reconstituer exactement ce que l'application a r�pondu � une date donn�e (voir section 16 
+ter)
+Qualit�
+ESLint + Prettier ; jeu d'�valuation de 50 questions-r�ponses valid�es par l'auteur (expert du 
+domaine) rejou�es � chaque �volution du pipeline - la fiabilit� des citations est la logique 
+critique du produit
+11. Exigences non fonctionnelles
+Les qualit�s attendues au-del� des fonctionnalit�s.
+�	Fiabilit� (exigence n�1) : aucune affirmation juridique sans citation ; en cas de doute ou de hors-corpus, l'assistant 
+refuse explicitement. Objectif mesur� : 100 % des r�ponses du jeu d'�valuation citent des articles corrects.
+�	D�ontologie : mention permanente " aide � la recherche documentaire - ne constitue pas un conseil juridique " ; ton 
+prudent sur les questions d'interpr�tation.
+�	Performance : premi�re r�ponse en moins de 10 s ; affichage en streaming pour la perception de rapidit� ; biblioth�que 
+et lecture d'articles instantan�es (donn�es servies en cache).
+�	Connectivit� : interface l�g�re ; la biblioth�que reste consultable hors-ligne (cache PWA) m�me si le chat exige la 
+connexion.
+�	Responsive : mobile-first - un DAF pose ses questions depuis son t�l�phone entre deux r�unions.
+�	S�curit� : cl� LLM c�t� serveur uniquement ; mots de passe hach�s (bcrypt) ; conversations priv�es par utilisateur ; 
+HTTPS partout.
+�	Tra�abilit� du corpus : chaque texte affiche sa version et sa date de consolidation - condition de confiance 
+professionnelle.
+12. Identit� visuelle (UI)
+Fixer l'apparence : couleurs, typographie, ton.
+�l�ment
+Choix
+Couleurs
+Principal : bleu nuit #1B2A4A (s�rieux juridique) * Accent : or #C9A227 (citations, base l�gale) * 
+Validation : vert #2A7D4F * Fond : blanc cass� #F4F2EC - univers sobre, proche de l'�dition 
+juridique
+Typographie
+Titres et r�f�rences d'articles : Source Serif (l'empattement �voque le texte de loi) * Interface 
+et r�ponses : Inter (400/500)
+Ton
+Pr�cis, sobre, professionnel ; jamais p�remptoire - l'assistant cite, nuance et renvoie au texte
+Logo / nom
+" ChatDocs OHADA " - pictogramme bulle de dialogue + paragraphe (�) ; d�clinaison favicon 
+et ic�ne PWA
+13. Planning et jalons
+D�couper la r�alisation en �tapes dat�es pour suivre l'avancement.
+Jalon
+Contenu
+�ch�ance
+J1 - Cadrage
+Cahier des charges valid�, d�p�t GitHub (main / formateur / apprenant), 
+squelette Angular + API FastAPI " hello "
+Semaine 1
+J2 - Corpus & 
+maquettes
+Corpus v1 d�coup� par article et charg� en base (AUSCGIE, AUDCG, 
+AUPC, CGI), embeddings g�n�r�s ; maquettes des �crans Chat et Lecture 
+d'article
+Semaines 2-3
+J3 - MVP
+Pipeline RAG complet avec citations cliquables, biblioth�que navigable, 
+historique ; jeu d'�valuation de 50 questions constitu� et jou�
+Semaines 4-6
+J4 - Finition
+Comptes + quota, export PDF, polissage UI, d�ploiement complet, 
+pr�paration Demo Day
+Semaines 7-8
+Ces quatre jalons couvrent la phase 1 de la feuille de route (section 5 bis), seule phase engag�e dans le cadre du 
+programme. Les phases 2 � 4 font l'objet d'un planning distinct �tabli apr�s le Demo Day, et ne sont pas des engagements 
+de livraison au titre de l'Angular Talent Lab.
+14. Livrables attendus
+Tout ce qui devra �tre rendu � la fin du projet.
+�	Le code source sur GitHub (branches main, formateur, apprenant) - d�p�ts front et back.
+�	L'application d�ploy�e (frontend Vercel + API en ligne), lien de d�mo public.
+�	Le pr�sent cahier des charges (v4, mis � jour si le p�rim�tre �volue).
+�	Un README clair : pr�sentation, architecture, captures, instructions de lancement (front et back).
+�	Le corpus structur� (scripts d'ingestion + base des articles) et le jeu d'�valuation de 50 questions valid�es avec ses 
+r�sultats.
+15. Crit�res de r�ussite
+Les conditions d'acceptation d�finies � l'avance.
+�	Toutes les fonctionnalit�s " Must " fonctionnent sans erreur bloquante.
+�	Sur le jeu d'�valuation de 50 questions : 100 % des r�ponses citent des articles existants et pertinents ; aucune r�ponse 
+" invent�e ".
+�	L'assistant refuse explicitement au moins 5 questions pi�ges hors corpus du jeu d'�valuation.
+�	Une question obtient sa r�ponse sourc�e en moins de 10 secondes en conditions r�elles.
+�	Chaque citation ouvre le bon article dans la biblioth�que.
+�	L'application est d�ploy�e, accessible via un lien public, et utilisable sur un �cran de 360 px.
+�	Le parcours principal est test� sans blocage par au moins 3 professionnels r�els (comptable, juriste, entrepreneur).
+16. Risques et plan B
+Anticiper ce qui peut mal tourner et pr�voir une solution de repli.
+Risque
+Plan B
+L'ingestion et le d�coupage propre du corpus prennent plus 
+de temps que pr�vu
+R�duire le corpus v1 � l'AUSCGIE seul + Livre TVA du CGI - le 
+pipeline reste identique, on �largit ensuite
+Le LLM produit des r�ponses non conformes malgr� le RAG 
+(hallucinations)
+Durcir : r�ponse g�n�r�e uniquement � partir des extraits 
+affich�s, format JSON contraint, seuil de pertinence minimal 
+sinon refus ; le jeu d'�valuation sert de non-r�gression
+Co�t des appels API LLM pendant le d�veloppement
+Cache des r�ponses aux questions identiques ; quota dev ; 
+mod�le plus �conomique en d�veloppement, mod�le 
+premium pour la d�mo
+H�bergement backend gratuit instable le jour de la d�mo
+Instance locale de secours (Docker Compose : API + 
+PostgreSQL) + captures d'�cran dans les slides
+Risque d�ontologique : un utilisateur prend une r�ponse 
+pour un avis juridique
+Avertissement permanent, mention dans chaque export PDF, 
+ton syst�matiquement renvoy� au texte ; page 
+M�thodologie explicite
+Corpus p�rim� apr�s une nouvelle loi de finances
+Journal des versions affich� ; proc�dure de mise � jour 
+document�e - c'est aussi la barri�re � l'entr�e du projet
+16 bis. Analyse critique de faisabilit�
+Confronter le projet aux objections les plus dures et documenter les d�cisions retenues.
+Cette section recense les questions qu'un jury, un partenaire ou un investisseur posera. Elle est d�lib�r�ment critique : 
+chaque objection est suivie de la d�cision retenue, et les hypoth�ses non encore v�rifi�es sont identifi�es comme telles.
+Question critique
+R�ponse et d�cision retenue
+1. Le co�t par question permet-il un 
+abonnement abordable ?
+Une requ�te envoie ~8 articles en contexte (6 000-10 000 tokens en entr�e, ~800 en 
+sortie), soit de l'ordre de 5 � 15 FCFA par question selon le mod�le. � 100 
+questions/mois, le co�t variable reste sous 1 500 FCFA pour un abonnement vis� � 10 
+000 FCFA. D�cision : mesurer r�ellement ce co�t d�s les premiers tests plut�t que de 
+le supposer.
+2. Le RAG suffit-il pour des 
+questions juridiques ?
+Non, pas pour tout. Il excelle sur les questions factuelles (d�lai, taux, mentions 
+obligatoires), qui constituent l'essentiel des recherches quotidiennes ; il �choue sur le 
+raisonnement combinant plusieurs textes, l'interpr�tation et les cas d'esp�ce. 
+D�cision : assumer ce p�rim�tre - moteur de recherche documentaire intelligent, 
+non juriste artificiel ; le refus explicite couvre le reste.
+3. Qui porte la responsabilit� en cas 
+d'erreur pr�judiciable ?
+Risque r�el et non �liminable. Trois protections cumul�es : conditions d'utilisation 
+excluant toute qualification de conseil juridique ; avertissement permanent repris 
+dans chaque export ; architecture qui place l'extrait officiel sous les yeux de 
+l'utilisateur pour v�rification. D�cision : structurer juridiquement la soci�t� et 
+souscrire une RC professionnelle avant toute commercialisation.
+4. Les professionnels paieront-ils un 
+abonnement SaaS ?
+Hypoth�se la plus fragile du projet. Les cabinets financent d�j� revues et cotisations 
+ordinales, mais le paiement r�current en ligne est peu ancr� et Mobile Money n'offre 
+pas de pr�l�vement automatique natif. D�cision : valider par 20 entretiens et une 
+pr�-vente d'abonnements annuels avant d'�crire la moindre ligne de code de 
+facturation.
+5. Un �diteur juridique �tabli peut-il 
+�craser le projet ?
+Techniquement oui. En pratique, les �diteurs juridiques de la zone sont lents sur le 
+num�rique et positionn�s haut de gamme : la fen�tre est estim�e � 18-24 mois. 
+D�cision : la d�fense n'est pas technique mais repose sur la distribution (ordres 
+professionnels, facult�s) et la confiance ; devenir la brique technologique d'un 
+�diteur existant reste une sortie acceptable.
+6. L'auteur, seul et � temps partiel, 
+peut-il tenir ?
+Contrainte structurelle, la plus dure du projet. D�cision : ne pas " travailler plus " 
+mais r�duire le p�rim�tre - un seul acte uniforme et le Livre TVA du CGI pour le 
+MVP plut�t qu'un corpus large et b�cl� ; identifier t�t un profil commercial 
+compl�mentaire.
+7. Que se passe-t-il si le fournisseur 
+LLM change ses prix ou conditions ?
+D�pendance r�elle. D�cision : isoler la couche LLM derri�re une interface unique du 
+backend pour permettre un changement de fournisseur sans toucher au reste. Le 
+corpus et les embeddings restent la propri�t� du projet - l'actif est portable.
+8. Le secret professionnel des 
+utilisateurs est-il pr�serv� ?
+Un juriste interrogeant sur une proc�dure collective r�v�le une information sensible. 
+D�cision : aucun stockage du contenu des questions au-del� de l'historique visible 
+par l'utilisateur, effacement � la demande, et clause de non-entra�nement avec le 
+fournisseur LLM - argument de vente aupr�s de cette cible.
+9. Comment g�rer le bilinguisme 
+(Cameroun, �tats anglophones de 
+l'OHADA) ?
+R�pondre en anglais sur un corpus francophone induit un risque de traduction 
+approximative des termes juridiques. D�cision : v1 strictement francophone ; 
+l'anglais est un chantier � part enti�re, jamais une simple option de configuration.
+10. Comment prouver la qualit� 
+autrement qu'en la d�clarant ?
+Par le jeu d'�valuation : 50 questions-r�ponses valid�es par un professionnel, 
+rejou�es � chaque �volution du pipeline, avec publication du taux de citations 
+correctes. D�cision : en faire un crit�re de r�ussite opposable - �l�ment 
+diff�renciant face � tout concurrent qui se contente d'affirmer sa fiabilit�.
+
+Hypoth�ses restant � valider avant toute industrialisation
+�	Le consentement � payer r�el des professionnels cibl�s (� v�rifier par pr�-vente, pas par d�claration d'intention).
+�	Le co�t unitaire effectif d'une question mesur� en conditions r�elles sur le corpus complet.
+�	Le taux de questions r�ellement couvertes par le corpus (part des requ�tes aboutissant � un refus).
+�	Le temps r�el d'ingestion et de consolidation d'une loi de finances compl�te.
+�	L'accessibilit� effective et la qualit� des versions officielles publi�es pour chaque texte du corpus cible.
+16 ter. Protection juridique et gestion du risque d'erreur
+Les dispositifs � mettre en place pour prot�ger l'auteur, la soci�t� et les utilisateurs.
+Un outil qui informe sur le droit et la fiscalit� expose son �diteur : un utilisateur peut soutenir qu'une r�ponse erron�e lui a 
+caus� un pr�judice. Ce risque ne peut �tre supprim�, seulement organis�. Les dispositifs ci-dessous se cumulent - aucun 
+ne suffit isol�ment. Ces �l�ments constituent un cadre de travail et non un avis juridique : leur r�daction d�finitive doit �tre 
+confi�e � un avocat d'affaires de l'espace OHADA.
+1. S�parer le patrimoine personnel de l'activit�
+�	Cr�er une soci�t� (SARL de droit OHADA) avant toute mise en ligne publique, m�me gratuite : la responsabilit� des 
+associ�s est alors limit�e � leurs apports, et le patrimoine personnel de l'auteur n'est plus expos�.
+�	Immatriculation au RCCM, ouverture d'un compte bancaire d�di�, obtention du num�ro de contribuable, adh�sion � un 
+centre de gestion agr�� le cas �ch�ant.
+�	Ne jamais contracter en nom propre avec un client professionnel.
+2. Cadrer contractuellement la prestation (CGU / CGV)
+�	Clause de qualification : l'outil fournit une aide � la recherche documentaire ; il ne constitue ni une consultation 
+juridique, ni un conseil fiscal, ni un acte relevant d'une profession r�glement�e.
+�	Obligation de moyens et non de r�sultat : l'�diteur s'engage sur la diligence apport�e au corpus et au fonctionnement 
+du service, non sur l'exactitude d'un r�sultat appliqu� � une situation particuli�re.
+�	Limitation de responsabilit� : exclusion des dommages indirects (perte de chance, manque � gagner, redressement 
+fiscal, p�nalit�s) et plafonnement de la responsabilit� au montant des sommes vers�es par l'utilisateur sur les 12 
+derniers mois.
+�	Obligation de v�rification � la charge de l'utilisateur : l'extrait officiel est affich� pr�cis�ment pour qu'il exerce son 
+propre contr�le professionnel.
+�	Acceptation prouv�e : case � cocher horodat�e � l'inscription, version des CGU conserv�e - la preuve du 
+consentement est aussi importante que la clause elle-m�me.
+�	Droit applicable et juridiction comp�tente d�sign�s express�ment.
+3. Faire de l'avertissement une caract�ristique du produit
+�	Mention permanente visible dans l'interface de chat, non masquable.
+�	Rappel repris dans chaque export PDF et dans chaque document g�n�r�.
+�	Sur les questions d'interpr�tation ou de cas d'esp�ce : refus explicite et invitation � consulter un professionnel - 
+comportement � tester dans le jeu d'�valuation.
+�	Aucun document g�n�r� n'est pr�sent� comme d�finitif : mention " projet � faire valider par un professionnel " sur 
+chaque mod�le produit.
+4. Assurer le risque
+�	Souscrire une responsabilit� civile professionnelle couvrant la faute de l'�diteur de service num�rique, avant la 
+premi�re facturation.
+�	V�rifier l'�tendue territoriale de la garantie : le produit vise l'espace OHADA, pas seulement le Cameroun.
+�	Y adjoindre une RC exploitation et, � mesure de la croissance, une garantie cyber (violation de donn�es, 
+indisponibilit�).
+�	R�examiner les plafonds � chaque changement d'�chelle du nombre d'utilisateurs.
+5. Se m�nager la preuve - la tra�abilit� comme d�fense
+�	Journalisation de chaque r�ponse avec la version du corpus utilis�e et les articles cit�s : en cas de contestation, 
+l'�diteur peut reconstituer exactement ce que l'application a r�pondu, � quelle date, sur quelle base.
+�	Archivage horodat� des fichiers sources officiels ing�r�s : preuve que le texte utilis� �tait bien le texte officiel publi�.
+�	Table de provenance publique (section 2 ter) nommant pour chaque texte la source, la date et le validateur.
+�	Registre des versions du corpus : toute publication d'une nouvelle version est dat�e et sign�e par un validateur 
+identifi�.
+6. Organiser la correction des erreurs
+�	Bouton " Signaler une r�ponse " sur chaque message : l'erreur signal�e est enregistr�e, qualifi�e et trait�e sous d�lai 
+annonc�.
+�	Proc�dure de correction trac�e : cause identifi�e, correction apport�e au corpus ou au pipeline, non-r�gression ajout�e 
+au jeu d'�valuation.
+�	Notification des utilisateurs affect�s lorsqu'une erreur a pu influencer leurs recherches - la logique de versionnement 
+le permet techniquement. Assumer une erreur et la corriger publiquement prot�ge davantage qu'un silence.
+�	Registre des incidents conserv� : il d�montre la diligence de l'�diteur en cas de litige.
+7. Prot�ger les donn�es des utilisateurs
+�	Politique de confidentialit� claire ; minimisation : aucune donn�e nominative de client final n'est demand�e.
+�	Clause de non-entra�nement avec le fournisseur du mod�le : les questions des utilisateurs ne servent pas � entra�ner 
+un mod�le tiers.
+�	Effacement de l'historique � la demande ; suppression du fichier d�pos� aussit�t l'analyse de conformit� termin�e.
+�	Chiffrement en transit et au repos ; cloisonnement strict des donn�es par organisation dans l'espace cabinet.
+�	Respect du cadre camerounais applicable � la cybers�curit� et aux donn�es � caract�re personnel, et vigilance sur les 
+�volutions r�glementaires de la zone.
+8. S�curiser la propri�t� intellectuelle
+�	D�p�t de la marque aupr�s de l'OAPI (si�ge � Yaound�) : un seul d�p�t couvre les 17 �tats membres - d�marche peu 
+co�teuse et d�terminante.
+�	R�servation des noms de domaine, dont le .cm.
+�	Licence du code source d�cid�e explicitement ; cession de droits sign�e avec tout contributeur ou prestataire.
+�	Respect strict de la ligne pos�e en section 2 ter : aucun contenu �ditorial de tiers ing�r� - c'est la meilleure protection 
+contre une action en contrefa�on.
+S�quencement recommand�. Phase 1 (d�monstration ATL, sans utilisateur payant) : avertissement produit et journalisation 
+suffisent. Avant la premi�re mise en ligne publique : CGU r�dig�es et acceptation trac�e. Avant la premi�re facturation : 
+soci�t� constitu�e, RC professionnelle souscrite, marque d�pos�e. Aucune commercialisation ne doit pr�c�der ces trois 
+derni�res �tapes.
+17. Annexes
+Glossaire, r�f�rences et maquettes compl�tant le document.
+Glossaire
+Terme
+D�finition
+OHADA
+Organisation pour l'Harmonisation en Afrique du Droit des Affaires - 17 �tats membres, droit des 
+affaires unifi� par actes uniformes
+AUSCGIE
+Acte Uniforme relatif au droit des Soci�t�s Commerciales et du GIE
+AUDCG
+Acte Uniforme portant sur le Droit Commercial G�n�ral
+AUPC
+Acte Uniforme portant organisation des Proc�dures Collectives d'apurement du passif
+CGI
+Code G�n�ral des Imp�ts du Cameroun, consolid� � chaque loi de finances
+RAG
+Retrieval-Augmented Generation : l'IA r�pond uniquement � partir de documents recherch�s et 
+fournis en contexte
+Embedding
+Repr�sentation vectorielle d'un texte permettant la recherche par similarit� de sens
+CCJA
+Cour Commune de Justice et d'Arbitrage de l'OHADA (jurisprudence - hors p�rim�tre v1)
+
+R�f�rences et liens utiles
+�	Textes officiels OHADA (actes uniformes) - site institutionnel de l'OHADA.
+�	Code g�n�ral des imp�ts du Cameroun - version consolid�e de la loi de finances en vigueur (DGI).
+�	Documentation Angular (angular.dev), Angular Material ; FastAPI ; PostgreSQL + pgvector.
+�	Documentation de l'API du fournisseur LLM retenu (r�ponses structur�es, streaming).
+�	Maquettes des �crans : � joindre (Figma ou croquis papier scann�s).
+ChatDocs OHADA - Cahier des charges		Angular Talent Lab 2026 * Orange Digital Center Douala
+Page 1

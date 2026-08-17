@@ -1,0 +1,53 @@
+# ChatDocs OHADA - dependances du backend
+# Python 3.11 ou 3.12 (pas 3.14 : roues manquantes pour psycopg2).
+#
+# Installation :
+#   py -3.11 -m venv .venv
+#   .venv\Scripts\activate
+#   pip install -r requirements.txt
+
+# --- API -------------------------------------------------------------
+fastapi
+uvicorn[standard]
+python-multipart
+
+# --- Base de donnees -------------------------------------------------
+sqlalchemy
+psycopg2-binary
+pgvector
+
+# --- Configuration ---------------------------------------------------
+pydantic-settings
+email-validator     # requis par pydantic.EmailStr
+
+# --- Generation de documents (phase F) -------------------------------
+# Export Word des documents types. Le format .docx est celui que le
+# client attend pour RETOUCHER le document ; le PDF, celui qu'il
+# transmet. Les deux sont demandes par le cahier des charges (§5).
+python-docx
+
+# --- Fournisseur LLM (phase E) ---------------------------------------
+anthropic
+
+# --- Securite (phase G) ----------------------------------------------
+python-jose[cryptography]
+bcrypt              # directement, sans passlib : voir app/services/securite.py
+google-auth         # verification des jetons d'identite Google
+requests            # exige par google.auth.transport.requests
+
+# --- Ingestion du corpus (phase B) -----------------------------------
+pdfplumber
+pytesseract
+# Export PDF d'une reponse sourcee. Il etait deja present comme
+# dependance transitive : on le declare, parce qu'on s'en sert
+# directement et qu'une transitive peut disparaitre a la prochaine mise
+# a jour de ce qui l'apportait.
+reportlab
+# Le rendu des pages en images passe par pypdfium2, deja tire par
+# pdfplumber : pas de poppler a installer ni a mettre dans le PATH.
+# pdf2image n'est donc plus necessaire.
+pillow
+
+# --- Appels sortants et tests ----------------------------------------
+httpx
+pytest
