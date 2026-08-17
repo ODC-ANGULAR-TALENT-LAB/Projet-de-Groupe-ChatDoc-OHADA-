@@ -12,7 +12,7 @@ from app.config import parametres
 from app.db import get_db
 from app.dependances import QUOTA_PAR_PLAN, utilisateur_courant
 from app.models import Utilisateur
-from app.schemas import Identifiants, Jeton, JetonGoogle, Quota
+from app.schemas import Identifiants, Inscription, Jeton, JetonGoogle, Quota
 from app.services.google import JetonGoogleInvalide, verifier_jeton
 from app.services.securite import creer_jeton, hacher, verifier
 
@@ -27,7 +27,28 @@ def _jeton(utilisateur: Utilisateur) -> Jeton:
 
 
 @routeur.post("/auth/inscription", status_code=status.HTTP_201_CREATED)
-def inscription(corps: Identifiants, db: Session = Depends(get_db)) -> Jeton:
+def inscription(corps: Inscription, db: Session = Depends(get_db)) -> Jeton:
+    """Cree un compte. LES CONDITIONS DOIVENT AVOIR ETE ACCEPTEES.
+
+    LE REFUS EST COTE SERVEUR, pas seulement dans le formulaire. Une
+    case desactivee dans le navigateur n'engage rien : elle se
+    contourne avec deux lignes de console. Le seul endroit ou
+    l'acceptation peut etre exigee est ici.
+
+    On enregistre AVEC LA VERSION ET LA DATE. « A accepte » ne prouve
+    rien le jour ou il faudrait le prouver : accepte quand, et accepte
+    quoi ? Pour ce produit ce n'est pas theorique — le cahier des
+    charges (§3) exclut toute garantie de resultat, et la seule reponse
+    solide a « je l'ai pris pour un conseil juridique » est la date et
+    la version des conditions acceptees.
+    """
+    if not corps.cgu_acceptees:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Les conditions générales d'utilisation doivent être acceptées "
+            "pour créer un compte.",
+        )
+
     existant = db.scalar(select(Utilisateur).where(Utilisateur.email == corps.email))
     if existant is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Cet e-mail est deja inscrit")
@@ -38,6 +59,8 @@ def inscription(corps: Identifiants, db: Session = Depends(get_db)) -> Jeton:
         plan="gratuit",
         quota_restant=QUOTA_PAR_PLAN["gratuit"],
         quota_reinit_le=datetime.date.today(),
+        cgu_version=parametres.version_cgu,
+        cgu_acceptees_le=datetime.datetime.now(datetime.timezone.utc),
     )
     db.add(utilisateur)
     db.commit()

@@ -44,6 +44,16 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'cgu',
+    title: "ChatDocs OHADA — Conditions générales d'utilisation",
+    // Publique : on doit pouvoir les lire AVANT de créer un compte.
+    // Des conditions qu'il faudrait accepter pour pouvoir les lire
+    // seraient une plaisanterie.
+    data: { publique: true },
+    loadComponent: () =>
+      import('./fonctionnalites/legal/cgu.page').then((m) => m.CguPage),
+  },
+  {
     path: 'chat',
     title: 'ChatDocs OHADA — Poser une question',
     loadComponent: () =>

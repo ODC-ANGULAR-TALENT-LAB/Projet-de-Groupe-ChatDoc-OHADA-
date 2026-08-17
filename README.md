@@ -469,6 +469,38 @@ Sur 10 000 000 FCFA HT : 1 750 000 (art. 142) + 175 000 (art. C 54) =
 
 ---
 
+## Conditions d'utilisation
+
+`db/08_migration_cgu.sql`, `app/routers/auth.py`, page `/cgu`
+
+L'acceptation des conditions est **obligatoire à l'inscription**, et le
+refus est prononcé **côté serveur**. Une case désactivée dans le
+navigateur n'engage rien : elle se contourne avec deux lignes de
+console. La case du formulaire informe ; c'est la route qui protège.
+
+### Deux colonnes, pas un booléen
+
+`cgu_version` et `cgu_acceptees_le`. « A accepté » ne prouve rien le jour
+où il faudrait le prouver : accepté **quand**, et accepté **quoi** ? Les
+conditions changent, et celui qui a coché en 2026 n'a pas accepté la
+version de 2028.
+
+Ce n'est pas une précaution théorique ici. Le cahier des charges (§3)
+exclut toute garantie de résultat, et la seule réponse solide à « je
+l'ai pris pour un conseil juridique » est la date et la version des
+conditions acceptées.
+
+Les comptes antérieurs à cette migration restent à `NULL` : on ne leur
+prête pas un consentement qu'ils n'ont pas donné.
+
+### Changer les conditions
+
+Faire évoluer `version_cgu` dans `app/config.py` ne suffit pas : il faut
+aussi redemander l'acceptation aux comptes existants, sinon la version
+enregistrée ne correspond plus à ce qu'ils ont lu.
+
+---
+
 ## Recherche hybride
 
 Sans interface et sans LLM, on vérifie une seule chose : est-ce que les bons

@@ -93,6 +93,20 @@ class Utilisateur(Base):
     quota_restant: Mapped[int] = mapped_column(Integer, default=5)
     quota_reinit_le: Mapped[datetime.date | None] = mapped_column(Date)
 
+    # ACCEPTATION DES CONDITIONS D'UTILISATION.
+    #
+    # Deux colonnes et non un booleen : « a accepte » ne prouve rien le
+    # jour ou il faudrait le prouver. Accepte QUAND, et accepte QUOI ?
+    # Les conditions changent, et celui qui a coche en 2026 n'a pas
+    # accepte la version de 2028.
+    #
+    # NULL pour les comptes anterieurs a la mise en place : on ne leur
+    # prete pas un consentement qu'ils n'ont pas donne.
+    cgu_version: Mapped[str | None] = mapped_column(String(20))
+    cgu_acceptees_le: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+
     @property
     def est_admin(self) -> bool:
         return self.role == "admin"

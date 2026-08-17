@@ -46,6 +46,14 @@ class Parametres(BaseSettings):
     # Fournisseur LLM (phase E) - la cle ne quitte jamais le serveur
     llm_api_key: str = ""
     llm_modele: str = "claude-opus-5"
+
+    # VERSION DES CONDITIONS GENERALES D'UTILISATION.
+    #
+    # Elle est enregistree sur chaque compte a l'inscription. La faire
+    # evoluer ici ne suffit pas : changer les conditions oblige a
+    # redemander leur acceptation aux comptes existants, sinon la
+    # version enregistree ne correspond plus a ce qu'ils ont lu.
+    version_cgu: str = "2026-08"
     llm_max_tokens: int = 4096
     # Niveau d'effort du modele : low, medium, high, xhigh, max.
     # "low" tient la cible des 10 secondes ; monter d'un cran ameliore

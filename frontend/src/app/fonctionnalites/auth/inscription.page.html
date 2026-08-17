@@ -63,6 +63,30 @@
           }
         </div>
 
+        <!--
+          LA CASE EST OBLIGATOIRE, et le serveur la revérifie : une case
+          désactivée dans le navigateur se contourne avec deux lignes de
+          console. Ici elle sert à informer, pas à protéger.
+
+          Le lien s'ouvre dans un nouvel onglet : renvoyer l'utilisateur
+          vers les conditions lui ferait perdre ce qu'il a déjà saisi.
+        -->
+        <label class="conditions">
+          <input
+            type="checkbox"
+            name="cgu"
+            [ngModel]="cguAcceptees()"
+            (ngModelChange)="cguAcceptees.set($event)"
+          />
+          <span>
+            J'ai lu et j'accepte les
+            <a routerLink="/cgu" target="_blank" rel="noopener">
+              conditions générales d'utilisation</a>, et je comprends que
+            ChatDocs OHADA est une aide à la recherche documentaire et non
+            une consultation juridique.
+          </span>
+        </label>
+
         <button type="submit" class="principal" [disabled]="!peutEnvoyer()">
           {{ occupe() ? 'Création…' : 'Créer mon compte' }}
         </button>

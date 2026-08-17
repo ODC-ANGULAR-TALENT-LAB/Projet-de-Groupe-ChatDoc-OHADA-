@@ -16,9 +16,25 @@ export class AuthService {
   readonly quota = signal<Quota | null>(null);
   readonly connecte = computed(() => this.jeton() !== null);
 
-  async inscription(email: string, motDePasse: string): Promise<void> {
+  /**
+   * Crée un compte.
+   *
+   * `cguAcceptees` n'a pas de valeur par défaut : le serveur refuse
+   * l'inscription sans acceptation, et un défaut à `true` ici
+   * consentirait à la place de l'utilisateur — exactement ce que la
+   * case est censée empêcher.
+   */
+  async inscription(
+    email: string,
+    motDePasse: string,
+    cguAcceptees: boolean,
+  ): Promise<void> {
     const jeton = await firstValueFrom(
-      this.api.post<Jeton>('/auth/inscription', { email, mot_de_passe: motDePasse }),
+      this.api.post<Jeton>('/auth/inscription', {
+        email,
+        mot_de_passe: motDePasse,
+        cgu_acceptees: cguAcceptees,
+      }),
     );
     this.enregistrer(jeton);
   }

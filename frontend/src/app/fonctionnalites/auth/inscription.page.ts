@@ -45,6 +45,10 @@ export class InscriptionPage {
   /** Passe à vrai quand l'utilisateur quitte le champ mot de passe. */
   protected readonly motDePasseTouche = signal(false);
 
+  /** Acceptation des conditions. Obligatoire, et revérifiée côté
+      serveur : la case informe, elle ne protège pas. */
+  protected readonly cguAcceptees = signal(false);
+
   protected readonly longueurMinimale = LONGUEUR_MINIMALE;
 
   protected readonly motDePasseTropCourt = computed(
@@ -58,7 +62,8 @@ export class InscriptionPage {
     () =>
       !this.occupe() &&
       this.email().includes('@') &&
-      this.motDePasse().length >= LONGUEUR_MINIMALE,
+      this.motDePasse().length >= LONGUEUR_MINIMALE &&
+      this.cguAcceptees(),
   );
 
   protected readonly avantages = [
@@ -104,7 +109,11 @@ export class InscriptionPage {
     this.erreur.set(null);
     this.occupe.set(true);
     try {
-      await this.auth.inscription(this.email(), this.motDePasse());
+      await this.auth.inscription(
+        this.email(),
+        this.motDePasse(),
+        this.cguAcceptees(),
+      );
       this.motDePasse.set('');
       await this.router.navigate(['/accueil']);
     } catch (erreur) {

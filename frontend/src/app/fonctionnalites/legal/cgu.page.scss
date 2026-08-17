@@ -1,0 +1,95 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--fond);
+}
+
+.page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: var(--e6) var(--e4) var(--e8);
+}
+
+header {
+  margin-bottom: var(--e8);
+
+  h1 {
+    margin: var(--e4) 0 var(--e2);
+    font-family: var(--police-serif);
+    font-size: 1.9rem;
+    color: var(--bleu-nuit);
+  }
+}
+
+.retour {
+  font-size: 0.86rem;
+  color: var(--gris-texte);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--bleu-nuit);
+  }
+}
+
+.version {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--gris-texte);
+}
+
+/* L'avertissement passe devant, et se voit. Le reléguer en bas de page
+   reviendrait à ne pas l'avoir écrit. */
+.capital {
+  margin-bottom: var(--e8);
+  padding: var(--e5);
+  background: var(--fond-citation);
+  border-left: 3px solid var(--or);
+  border-radius: 0 var(--rayon) var(--rayon) 0;
+
+  h2 {
+    margin-top: 0;
+  }
+}
+
+section {
+  margin-bottom: var(--e6);
+
+  h2 {
+    margin: 0 0 var(--e3);
+    font-family: var(--police-serif);
+    font-size: 1.15rem;
+    color: var(--bleu-nuit);
+  }
+
+  p {
+    margin: 0 0 var(--e3);
+    line-height: 1.75;
+    color: var(--texte);
+  }
+
+  ul {
+    margin: 0 0 var(--e3);
+    padding-left: var(--e5);
+    line-height: 1.75;
+    color: var(--texte);
+  }
+
+  li {
+    margin-bottom: var(--e2);
+  }
+}
+
+.pied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e5);
+  margin-top: var(--e8);
+  padding-top: var(--e4);
+  border-top: 1px solid var(--bordure);
+
+  a {
+    font-size: 0.88rem;
+    color: var(--bleu-nuit);
+    font-weight: 500;
+  }
+}

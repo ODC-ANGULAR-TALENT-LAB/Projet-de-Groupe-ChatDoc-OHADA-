@@ -280,3 +280,33 @@ input[type='password'] {
     display: block;
   }
 }
+
+/* La case des conditions. Elle est volontairement moins dense que le
+   reste : on la lit, on ne la survole pas. */
+.conditions {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e3);
+  margin: var(--e4) 0 var(--e2);
+  font-weight: 400;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--gris-texte);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    /* 20 px et un décalage : une case de 13 px est sous la taille
+       tactile confortable, et c'est la seule case du formulaire. */
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    accent-color: var(--bleu-nuit);
+    cursor: pointer;
+  }
+
+  a {
+    color: var(--bleu-nuit);
+    font-weight: 600;
+  }
+}

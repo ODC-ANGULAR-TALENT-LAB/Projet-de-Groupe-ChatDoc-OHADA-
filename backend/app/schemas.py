@@ -21,8 +21,26 @@ Confiance = Literal["elevee", "moyenne", "insuffisante"]
 
 
 class Identifiants(BaseModel):
+    """Identifiants de connexion.
+
+    Pas de case a cocher ici : on ne redemande pas d'accepter les
+    conditions a chaque connexion. L'acceptation est enregistree une
+    fois, a l'inscription, avec sa date et sa version.
+    """
+
     email: EmailStr
     mot_de_passe: str = Field(min_length=8, max_length=200)
+
+
+class Inscription(Identifiants):
+    """Creation de compte : les conditions doivent etre acceptees.
+
+    LE DEFAUT EST FALSE, ET IL N'Y A PAS DE VALEUR PAR DEFAUT COTE
+    SERVEUR. Un client qui omet le champ se voit refuser l'inscription
+    plutot que consentir a la place de l'utilisateur.
+    """
+
+    cgu_acceptees: bool = False
 
 
 class JetonGoogle(BaseModel):
