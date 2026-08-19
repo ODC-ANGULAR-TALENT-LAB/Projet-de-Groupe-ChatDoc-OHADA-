@@ -32,8 +32,8 @@
 
 .marque {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.28em;
+  align-items: center;
+  gap: 0.45em;
   margin-bottom: var(--e8);
   font-family: var(--police-serif);
   font-size: 1.35rem;
@@ -41,6 +41,18 @@
   letter-spacing: -0.02em;
   text-decoration: none;
   color: var(--bleu-nuit);
+}
+
+.marque-blason {
+  height: 2.1em;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.marque-texte {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
 }
 
 .marque-suffixe {

@@ -5,22 +5,32 @@
 
 .marque {
   display: inline-flex;
-  align-items: baseline;
-  /* Flex plutôt qu'une espace : Angular supprime les blancs entre
-     éléments à la compilation, et « ChatDocs » et « OHADA » se
-     retrouveraient soudés. */
-  gap: 0.28em;
+  align-items: center;
+  gap: 0.45em;
   font-family: var(--police-serif);
   font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-decoration: none;
   line-height: 1.1;
+}
 
-  app-icone {
-    align-self: center;
-    color: var(--or);
-  }
+/* Le blason remplace l'icône « balance » générique qui tenait la place
+   ici. Dimensionné en `em`, il suit la taille du mot-image sans réglage
+   séparé. */
+.marque-blason {
+  height: 2.1em;
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* Flex plutôt qu'une espace : Angular supprime les blancs entre
+   éléments à la compilation, et « ChatDocs » et « OHADA » se
+   retrouveraient soudés. */
+.marque-texte {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
 }
 
 .marque-suffixe {

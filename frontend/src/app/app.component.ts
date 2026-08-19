@@ -66,8 +66,17 @@ const DESTINATIONS: Destination[] = [
     <!-- BARRE LATÉRALE — poste de travail -->
     <aside class="laterale">
       <a class="marque" routerLink="/">
-        <span class="marque-nom">ChatDocs</span>
-        <span class="marque-suffixe">OHADA</span>
+        <img
+          class="marque-blason"
+          src="/images/blason.webp"
+          alt=""
+          width="131"
+          height="162"
+        />
+        <span class="marque-texte">
+          <span class="marque-nom">ChatDocs</span>
+          <span class="marque-suffixe">OHADA</span>
+        </span>
       </a>
       <p class="marque-sous-titre">Recherche juridique sourcée</p>
 
@@ -164,8 +173,17 @@ const DESTINATIONS: Destination[] = [
     <!-- BARRE HAUTE — téléphone uniquement -->
     <header class="barre">
       <a class="marque" routerLink="/">
-        <span class="marque-nom">ChatDocs</span>
-        <span class="marque-suffixe">OHADA</span>
+        <img
+          class="marque-blason"
+          src="/images/blason.webp"
+          alt=""
+          width="131"
+          height="162"
+        />
+        <span class="marque-texte">
+          <span class="marque-nom">ChatDocs</span>
+          <span class="marque-suffixe">OHADA</span>
+        </span>
       </a>
       @if (auth.connecte()) {
         <button type="button" class="lien" (click)="auth.deconnexion()">
@@ -227,16 +245,31 @@ const DESTINATIONS: Destination[] = [
       overflow-y: auto;
     }
 
-    /* Flex plutôt qu'une espace dans le gabarit : Angular supprime les
-       blancs entre éléments à la compilation, et « ChatDocs » et
-       « OHADA » se retrouvaient soudés. */
     .marque {
       display: inline-flex;
-      align-items: baseline;
-      gap: 0.28em;
+      align-items: center;
+      gap: 0.45em;
       font-family: var(--police-serif);
       text-decoration: none;
       line-height: 1.1;
+    }
+
+    /* Le blason se dimensionne en « em » : il suit la taille du
+       mot-image partout où celui-ci change (1.6rem dans la barre
+       latérale, plus petit sur téléphone) sans double réglage. */
+    .marque-blason {
+      height: 2.1em;
+      width: auto;
+      flex-shrink: 0;
+    }
+
+    /* Flex plutôt qu'une espace dans le gabarit : Angular supprime les
+       blancs entre éléments à la compilation, et « ChatDocs » et
+       « OHADA » se retrouvaient soudés. */
+    .marque-texte {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.28em;
     }
 
     .marque-nom {
