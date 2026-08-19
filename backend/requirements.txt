@@ -1,53 +1,73 @@
-# ChatDocs OHADA - dependances du backend
-# Python 3.11 ou 3.12 (pas 3.14 : roues manquantes pour psycopg2).
+# ChatDocs OHADA — dépendances du backend
 #
-# Installation :
+# Python 3.11 ou 3.12. PAS 3.14 : les roues de psycopg2 n'existent pas
+# encore pour cette version, et la compilation demande PostgreSQL en
+# local — ce qui n'est pas raisonnable à demander pour lancer un projet.
+#
 #   py -3.11 -m venv .venv
 #   .venv\Scripts\activate
 #   pip install -r requirements.txt
+#
+# -----------------------------------------------------------------
+# POURQUOI LES VERSIONS SONT FIGÉES
+# -----------------------------------------------------------------
+# Sans `==`, `pip install` livre les dernières versions du jour. Six
+# mois plus tard, celui qui clone le dépôt obtient d'autres majeures et
+# une application qui ne démarre plus — pour un dépôt de groupe, c'est
+# la panne qui coûte le plus de temps à tout le monde.
+#
+# Ces versions sont celles sur lesquelles les 342 tests passent.
+#
+# Pour mettre à jour un paquet : changer sa ligne, relancer la suite de
+# tests, et ne commiter que si elle passe.
+#
+# -----------------------------------------------------------------
+# TOUT CE QUI EST IMPORTÉ DIRECTEMENT EST DÉCLARÉ ICI
+# -----------------------------------------------------------------
+# Y compris ce qui arrive déjà par transitivité. Une dépendance
+# transitive peut disparaître à la prochaine mise à jour de ce qui
+# l'apportait, et la panne survient alors sans qu'on ait rien changé.
 
 # --- API -------------------------------------------------------------
-fastapi
-uvicorn[standard]
-python-multipart
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+python-multipart==0.0.32
 
 # --- Base de donnees -------------------------------------------------
-sqlalchemy
-psycopg2-binary
-pgvector
+sqlalchemy==2.0.52
+psycopg2-binary==2.9.12
+pgvector==0.5.0
 
-# --- Configuration ---------------------------------------------------
-pydantic-settings
-email-validator     # requis par pydantic.EmailStr
-
-# --- Generation de documents (phase F) -------------------------------
-# Export Word des documents types. Le format .docx est celui que le
-# client attend pour RETOUCHER le document ; le PDF, celui qu'il
-# transmet. Les deux sont demandes par le cahier des charges (§5).
-python-docx
+# --- Configuration et schemas ----------------------------------------
+pydantic==2.13.4          # importe directement par app/schemas.py
+pydantic-settings==2.15.0
+email-validator==2.3.0    # requis par pydantic.EmailStr
 
 # --- Fournisseur LLM (phase E) ---------------------------------------
-anthropic
+anthropic==0.121.0
 
 # --- Securite (phase G) ----------------------------------------------
-python-jose[cryptography]
-bcrypt              # directement, sans passlib : voir app/services/securite.py
-google-auth         # verification des jetons d'identite Google
-requests            # exige par google.auth.transport.requests
+python-jose[cryptography]==3.5.0
+bcrypt==5.0.0             # directement, sans passlib : voir services/securite.py
+google-auth==2.56.3       # verification des jetons d'identite Google
+requests==2.34.2          # exige par google.auth.transport.requests
 
 # --- Ingestion du corpus (phase B) -----------------------------------
-pdfplumber
-pytesseract
-# Export PDF d'une reponse sourcee. Il etait deja present comme
-# dependance transitive : on le declare, parce qu'on s'en sert
-# directement et qu'une transitive peut disparaitre a la prochaine mise
-# a jour de ce qui l'apportait.
-reportlab
-# Le rendu des pages en images passe par pypdfium2, deja tire par
-# pdfplumber : pas de poppler a installer ni a mettre dans le PATH.
-# pdf2image n'est donc plus necessaire.
-pillow
+pdfplumber==0.11.10
+pytesseract==0.3.13
+pillow==12.3.0
+# Rendu des pages en images pour l'OCR. Il arrive deja avec pdfplumber,
+# mais ingestion/1_extraire.py l'importe DIRECTEMENT : on le declare.
+# Avantage au passage : pas de poppler a installer ni a mettre dans le
+# PATH, contrairement a pdf2image.
+pypdfium2==5.12.1
+
+# --- Generation de documents (phase F) -------------------------------
+# Le .docx est le format qu'on RETOUCHE, le PDF celui qu'on TRANSMET.
+# Les deux sont demandes par le cahier des charges (§5).
+python-docx==1.2.0
+reportlab==5.0.0
 
 # --- Appels sortants et tests ----------------------------------------
-httpx
-pytest
+httpx==0.28.1
+pytest==9.1.1

@@ -136,7 +136,24 @@ winget install UB-Mannheim.TesseractOCR
 copy .env.example .env
 ```
 
-Le fichier `.env` n'est jamais commité.
+`.env.example` contient **toutes** les variables lues par l'application,
+avec des valeurs locales qui fonctionnent telles quelles : la base, le
+port, les origines autorisées, les seuils. Copié tel quel, il suffit à
+lancer le projet, à charger le corpus et à jouer les tests.
+
+Trois valeurs restent à toi, et ne sont volontairement pas dans le
+dépôt :
+
+| Variable | Sans elle |
+|---|---|
+| `LLM_API_KEY` | L'assistant bascule en mode « articles sans synthèse » — sûr, mais muet |
+| `EMBEDDING_API_KEY` | La recherche se dégrade en plein texte, le seuil de refus perd son signal |
+| `GOOGLE_CLIENT_SECRET` | La connexion Google est indisponible ; l'e-mail continue de fonctionner |
+
+**`.env` n'est jamais commité**, et ce n'est pas une formalité : une clé
+d'API poussée sur un dépôt public est aspirée par des robots en quelques
+minutes. C'est pourquoi ces trois-là passent par `.env.example` vide
+plutôt que par le dépôt.
 
 ### 2. Base de données
 
@@ -165,6 +182,26 @@ uvicorn app.main:app --reload
 
 Documentation interactive : <http://localhost:8000/docs>
 État de l'API et de la base : <http://localhost:8000/sante>
+
+> **Python 3.11 ou 3.12, pas 3.14.** Les roues de `psycopg2` n'existent
+> pas encore pour 3.14, et la compilation demanderait PostgreSQL installé
+> en local — ce qui n'est pas raisonnable à exiger pour démarrer.
+
+**Les versions sont figées** dans `requirements.txt`. Sans cela,
+`pip install` livre les dernières versions du jour : six mois plus tard,
+celui qui clone obtient d'autres majeures et une application qui ne
+démarre plus. Ce sont les versions sur lesquelles les 342 tests passent
+— vérifié en installant depuis zéro dans un environnement neuf.
+
+Pour mettre à jour un paquet : changer sa ligne, relancer la suite, et
+ne commiter que si elle passe.
+
+**Vérifier que l'installation est complète :**
+
+```bash
+pytest -q                      # 342 tests
+python -c "import app.main"    # l'API se construit
+```
 
 ### 4. Frontend
 
