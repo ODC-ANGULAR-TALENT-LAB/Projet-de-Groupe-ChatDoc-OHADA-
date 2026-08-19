@@ -164,3 +164,88 @@ def valider_preferences(proposees: dict) -> dict:
             )
         retenues[cle] = valeur
     return retenues
+
+
+# ---------------------------------------------------------------------
+# Photo de profil
+#
+# UNE IMAGE TELEVERSEE EST UNE DONNEE HOSTILE JUSQU'A PREUVE DU
+# CONTRAIRE. On ne se fie ni au nom du fichier, ni au type declare par
+# le navigateur : les deux sont choisis par l'appelant. La seule preuve
+# qu'un fichier est une image est qu'un decodeur parvienne a la lire.
+# ---------------------------------------------------------------------
+
+# Au-dela, on ne lit meme pas : un avatar de cette taille n'existe pas,
+# et decoder un fichier enorme est precisement ce qu'on cherche a
+# eviter (une image « zip bomb » se decompresse en gigaoctets).
+TAILLE_MAXIMALE_PHOTO = 5 * 1024 * 1024
+
+# Cote de l'avatar stocke. 256 px couvre l'affichage le plus grand de
+# l'application (72 px) sur un ecran a haute densite, avec de la marge.
+COTE_PHOTO = 256
+
+# Formats acceptes en entree. On REFUSE le SVG : c'est un document XML,
+# qui peut porter du script et des references externes. Un avatar n'a
+# aucun besoin d'etre vectoriel.
+FORMATS_ACCEPTES = {"JPEG", "PNG", "WEBP", "GIF"}
+
+
+def preparer_photo(contenu: bytes) -> bytes:
+    """Valide, recadre et convertit un avatar. Rend du WebP.
+
+    TOUT EST REENCODE, et ce n'est pas seulement pour le poids. Une
+    image reecrite par le decodeur perd ce qu'elle transportait : les
+    metadonnees EXIF — dont la position GPS de la prise de vue, qu'un
+    utilisateur ne pense jamais publier — et tout octet parasite glisse
+    apres les donnees d'image.
+
+    Le recadrage est CENTRE et carre : un avatar s'affiche dans un
+    cercle, et redimensionner sans recadrer produirait des visages
+    ecrases.
+    """
+    from PIL import Image, UnidentifiedImageError
+
+    if not contenu:
+        raise ProfilRefuse("Aucun fichier reçu.")
+
+    if len(contenu) > TAILLE_MAXIMALE_PHOTO:
+        raise ProfilRefuse(
+            f"L'image dépasse {TAILLE_MAXIMALE_PHOTO // (1024 * 1024)} Mo."
+        )
+
+    import io
+
+    try:
+        image = Image.open(io.BytesIO(contenu))
+        # `verify` lit la structure sans decoder les pixels : c'est ce
+        # qui arrete un fichier qui n'est pas une image AVANT de lui
+        # consacrer de la memoire.
+        image.verify()
+        image = Image.open(io.BytesIO(contenu))
+    except (UnidentifiedImageError, OSError, ValueError) as erreur:
+        raise ProfilRefuse(
+            "Ce fichier n'est pas une image lisible. Formats acceptés : "
+            "JPEG, PNG, WebP, GIF."
+        ) from erreur
+
+    if (image.format or "").upper() not in FORMATS_ACCEPTES:
+        raise ProfilRefuse(
+            f"Format « {image.format} » non accepté. "
+            "Utilisez JPEG, PNG, WebP ou GIF."
+        )
+
+    # RGB : le WebP de sortie n'a pas de transparence, et une image en
+    # palette ou en niveaux de gris casserait la conversion.
+    image = image.convert("RGB")
+
+    # Recadrage centre, au carre, avant redimensionnement.
+    largeur, hauteur = image.size
+    cote = min(largeur, hauteur)
+    gauche = (largeur - cote) // 2
+    haut = (hauteur - cote) // 2
+    image = image.crop((gauche, haut, gauche + cote, haut + cote))
+    image = image.resize((COTE_PHOTO, COTE_PHOTO), Image.LANCZOS)
+
+    sortie = io.BytesIO()
+    image.save(sortie, "WEBP", quality=82, method=4)
+    return sortie.getvalue()

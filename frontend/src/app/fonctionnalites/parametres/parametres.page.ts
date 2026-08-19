@@ -50,6 +50,43 @@ export class ParametresPage {
   protected readonly occupe = signal(false);
   protected readonly erreur = signal<string | null>(null);
   protected readonly enregistre = signal(false);
+  protected readonly photoOccupee = signal(false);
+
+  /** Adresse résolue de l'avatar : le service préfixe les chemins
+      internes, laisse les URL Google telles quelles. */
+  protected urlPhoto(): string | null {
+    return this.service.urlPhoto(this.profil());
+  }
+
+  protected async choisirPhoto(evenement: Event): Promise<void> {
+    const fichier = (evenement.target as HTMLInputElement).files?.[0];
+    if (!fichier) return;
+
+    this.erreur.set(null);
+    this.photoOccupee.set(true);
+    try {
+      this.profil.set(await this.service.televerserPhoto(fichier));
+    } catch (erreur) {
+      this.erreur.set(this.service.message(erreur));
+    } finally {
+      this.photoOccupee.set(false);
+      // Le champ est vidé : sans cela, rechoisir LE MÊME fichier après
+      // une erreur ne déclencherait aucun évènement.
+      (evenement.target as HTMLInputElement).value = '';
+    }
+  }
+
+  protected async supprimerPhoto(): Promise<void> {
+    this.erreur.set(null);
+    this.photoOccupee.set(true);
+    try {
+      this.profil.set(await this.service.retirerPhoto());
+    } catch (erreur) {
+      this.erreur.set(this.service.message(erreur));
+    } finally {
+      this.photoOccupee.set(false);
+    }
+  }
 
   /** Libellés des réglages. Le serveur dit lesquels existent ; ce
       tableau dit comment les présenter. */

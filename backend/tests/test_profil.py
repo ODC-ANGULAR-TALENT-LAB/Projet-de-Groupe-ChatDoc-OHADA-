@@ -176,3 +176,87 @@ def test_les_preferences_valides_passent():
         "format_export": "docx",
         "densite": "compacte",
     }
+
+
+# ---------------------------------------------------------------------
+# Photo de profil
+#
+# Une image téléversée est une donnée hostile jusqu'à preuve du
+# contraire. On ne se fie ni au nom du fichier, ni au type déclaré par
+# le navigateur : les deux sont choisis par l'appelant.
+# ---------------------------------------------------------------------
+
+import io  # noqa: E402
+
+from app.services.profil import (  # noqa: E402
+    COTE_PHOTO,
+    TAILLE_MAXIMALE_PHOTO,
+    preparer_photo,
+)
+
+
+def image(largeur: int, hauteur: int, format_: str = "PNG") -> bytes:
+    from PIL import Image
+
+    tampon = io.BytesIO()
+    Image.new("RGB", (largeur, hauteur), (30, 60, 120)).save(tampon, format_)
+    return tampon.getvalue()
+
+
+def test_une_image_est_ramenee_au_carre():
+    """Un avatar s'affiche dans un cercle.
+
+    Redimensionner sans recadrer produirait des visages écrasés.
+    """
+    from PIL import Image
+
+    sortie = Image.open(io.BytesIO(preparer_photo(image(1200, 800))))
+
+    assert sortie.size == (COTE_PHOTO, COTE_PHOTO)
+
+
+def test_tout_est_reencode_en_webp():
+    """Le réencodage n'est pas qu'une question de poids.
+
+    Une image réécrite par le décodeur perd ses métadonnées EXIF — dont
+    la position GPS de la prise de vue, qu'un utilisateur ne pense
+    jamais publier en changeant sa photo de profil.
+    """
+    from PIL import Image
+
+    sortie = Image.open(io.BytesIO(preparer_photo(image(400, 400, "JPEG"))))
+
+    assert sortie.format == "WEBP"
+
+
+@pytest.mark.parametrize(
+    "contenu,pourquoi",
+    [
+        (b"", "fichier vide"),
+        (b"GIF89a<script>alert(1)</script>", "texte déguisé en GIF"),
+        (b"%PDF-1.4 rien a voir", "PDF"),
+        (b"\x00" * 5000, "octets aléatoires"),
+    ],
+)
+def test_ce_qui_n_est_pas_une_image_est_refuse(contenu, pourquoi):
+    """LA SEULE PREUVE QU'UN FICHIER EST UNE IMAGE est qu'un décodeur
+    parvienne à la lire. Ni le nom, ni le type déclaré ne l'établissent :
+    les deux sont choisis par l'appelant."""
+    with pytest.raises(ProfilRefuse):
+        preparer_photo(contenu)
+
+
+def test_une_image_trop_lourde_est_refusee_sans_etre_decodee():
+    """On refuse AVANT de décoder.
+
+    Un avatar de cette taille n'existe pas, et décoder un fichier énorme
+    est précisément ce qu'on cherche à éviter — une image « bombe » se
+    décompresse en gigaoctets.
+    """
+    with pytest.raises(ProfilRefuse, match="dépasse"):
+        preparer_photo(b"\x89PNG\r\n\x1a\n" + b"x" * TAILLE_MAXIMALE_PHOTO)
+
+
+def test_un_avatar_prepare_reste_leger():
+    """256 px en WebP : quelques kilo-octets, stockables en base."""
+    assert len(preparer_photo(image(2000, 2000, "JPEG"))) < 60_000

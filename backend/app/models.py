@@ -19,6 +19,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     Text,
     func,
@@ -115,6 +116,18 @@ class Utilisateur(Base):
     # bougera : une colonne par reglage imposerait une migration a
     # chaque ajout.
     preferences: Mapped[dict] = mapped_column(JSONB, default=dict)
+
+    # AVATAR TELEVERSE. Il prime sur `photo_url` : c'est le choix de
+    # l'utilisateur, celui de Google n'est qu'un defaut. En base et non
+    # sur le disque — l'hebergement vise a un systeme de fichiers
+    # ephemere, ou un avatar ecrit disparaitrait au redeploiement.
+    photo: Mapped[bytes | None] = mapped_column(LargeBinary)
+    photo_type: Mapped[str | None] = mapped_column(String(30))
+    # Sert de jeton de cache : l'URL de la photo le porte, si bien qu'un
+    # changement se voit tout de suite au lieu d'attendre l'expiration.
+    photo_le: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     cgu_version: Mapped[str | None] = mapped_column(String(20))
     cgu_acceptees_le: Mapped[datetime.datetime | None] = mapped_column(

@@ -552,7 +552,13 @@ class ProfilEntree(BaseModel):
 class ProfilSortie(BaseModel):
     email: str
     prenom: str | None = None
+    # Ou chercher l'avatar : la photo televersee si elle existe, sinon
+    # celle du compte Google, sinon rien.
     photo_url: str | None = None
+    # L'utilisateur a-t-il choisi sa propre photo ? L'interface en a
+    # besoin pour proposer « revenir a la photo Google ».
+    photo_televersee: bool = False
+    photo_google: str | None = None
     # Deux lettres pour l'avatar quand la photo ne charge pas. Calculees
     # cote serveur : l'interface n'a pas a reimplementer la regle.
     initiales: str

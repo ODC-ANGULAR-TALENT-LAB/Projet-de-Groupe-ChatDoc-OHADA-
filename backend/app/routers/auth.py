@@ -140,12 +140,6 @@ def connexion_google(corps: JetonGoogle, db: Session = Depends(get_db)) -> Jeton
         )
         if utilisateur is not None:
             utilisateur.google_sub = identite.sub
-            # On COMPLETE, on n'ECRASE pas : un prénom déjà choisi par
-            # l'utilisateur vaut mieux que celui de son compte Google.
-            if not utilisateur.prenom:
-                utilisateur.prenom = _prenom_google(identite.prenom)
-            if not utilisateur.photo_url:
-                utilisateur.photo_url = identite.photo_url
         else:
             # 3. Aucun compte : on en crée un, sans mot de passe.
             #
@@ -179,8 +173,25 @@ def connexion_google(corps: JetonGoogle, db: Session = Depends(get_db)) -> Jeton
             )
             db.add(utilisateur)
 
-        db.commit()
-        db.refresh(utilisateur)
+    # LA REPRISE DU PROFIL SE FAIT A CHAQUE CONNEXION GOOGLE, pas
+    # seulement a la creation du compte.
+    #
+    # Elle etait placee dans la branche « compte retrouve par e-mail ».
+    # Consequence : un compte DEJA rattache a Google — donc trouve des
+    # la premiere recherche — sautait tout le bloc, et n'obtenait jamais
+    # son prenom ni sa photo. C'est le cas de tous les comptes crees
+    # avant que ces champs existent.
+    #
+    # ON COMPLETE, ON N'ECRASE PAS : un prenom ou une photo choisis par
+    # l'utilisateur valent mieux que ceux de son compte Google, et une
+    # reprise a chaque connexion les effacerait a son insu.
+    if not utilisateur.prenom:
+        utilisateur.prenom = _prenom_google(identite.prenom)
+    if not utilisateur.photo_url:
+        utilisateur.photo_url = identite.photo_url
+
+    db.commit()
+    db.refresh(utilisateur)
 
     return _jeton(utilisateur)
 

@@ -645,12 +645,39 @@ compte.
 | `extraits_entiers` | Article complet plutôt que tronqué dans les listes |
 | `densite` | Densité de lecture de la bibliothèque |
 
-### La photo Google est décorative
+### La photo de profil
 
-On stocke l'URL, pas l'image. Si elle ne charge pas — hors ligne, lien
-expiré — l'interface affiche les initiales, calculées côté serveur. Rien
-ne dépend d'elle, et `referrerpolicy="no-referrer"` évite d'annoncer à
-Google depuis quelle page elle est demandée.
+**Trois niveaux, dans cet ordre** : la photo téléversée par
+l'utilisateur, puis celle du compte Google, puis les initiales —
+calculées côté serveur pour que l'interface n'ait pas à réimplémenter la
+règle. Retirer sa propre photo rend celle de Google, pas les initiales :
+c'est la raison d'être des deux colonnes.
+
+La photo Google est stockée comme **URL**. Si elle ne charge pas — hors
+ligne, lien expiré — on retombe sur les initiales, et rien n'est perdu.
+`referrerpolicy="no-referrer"` évite d'annoncer à Google depuis quelle
+page elle est demandée.
+
+**L'avatar téléversé est stocké en base**, pas sur le disque : l'API
+vise un hébergement à système de fichiers éphémère, où un fichier écrit
+disparaît au redéploiement suivant. Le coût reste maîtrisé parce que
+l'image est ramenée à 256×256 en WebP — une dizaine de kilo-octets.
+
+**Tout est réencodé, et pas seulement pour le poids.** Une image
+réécrite par le décodeur perd ses métadonnées EXIF, dont la position GPS
+de la prise de vue — qu'un utilisateur ne pense jamais publier en
+changeant sa photo de profil.
+
+Une image téléversée est traitée comme **une donnée hostile jusqu'à
+preuve du contraire** : ni le nom du fichier ni le type déclaré par le
+navigateur ne prouvent quoi que ce soit, tous deux étant choisis par
+l'appelant. La seule preuve est qu'un décodeur parvienne à lire
+l'image. Le SVG est refusé : c'est un document XML, qui peut porter du
+script — et un avatar n'a aucun besoin d'être vectoriel.
+
+L'URL de la photo porte la **date du téléversement**. Sans elle, le
+navigateur garderait l'ancienne image en cache et l'utilisateur croirait
+son changement perdu.
 
 ---
 

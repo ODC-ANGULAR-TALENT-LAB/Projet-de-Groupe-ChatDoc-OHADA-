@@ -247,3 +247,64 @@ header {
   line-height: 1.65;
   color: var(--gris-texte);
 }
+
+/* ------------------------------------------------------------------ */
+/* Photo de profil                                                     */
+/* ------------------------------------------------------------------ */
+
+.actions-photo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e3);
+  margin-bottom: var(--e3);
+}
+
+/* Le champ natif est masqué mais reste dans le flux d'accessibilité :
+   `display: none` le retirerait de la navigation au clavier. */
+.bouton-fichier {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--bleu-nuit);
+  background: var(--surface);
+  border: 1px solid var(--gris-bordure);
+  border-radius: var(--rayon);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--or);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--bleu-nuit);
+    outline-offset: 1px;
+  }
+
+  input[type='file'] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.secondaire {
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--gris-texte);
+  background: none;
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--bleu-nuit);
+    border-color: var(--gris-bordure);
+  }
+}

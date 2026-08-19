@@ -26,10 +26,10 @@
         `referrerpolicy` : le navigateur n'annonce pas à Google depuis
         quelle page l'avatar est demandé.
       -->
-      @if (p.photo_url) {
+      @if (urlPhoto(); as url) {
         <img
           class="avatar"
-          [src]="p.photo_url"
+          [src]="url"
           alt=""
           referrerpolicy="no-referrer"
           width="72"
@@ -54,6 +54,44 @@
           </p>
         }
       </div>
+    </section>
+
+    <!-- PHOTO ---------------------------------------------------- -->
+    <section class="bloc">
+      <h2>Photo de profil</h2>
+
+      <!--
+        Un <input type="file"> natif est laid et se stylise mal ; on le
+        masque derrière un <label>, qui reste parfaitement accessible :
+        le clavier l'atteint et le lecteur d'écran l'annonce comme le
+        champ qu'il commande.
+      -->
+      <div class="actions-photo">
+        <label class="bouton-fichier">
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            (change)="choisirPhoto($event)"
+          />
+          {{ p.photo_televersee ? 'Changer la photo' : 'Choisir une photo' }}
+        </label>
+
+        @if (p.photo_televersee) {
+          <button type="button" class="secondaire" (click)="supprimerPhoto()">
+            {{ p.photo_google ? 'Revenir à la photo Google' : 'Retirer la photo' }}
+          </button>
+        }
+      </div>
+
+      @if (photoOccupee()) {
+        <p class="aide" role="status">Envoi en cours…</p>
+      }
+
+      <p class="aide">
+        JPEG, PNG, WebP ou GIF, 5 Mo au maximum. L'image est recadrée au
+        carré et réduite à 256 pixels — ses données de prise de vue,
+        position GPS comprise, ne sont pas conservées.
+      </p>
     </section>
 
     <!-- PRÉNOM --------------------------------------------------- -->

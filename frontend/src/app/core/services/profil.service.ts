@@ -1,11 +1,19 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { environnement } from '../../../environnements/environnement';
 import { ApiService, ErreurApi } from './api.service';
 
 export interface Profil {
   email: string;
   prenom: string | null;
+  /** Où trouver l'avatar : chemin interne si l'utilisateur a téléversé
+      le sien, URL Google sinon, `null` si aucun des deux. */
   photo_url: string | null;
+  /** L'utilisateur a-t-il choisi sa propre photo ? Sert à proposer
+      « revenir à la photo Google ». */
+  photo_televersee: boolean;
+  photo_google: string | null;
   /** Deux lettres, calculées côté serveur. Servent d'avatar quand la
       photo ne charge pas — hors ligne, ou lien Google expiré. */
   initiales: string;
@@ -38,6 +46,7 @@ export interface ReglePreference {
 @Injectable({ providedIn: 'root' })
 export class ProfilService {
   private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
 
   readonly profil = signal<Profil | null>(null);
 
@@ -52,6 +61,45 @@ export class ProfilService {
       // fonctionne sans prénom ni avatar, simplement moins bien.
       this.profil.set(null);
     }
+  }
+
+  /**
+   * Adresse affichable de l'avatar.
+   *
+   * Une photo téléversée est servie par notre API et arrive en chemin
+   * RELATIF ; celle de Google est une URL absolue. Sans cette
+   * résolution, le navigateur chercherait `/utilisateurs/…/photo` sur
+   * l'origine du frontend, où rien ne répond.
+   */
+  urlPhoto(profil: Profil | null): string | null {
+    const chemin = profil?.photo_url;
+    if (!chemin) return null;
+    return chemin.startsWith('/') ? `${environnement.urlApi}${chemin}` : chemin;
+  }
+
+  /**
+   * Envoie un nouvel avatar.
+   *
+   * Passe par HttpClient directement : un envoi multipart ne doit pas
+   * porter d'en-tête Content-Type fixé à la main, le navigateur ajoute
+   * lui-même la frontière.
+   */
+  async televerserPhoto(fichier: File): Promise<Profil> {
+    const corps = new FormData();
+    corps.append('fichier', fichier);
+    const profil = await firstValueFrom(
+      this.http.put<Profil>(`${environnement.urlApi}/moi/photo`, corps),
+    );
+    this.profil.set(profil);
+    return profil;
+  }
+
+  /** Retire l'avatar choisi. On retombe sur celui de Google s'il y en
+      a un, sinon sur les initiales. */
+  async retirerPhoto(): Promise<Profil> {
+    const profil = await firstValueFrom(this.api.delete<Profil>('/moi/photo'));
+    this.profil.set(profil);
+    return profil;
   }
 
   async catalogue(): Promise<Record<string, ReglePreference>> {

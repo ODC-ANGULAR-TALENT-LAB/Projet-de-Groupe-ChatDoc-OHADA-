@@ -118,8 +118,8 @@ const DESTINATIONS: Destination[] = [
         <!-- Identité : l'avatar dit à qui appartient la session. Sans
              lui, rien ne distingue deux comptes sur le même poste. -->
         <a class="moi" routerLink="/parametres" routerLinkActive="actif">
-          @if (moi.photo_url) {
-            <img [src]="moi.photo_url" alt="" referrerpolicy="no-referrer" />
+          @if (profils.urlPhoto(moi); as url) {
+            <img [src]="url" alt="" referrerpolicy="no-referrer" />
           } @else {
             <span class="initiales" aria-hidden="true">{{ moi.initiales }}</span>
           }
