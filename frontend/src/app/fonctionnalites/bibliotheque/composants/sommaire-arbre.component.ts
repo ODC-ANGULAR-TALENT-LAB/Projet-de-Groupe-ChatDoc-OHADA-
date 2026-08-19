@@ -1,4 +1,9 @@
-import { Component, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NoeudSommaire } from '../../../core/models';
 
@@ -14,6 +19,12 @@ import { NoeudSommaire } from '../../../core/models';
   selector: 'app-sommaire-arbre',
   standalone: true,
   imports: [RouterLink],
+  // Le sommaire de l'AUSCGIE compte 204 sections. Sans OnPush, chacune
+  // est réévaluée à chaque cycle de détection déclenché n'importe où
+  // dans l'application — y compris par une frappe dans la recherche.
+  // L'état de l'arbre tient dans un signal : OnPush est donc sûr ici,
+  // le composant se redessine quand ce signal change et pas autrement.
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="arbre">
       @for (noeud of sommaire(); track noeud.chemin) {

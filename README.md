@@ -180,8 +180,18 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Documentation interactive : <http://localhost:8000/docs>
-État de l'API et de la base : <http://localhost:8000/sante>
+Documentation interactive : <http://127.0.0.1:8000/docs>
+État de l'API et de la base : <http://127.0.0.1:8000/sante>
+
+> **Le frontend appelle `127.0.0.1`, pas `localhost`.** Uvicorn écoute en
+> IPv4 ; sous Windows, `localhost` résout d'abord en IPv6 (`::1`), et le
+> client attend le refus avant de retomber sur IPv4. Mesuré sur ce
+> projet : **0,30 s par requête via `localhost` contre 0,08 s via
+> `127.0.0.1`**, dont 0,23 s de seule mise en connexion.
+>
+> Ce délai se paie sur **chaque appel** — l'application paraît lente
+> partout alors qu'aucune requête ne l'est. C'est la première chose à
+> vérifier devant une lenteur générale et inexpliquée.
 
 > **Python 3.11 ou 3.12, pas 3.14.** Les roues de `psycopg2` n'existent
 > pas encore pour 3.14, et la compilation demanderait PostgreSQL installé
