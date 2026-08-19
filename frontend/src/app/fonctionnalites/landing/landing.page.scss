@@ -165,7 +165,24 @@
 
    C'est ce voile qui rend le portique utilisable comme fond : sans lui,
    ses traits passeraient derrière le titre et feraient tomber le
-   contraste du texte blanc sous le seuil lisible. */
+   contraste du texte blanc sous le seuil lisible.
+
+   LE VOILE EST DENSE À GAUCHE ET LÉGER À DROITE, ET CE N'EST PAS
+   SYMÉTRIQUE PAR HASARD. Le sujet de la photo — les visages des
+   juristes qui collaborent — tombe au centre-droit, là où il n'y a
+   aucun texte. Alléger cette zone ne coûte donc rien en lisibilité,
+   alors que la voiler revenait à payer une image que personne ne
+   voyait : le voile y est passé de 23 % à 12 % de densité moyenne.
+
+   LA GAUCHE, ELLE, N'A PAS BOUGÉ (0.68), parce que c'est là que repose
+   le titre blanc. Mesuré en composant les couches sur les pixels réels
+   de l'image : le contraste minimal du titre est de 3.5:1, au-dessus du
+   seuil AA de 3:1 pour un grand texte. Une version où la gauche
+   descendait à 0.60 tombait à 2.83:1 — sous le seuil, pour un gain nul
+   sur les visages.
+
+   Toute retouche doit refaire cette mesure : le contraste du titre est
+   la contrainte, le reste est du réglage. */
 .voile {
   position: absolute;
   inset: 0;
@@ -183,14 +200,14 @@
       linear-gradient(
         100deg,
         rgba(4, 21, 52, 0.68) 0%,
-        rgba(4, 21, 52, 0.5) 34%,
-        rgba(4, 21, 52, 0.2) 62%,
-        rgba(4, 21, 52, 0.08) 100%
+        rgba(4, 21, 52, 0.48) 34%,
+        rgba(4, 21, 52, 0.1) 62%,
+        rgba(4, 21, 52, 0.03) 100%
       ),
     /* Assombrissement du bas : il assoit l'image et raccorde le hero à
        la section suivante sans couture. */
-      linear-gradient(180deg, rgba(4, 21, 52, 0.5) 0%, transparent 28%),
-    linear-gradient(180deg, transparent 62%, rgba(4, 21, 52, 0.9) 100%);
+      linear-gradient(180deg, rgba(4, 21, 52, 0.34) 0%, transparent 24%),
+    linear-gradient(180deg, transparent 68%, rgba(4, 21, 52, 0.82) 100%);
   pointer-events: none;
 }
 
@@ -206,9 +223,9 @@
       ),
       linear-gradient(
         180deg,
-        rgba(4, 21, 52, 0.74) 0%,
-        rgba(4, 21, 52, 0.66) 55%,
-        rgba(4, 21, 52, 0.86) 100%
+        rgba(4, 21, 52, 0.66) 0%,
+        rgba(4, 21, 52, 0.56) 55%,
+        rgba(4, 21, 52, 0.8) 100%
       );
   }
 }

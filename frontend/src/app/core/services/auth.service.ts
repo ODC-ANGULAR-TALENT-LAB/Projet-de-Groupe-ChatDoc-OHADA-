@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { Jeton, Quota } from '../models';
 import { ApiService } from './api.service';
@@ -11,6 +12,7 @@ const CLE_JETON = 'chatdocs.jeton';
 export class AuthService {
   private readonly api = inject(ApiService);
   private readonly google = inject(GoogleService);
+  private readonly router = inject(Router);
 
   readonly jeton = signal<string | null>(localStorage.getItem(CLE_JETON));
   readonly quota = signal<Quota | null>(null);
@@ -73,11 +75,32 @@ export class AuthService {
     this.enregistrer(jeton);
   }
 
-  deconnexion(): void {
+  /**
+   * Ferme la session et ramène à la page de connexion.
+   *
+   * LA REDIRECTION APPARTIENT AU SERVICE, pas aux boutons. Deux boutons
+   * l'appellent — la barre latérale et le menu — et se contentaient
+   * d'effacer le jeton : l'utilisateur restait sur la page où il se
+   * trouvait, vidée de ce qui exige une session, sans comprendre s'il
+   * était encore connecté. Un troisième point d'appel aurait oublié la
+   * redirection à son tour.
+   *
+   * `replaceUrl` retire la page authentifiée de l'historique : après une
+   * déconnexion, le bouton Précédent ne doit pas y ramener.
+   *
+   * `redirection` n'existe que pour l'intercepteur, qui navigue lui-même
+   * vers la connexion en signalant l'expiration ; sans ce drapeau, les
+   * deux navigations se succéderaient et la seconde effacerait le
+   * message que l'utilisateur devait lire.
+   */
+  deconnexion(redirection = true): void {
     localStorage.removeItem(CLE_JETON);
     this.jeton.set(null);
     this.quota.set(null);
     this.google.oublier();
+    if (redirection) {
+      void this.router.navigate(['/connexion'], { replaceUrl: true });
+    }
   }
 
   /**

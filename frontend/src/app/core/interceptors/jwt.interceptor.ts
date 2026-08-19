@@ -39,9 +39,13 @@ export const jwtInterceptor: HttpInterceptorFn = (requete, suivant) => {
   ).pipe(
     catchError((erreur: unknown) => {
       if (erreur instanceof HttpErrorResponse && erreur.status === 401) {
-        auth.deconnexion();
+        // `false` : on navigue nous-mêmes juste après, en signalant
+        // l'expiration. Laisser deconnexion() rediriger aussi ferait
+        // deux navigations, et la nôtre perdrait le message.
+        auth.deconnexion(false);
         void routeur.navigate(['/connexion'], {
           queryParams: { session: 'expiree' },
+          replaceUrl: true,
         });
       }
       return throwError(() => erreur);
