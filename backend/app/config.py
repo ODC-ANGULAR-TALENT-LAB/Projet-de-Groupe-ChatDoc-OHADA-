@@ -113,7 +113,23 @@ class Parametres(BaseSettings):
 
     # Authentification (phase G)
     jwt_secret: str = "a_changer_imperativement"
-    jwt_expiration_minutes: int = 30
+
+    # DUREE DE SESSION : 12 heures, soit une journee de travail.
+    #
+    # Elle etait de 30 minutes, ce qui ne correspond pas a l'usage : on
+    # lit un acte uniforme, on compare plusieurs articles, on redige. Une
+    # coupure toutes les demi-heures tombait en plein travail.
+    #
+    # Le risque assume est celui d'un poste laisse ouvert. Il est
+    # acceptable ici : l'application ne manipule ni paiement ni donnee
+    # d'etat civil, et ce qu'un tiers verrait — le corpus, public par
+    # nature — ne vaut pas la gene d'une reconnexion toutes les demi-
+    # heures. Les notes personnelles sont la seule donnee privee, et le
+    # bouton de deconnexion reste a portee sur chaque page.
+    #
+    # A revoir si le produit accueille un jour des donnees de dossier
+    # client : ce serait un tout autre arbitrage.
+    jwt_expiration_minutes: int = 720
 
     # Connexion Google. Seul le client ID est utilise : il sert a
     # verifier que le jeton nous est bien destine. Le code secret ne
