@@ -44,8 +44,14 @@ class Parametres(BaseSettings):
     database_url: str = "postgresql://chatdocs:chatdocs_local@localhost:5435/chatdocs"
 
     # Fournisseur LLM (phase E) - la cle ne quitte jamais le serveur
+    #
+    # LE NOM DU MODELE N'EST PAS CODE EN DUR. Il vient du .env, au meme
+    # titre que la cle : le depot ne designe donc aucun fournisseur, et
+    # en changer ne demande pas de toucher au code. Vide par defaut, ce
+    # qui fait simplement basculer le produit en mode sans synthese
+    # plutot que d'echouer a l'appel.
     llm_api_key: str = ""
-    llm_modele: str = "claude-opus-5"
+    llm_modele: str = ""
 
     # VERSION DES CONDITIONS GENERALES D'UTILISATION.
     #
@@ -91,7 +97,7 @@ class Parametres(BaseSettings):
         fournisseur avec un message technique, la ou le produit peut
         simplement basculer en mode sans synthese.
         """
-        return bool(_valeur_reelle(self.llm_api_key) and self.llm_modele)
+        return bool(_valeur_reelle(self.llm_api_key) and _valeur_reelle(self.llm_modele))
 
     @property
     def embeddings_configures(self) -> bool:

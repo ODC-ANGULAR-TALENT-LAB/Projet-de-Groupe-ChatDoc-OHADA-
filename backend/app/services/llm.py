@@ -10,9 +10,9 @@ fournisseur directement.
 DEUX ECARTS PAR RAPPORT AU CODE DU GUIDE, tous deux imposes par l'API
 actuelle ou par la fiabilite du produit :
 
-1. Pas de `temperature`. Le parametre a ete retire des modeles Claude
-   actuels et une requete qui le porte est rejetee (400). La sobriete
-   des reponses se pilote par le prompt et par le niveau d'effort.
+1. Pas de `temperature`. Le parametre a ete retire des modeles actuels
+   du fournisseur et une requete qui le porte est rejetee (400). La
+   sobriete des reponses se pilote par le prompt et le niveau d'effort.
 
 2. Sortie JSON contrainte cote serveur (`output_config.format`) plutot
    qu'un JSON demande en prose puis recupere par json.loads() sur du
