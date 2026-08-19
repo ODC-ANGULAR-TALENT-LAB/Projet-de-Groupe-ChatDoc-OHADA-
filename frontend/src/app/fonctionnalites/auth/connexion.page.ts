@@ -7,7 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ErreurApi } from '../../core/services/api.service';
 import { GoogleService } from '../../core/services/google.service';
@@ -34,6 +34,7 @@ export class ConnexionPage {
   protected readonly auth = inject(AuthService);
   protected readonly google = inject(GoogleService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly erreur = signal<string | null>(null);
   protected readonly occupe = signal(false);
@@ -51,6 +52,16 @@ export class ConnexionPage {
     viewChild<ElementRef<HTMLElement>>('boutonGoogle');
 
   constructor() {
+    // Arrivée après expiration : l'intercepteur a fermé la session et
+    // renvoyé ici. Sans ce message, l'utilisateur se retrouve sur la
+    // page de connexion sans savoir ce qu'il a fait de mal — il vient
+    // de cliquer sur tout autre chose.
+    if (this.route.snapshot.queryParamMap.get('session') === 'expiree') {
+      this.erreur.set(
+        'Votre session a expiré. Reconnectez-vous pour reprendre où vous en étiez.',
+      );
+    }
+
     if (this.auth.connecte()) {
       void this.router.navigate(['/accueil'], { replaceUrl: true });
       return;

@@ -514,7 +514,18 @@ const DESTINATIONS: Destination[] = [
     main {
       grid-area: principal;
       min-height: 0;
-      overflow: hidden;
+
+      /* « hidden » ici COUPAIT purement et simplement les pages longues.
+         main est la rangée 1fr d'une grille haute de 100dvh : tout ce
+         qui dépassait la hauteur de l'écran devenait inatteignable,
+         sans barre de défilement pour y accéder. Un article de 19 000
+         caractères — l'article 7 du CGI — s'arrêtait au bas de l'écran.
+
+         « auto » ne rompt pas le chat, qui fait height: 100% et gère
+         son propre défilement pour garder la zone de saisie en bas : à
+         hauteur exacte il ne déborde pas, donc aucune barre n'apparaît
+         et aucun défilement ne s'imbrique. */
+      overflow-y: auto;
     }
 
     .onglets {
