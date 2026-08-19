@@ -70,6 +70,20 @@ export class ConnexionPage {
       await this.auth.connexionGoogle(jetonIdentite);
       await this.router.navigate(['/accueil']);
     } catch (erreur) {
+      // CUL-DE-SAC À ÉVITER. Cette page sert à se CONNECTER : elle n'a
+      // pas de case « j'accepte les conditions », et n'a pas à en avoir
+      // une. Mais le compte Google peut être inconnu — c'est alors une
+      // inscription, que le serveur refuse sans acceptation.
+      //
+      // Sans ce cas, l'utilisateur lisait « les conditions doivent être
+      // acceptées » sur une page où rien ne permet de les accepter.
+      if (erreur instanceof ErreurApi && erreur.statut === 422) {
+        this.erreur.set(null);
+        await this.router.navigate(['/inscription'], {
+          queryParams: { google: 'nouveau' },
+        });
+        return;
+      }
       this.erreur.set(
         erreur instanceof ErreurApi
           ? erreur.message

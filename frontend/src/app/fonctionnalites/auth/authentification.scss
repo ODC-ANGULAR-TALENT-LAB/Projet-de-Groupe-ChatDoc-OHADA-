@@ -323,3 +323,16 @@ input[type='password'] {
 .aide.centre {
   text-align: center;
 }
+
+/* Message d'orientation, pas d'erreur : l'utilisateur n'a rien fait de
+   mal, on lui explique simplement où il en est. */
+.information {
+  margin: 0 0 var(--e4);
+  padding: var(--e3);
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--texte);
+  background: var(--fond-citation);
+  border-left: 3px solid var(--or);
+  border-radius: 0 var(--rayon) var(--rayon) 0;
+}

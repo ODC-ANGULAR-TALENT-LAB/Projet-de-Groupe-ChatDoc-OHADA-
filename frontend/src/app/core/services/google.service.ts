@@ -109,6 +109,34 @@ export class GoogleService {
       locale: 'fr',
       width: 280,
     });
+
+    this.verifierAffichage(hote);
+  }
+
+  /**
+   * Le bouton s'est-il réellement affiché ?
+   *
+   * POURQUOI CE CONTRÔLE EXISTE. Quand l'origine de la page n'est pas
+   * déclarée dans la console Google, `renderButton` n'échoue pas : il
+   * ne dessine simplement rien, et écrit l'erreur dans la console du
+   * navigateur. L'utilisateur, lui, voit un espace vide et conclut que
+   * « ça ne marche pas » — sans le moindre indice.
+   *
+   * On constate donc l'absence de bouton, et on nomme la cause la plus
+   * probable. C'est la panne la plus fréquente de cette intégration, et
+   * la seule que l'application peut diagnostiquer à la place de
+   * l'utilisateur.
+   */
+  private verifierAffichage(hote: HTMLElement): void {
+    setTimeout(() => {
+      if (hote.childElementCount > 0) return;
+      this.erreur.set(
+        "Le bouton Google ne s'est pas affiché. L'origine " +
+          `${window.location.origin} doit être déclarée dans « Origines ` +
+          'JavaScript autorisées » de la console Google Cloud, pour ce ' +
+          "client. En attendant, l'inscription par e-mail fonctionne.",
+      );
+    }, 2000);
   }
 
   /** À appeler à la déconnexion, pour ne pas rouvrir la session seule. */

@@ -12,6 +12,14 @@
         consultable même sans compte.
       </p>
 
+      @if (venuDeConnexion()) {
+        <p class="information" role="status">
+          Ce compte Google n'est pas encore inscrit. Acceptez les
+          conditions ci-dessous, puis reprenez avec Google — vos autres
+          informations seront reprises automatiquement.
+        </p>
+      }
+
       @if (erreur()) {
         <p class="erreur" role="alert">{{ erreur() }}</p>
       }

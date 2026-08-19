@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ErreurApi } from '../../core/services/api.service';
 import { GoogleService } from '../../core/services/google.service';
@@ -36,6 +36,12 @@ export class InscriptionPage {
   protected readonly auth = inject(AuthService);
   protected readonly google = inject(GoogleService);
   private readonly router = inject(Router);
+
+  /** Vient-on d'être redirigé depuis la page de connexion, parce que ce
+      compte Google n'existe pas encore ? */
+  protected readonly venuDeConnexion = signal(
+    inject(ActivatedRoute).snapshot.queryParamMap.get('google') === 'nouveau',
+  );
 
   protected readonly erreur = signal<string | null>(null);
   protected readonly occupe = signal(false);
