@@ -124,3 +124,35 @@ def test_toutes_les_routes_declarees_sont_montees(client):
         "/admin/utilisateurs/{utilisateur_id}/role",
     ]:
         assert attendu in chemins, f"route absente : {attendu}"
+
+
+def test_toutes_les_methodes_utilisees_sont_autorisees_par_le_cors(client):
+    """LE DÉFAUT QUE CE TEST EMPÊCHE DE REVENIR.
+
+    `allow_methods` listait GET, POST et DELETE. Les routes en PUT —
+    profil, photo, favoris — répondaient parfaitement à curl, mais le
+    NAVIGATEUR refusait d'envoyer la requête après la réponse
+    préliminaire : l'appel échouait sans jamais atteindre l'API.
+
+    Une panne côté serveur se voit dans les journaux ; celle-ci ne se
+    voit que dans la console du navigateur. D'où ce test.
+    """
+    autorisees = set()
+    for couche in app.user_middleware:
+        options = getattr(couche, "kwargs", {}) or {}
+        if "allow_methods" in options:
+            autorisees = {m.upper() for m in options["allow_methods"]}
+
+    assert autorisees, "aucun middleware CORS déclarant allow_methods"
+
+    utilisees = set()
+    for chemin, operations in app.openapi()["paths"].items():
+        for methode in operations:
+            if methode.upper() in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
+                utilisees.add(methode.upper())
+
+    manquantes = utilisees - autorisees
+    assert not manquantes, (
+        f"méthode(s) exposée(s) mais bloquée(s) par le CORS : "
+        f"{sorted(manquantes)}"
+    )

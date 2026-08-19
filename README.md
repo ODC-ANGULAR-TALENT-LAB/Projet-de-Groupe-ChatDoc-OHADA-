@@ -223,9 +223,19 @@ ng serve
 
 Application : <http://localhost:4200>
 
-> **Port déjà pris ?** D'autres projets de la machine servent sur 4200 et 4300.
-> `ng serve --port 4400` fonctionne, mais il faut alors ajouter cette origine à
-> `ORIGINES_AUTORISEES` dans `.env`, sinon le navigateur bloque les appels API.
+> **Port déjà pris ?** D'autres projets de la machine servent sur 4200
+> (DIMFitness) et 4300 (CotisantéCM). ChatDocs tourne donc sur **4400**,
+> et cette origine figure dans `ORIGINES_AUTORISEES` du `.env`.
+>
+> **Vérifier qu'on regarde la bonne application** avant de diagnostiquer
+> quoi que ce soit — le titre de la page suffit :
+>
+> ```bash
+> curl -s http://localhost:4400/ | grep -o "<title>[^<]*"
+> ```
+>
+> Sans cette vérification on peut passer un long moment à chercher une
+> panne dans une application qu'on ne regarde pas.
 
 > **Angular CLI.** La CLI installée globalement est en version 22 ; le projet
 > est en Angular 18, conforme à la stack imposée. Les commandes `ng` lancées

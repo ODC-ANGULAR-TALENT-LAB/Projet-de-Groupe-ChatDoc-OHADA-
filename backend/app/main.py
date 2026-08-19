@@ -39,7 +39,19 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=parametres.liste_origines,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "DELETE"],
+    # PUT (profil, photo, favoris) et PATCH (changement de role) etaient
+    # absents de cette liste.
+    #
+    # UNE METHODE MANQUANTE NE SE VOIT PAS COTE SERVEUR : la route
+    # repond parfaitement a curl. C'est le NAVIGATEUR qui refuse
+    # d'envoyer la requete apres la reponse preliminaire, et l'appel
+    # echoue sans jamais atteindre l'API — donc sans laisser la moindre
+    # trace dans les journaux.
+    #
+    # On enumere plutot que d'ouvrir a "*" : la liste dit ce que l'API
+    # accepte reellement. Un test verifie qu'aucune methode exposee n'en
+    # est absente (tests/test_routes.py).
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
