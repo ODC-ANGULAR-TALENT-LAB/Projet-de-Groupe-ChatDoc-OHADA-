@@ -193,11 +193,19 @@ export class BoutonFavoriComponent {
   constructor() {
     // L'état suit l'article affiché : passer à l'article suivant sans
     // recharger laisserait sinon le bouton dans l'état du précédent.
-    effect(() => {
-      const id = this.articleId();
-      if (!this.auth.connecte()) return;
-      void this.charger(id);
-    });
+    // `allowSignalWrites` par prudence : `charger` écrit `marque` et
+    // `note`. Ces écritures surviennent après un `await`, donc hors du
+    // contexte réactif — mais un jour où l'une d'elles remonterait
+    // avant l'attente, l'effet lèverait NG0600 et le bouton
+    // disparaîtrait sans message. Le coût de l'option est nul.
+    effect(
+      () => {
+        const id = this.articleId();
+        if (!this.auth.connecte()) return;
+        void this.charger(id);
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   private async charger(id: number): Promise<void> {

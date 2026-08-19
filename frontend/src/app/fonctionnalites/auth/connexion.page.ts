@@ -56,11 +56,21 @@ export class ConnexionPage {
       return;
     }
 
-    effect(() => {
-      const hote = this.boutonGoogle()?.nativeElement;
-      if (!hote || this.auth.connecte()) return;
-      void this.google.afficherBouton(hote, (jeton) => this.entrerGoogle(jeton));
-    });
+    // `allowSignalWrites` : afficherBouton() marque le script Google
+    // comme disponible, et cette écriture se produit de façon SYNCHRONE
+    // quand le script est déjà chargé. Sans cette option, l'effet lève
+    // NG0600 et le bouton n'apparaît jamais — sans autre trace que la
+    // console du navigateur.
+    effect(
+      () => {
+        const hote = this.boutonGoogle()?.nativeElement;
+        if (!hote || this.auth.connecte()) return;
+        void this.google.afficherBouton(hote, (jeton) =>
+          this.entrerGoogle(jeton),
+        );
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   private async entrerGoogle(jetonIdentite: string): Promise<void> {

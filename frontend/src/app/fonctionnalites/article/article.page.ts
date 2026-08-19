@@ -183,12 +183,30 @@ export class ArticlePage {
     // d'un article vers son voisin, où Angular réutilise le composant
     // au lieu de le recréer. Un chargement au constructeur laisserait
     // l'article précédent affiché.
-    effect(() => {
-      const identifiant = Number(this.id());
-      this.article.set(null);
-      this.erreur.set(null);
-      void this.charger(identifiant);
-    });
+    //
+    // `allowSignalWrites` EST INDISPENSABLE ICI, et son absence rendait
+    // la page inutilisable : remettre `article` à null avant de charger
+    // est une écriture SYNCHRONE dans un effet, qu'Angular refuse par
+    // défaut (NG0600). L'effet levait donc avant même d'appeler l'API —
+    // aucune requête n'était émise, et la page restait indéfiniment sur
+    // « Chargement de l'article… ».
+    //
+    // Le symptôme trompe : cela ressemble à une lenteur réseau, alors
+    // que rien n'est parti sur le réseau. L'erreur n'apparaît que dans
+    // la console du navigateur.
+    //
+    // La remise à null n'est pas décorative : sans elle, passer d'un
+    // article à son voisin afficherait le texte du précédent pendant le
+    // chargement du suivant — un contresens dans un outil juridique.
+    effect(
+      () => {
+        const identifiant = Number(this.id());
+        this.article.set(null);
+        this.erreur.set(null);
+        void this.charger(identifiant);
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   protected niveaux(chemin: string): string[] {
