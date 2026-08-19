@@ -378,6 +378,9 @@ class CalculEntree(BaseModel):
     # Le montant saisi est-il TTC ? Ne concerne que la TVA ; les autres
     # calculateurs l'ignorent.
     sur_ttc: bool = False
+    # Taille de l'entreprise, pour la patente : le tarif en depend.
+    # Ignore par les autres calculateurs.
+    categorie: Literal["grande", "moyenne", "petite"] | None = None
 
 
 class BaseLegaleCalcul(BaseModel):

@@ -34,7 +34,7 @@ import { IconeComponent } from '../../partage/composants/icone.component';
       @if (!auth.connecte()) {
         <p class="vide">
           Cette analyse demande un compte.
-          <a routerLink="/compte">Se connecter</a>
+          <a routerLink="/connexion">Se connecter</a>
         </p>
       } @else {
         <section class="bloc">

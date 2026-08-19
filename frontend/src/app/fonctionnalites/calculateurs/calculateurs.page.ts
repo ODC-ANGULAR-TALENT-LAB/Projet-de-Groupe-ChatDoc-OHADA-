@@ -37,6 +37,10 @@ export class CalculateursPage {
   protected readonly choisi = signal<string>('tva');
   protected readonly montant = signal<string>('');
   protected readonly surTtc = signal(false);
+  /** Taille de l'entreprise, pour la patente uniquement. */
+  protected readonly categorie = signal<'grande' | 'moyenne' | 'petite'>(
+    'moyenne',
+  );
 
   protected readonly resultat = signal<ResultatCalcul | null>(null);
   protected readonly erreur = signal<string>('');
@@ -79,15 +83,42 @@ export class CalculateursPage {
 
     this.occupe.set(true);
     try {
-      this.resultat.set(
-        this.choisi() === 'tva'
-          ? await this.service.tva(saisie, this.surTtc())
-          : await this.service.impotSocietes(saisie),
-      );
+      this.resultat.set(await this.liquider(saisie));
     } catch (erreur) {
       this.erreur.set(this.service.message(erreur));
     } finally {
       this.occupe.set(false);
+    }
+  }
+
+  /** Aiguillage vers le calculateur choisi. Un `switch` plutôt qu'une
+      table : chaque calculateur a sa propre signature, et les forcer
+      dans une forme commune obligerait à passer des paramètres qui ne
+      concernent pas les autres. */
+  private async liquider(montant: string): Promise<ResultatCalcul> {
+    switch (this.choisi()) {
+      case 'tva':
+        return this.service.tva(montant, this.surTtc());
+      case 'irpp':
+        return this.service.impotRevenu(montant);
+      case 'patente':
+        return this.service.patente(montant, this.categorie());
+      default:
+        return this.service.impotSocietes(montant);
+    }
+  }
+
+  /** Libellé du champ de saisie : ce qu'on demande change avec l'impôt. */
+  protected libelleBase(): string {
+    switch (this.choisi()) {
+      case 'tva':
+        return 'Montant (FCFA)';
+      case 'irpp':
+        return 'Revenu net imposable (FCFA)';
+      case 'patente':
+        return "Chiffre d'affaires du dernier exercice clos (FCFA)";
+      default:
+        return 'Résultat fiscal (FCFA)';
     }
   }
 

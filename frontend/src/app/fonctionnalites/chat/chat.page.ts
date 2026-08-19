@@ -30,7 +30,7 @@ const EXEMPLES = [
             de répondre.
           </p>
           <p class="intro">5 questions par mois, gratuitement.</p>
-          <a routerLink="/compte" class="principal lien-bouton">
+          <a routerLink="/connexion" class="principal lien-bouton">
             Se connecter ou créer un compte
           </a>
           <p class="intro">

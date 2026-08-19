@@ -29,7 +29,7 @@ import { AuthService } from '../../core/services/auth.service';
         <h1>Espace juriste</h1>
         <p class="vide">
           Cet espace est réservé aux juristes responsables du corpus.
-          <a routerLink="/compte">Se connecter</a>
+          <a routerLink="/connexion">Se connecter</a>
         </p>
       } @else {
         <header>

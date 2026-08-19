@@ -266,3 +266,223 @@ def test_un_calcul_dont_le_bareme_est_perime_ne_rend_aucun_chiffre():
 
     with pytest.raises(CalculRefuse):
         calculer_tva(session, "10000", False, TVA)
+
+
+# ---------------------------------------------------------------------
+# Barème progressif (IRPP)
+# ---------------------------------------------------------------------
+
+from app.services.calculateurs import (  # noqa: E402
+    bareme,
+    calculer_impot_progressif,
+    verifier_bareme,
+)
+
+# Extrait réel de l'article 69 du CGI, tel qu'il figure en base.
+ARTICLE_69 = article(
+    "L'Impôt sur le Revenu des Personnes Physiques applicable aux salariés "
+    "est calculé par application du barème ci-après sur le revenu net des "
+    "traitements, salaires, pensions, rentes viagères : "
+    "De 0 à 2 000 000 10% De 2 000 001 à 3 000 000. 15% "
+    "De 3 000 001 à 5 000 000. 25 % Plus de 5 000 000 35%",
+    numero="69",
+)
+
+IRPP = bareme(
+    "irpp",
+    "Barème de l'IRPP",
+    [("2000000", "10"), ("3000000", "15"), ("5000000", "25"), (None, "35")],
+    "69",
+)
+
+
+def test_le_bareme_progressif_applique_chaque_tranche():
+    """LE CALCUL SE VÉRIFIE À LA MAIN, et c'est voulu.
+
+    2 000 000 × 10 % = 200 000
+    1 000 000 × 15 % = 150 000
+    2 000 000 × 25 % = 500 000
+    1 000 000 × 35 % = 350 000
+                     = 1 200 000
+    """
+    resultat = calculer_impot_progressif(
+        SessionFactice(ARTICLE_69), "6000000", IRPP, "Impôt", "Revenu net"
+    )
+
+    assert resultat["resultat"]["montant"] == "1200000"
+
+
+def test_un_revenu_dans_la_premiere_tranche_n_active_qu_elle():
+    """Un taux moyen unique serait faux pour tout le monde sauf par hasard."""
+    resultat = calculer_impot_progressif(
+        SessionFactice(ARTICLE_69), "1500000", IRPP, "Impôt", "Revenu net"
+    )
+
+    assert resultat["resultat"]["montant"] == "150000"
+    # Une ligne de base, une seule tranche.
+    assert len(resultat["lignes"]) == 2
+
+
+def test_chaque_tranche_est_une_ligne_du_resultat():
+    """Rendre le seul total obligerait à refaire le calcul pour le vérifier."""
+    resultat = calculer_impot_progressif(
+        SessionFactice(ARTICLE_69), "6000000", IRPP, "Impôt", "Revenu net"
+    )
+
+    libelles = [ligne["libelle"] for ligne in resultat["lignes"]]
+    assert any("10 %" in x for x in libelles)
+    assert any("35 %" in x for x in libelles)
+
+
+def test_un_taux_de_tranche_disparu_bloque_le_calcul():
+    session = SessionFactice(
+        article("De 0 à 2 000 000 12% De 2 000 001 à 3 000 000 15%", numero="69")
+    )
+
+    with pytest.raises(CalculRefuse, match="taux"):
+        verifier_bareme(session, IRPP)
+
+
+def test_un_seuil_deplace_bloque_le_calcul():
+    """LE CAS LE PLUS FRÉQUENT, et le plus sournois.
+
+    Une loi de finances déplace plus souvent les tranches qu'elle n'en
+    change les taux. Un barème dont les taux seraient justes mais les
+    seuils périmés donnerait des résultats faux sans qu'aucun contrôle
+    ne bronche.
+    """
+    session = SessionFactice(
+        article(
+            "De 0 à 2 500 000 10% De 2 500 001 à 3 000 000. 15% "
+            "De 3 000 001 à 5 000 000. 25 % Plus de 5 000 000 35%",
+            numero="69",
+        )
+    )
+
+    with pytest.raises(CalculRefuse, match="seuil"):
+        verifier_bareme(session, IRPP)
+
+
+def test_le_seuil_est_reconnu_quel_que_soit_son_separateur():
+    """« 2 000 000 », « 2.000.000 », « 2000000 » sont le même seuil.
+
+    Le Code mélange les trois selon les articles, et l'OCR ajoute ses
+    propres variantes.
+    """
+    for ecriture in ("2 000 000", "2.000.000", "2000000", "2\u00a0000\u00a0000"):
+        session = SessionFactice(
+            article(
+                f"De 0 à {ecriture} 10% De 2 000 001 à 3 000 000. 15% "
+                "De 3 000 001 à 5 000 000. 25 % Plus de 5 000 000 35%",
+                numero="69",
+            )
+        )
+        assert verifier_bareme(session, IRPP)["numero"] == "69"
+
+
+# ---------------------------------------------------------------------
+# Tarif encadré (patente)
+# ---------------------------------------------------------------------
+
+from app.services.calculateurs import (  # noqa: E402
+    calculer_patente,
+    tarif,
+    verifier_tarif,
+)
+
+# Extrait réel de l'article C 13 du CGI, tel qu'il figure en base.
+ARTICLE_C13 = article(
+    "La contribution des patentes est liquidée par application d'un taux au "
+    "chiffre d'affaires du dernier exercice clos, tel que défini ci-dessous : "
+    "- 0,159 % sur le chiffre d'affaires des grandes entreprises, pour une "
+    "contribution plancher de F CFA 5 000 000 et un plafond de F CFA 2,5 "
+    "milliards ; - 0,283 % sur le chiffre d'affaires des moyennes "
+    "entreprises, pour une contribution plancher de F CFA 141 500 et un "
+    "plafond de F CFA 4 500 000 ; - 0,494 % sur le chiffre d'affaires des "
+    "petites entreprises, pour une contribution plancher de F CFA 50 000 et "
+    "un plafond de F CFA 140 000.",
+    numero="C 13",
+)
+
+PETITE = tarif(
+    "petite", "Petites entreprises", "0,494", "50000", "140000", "140 000", "C 13"
+)
+GRANDE = tarif(
+    "grande",
+    "Grandes entreprises",
+    "0,159",
+    "5000000",
+    "2500000000",
+    "2,5 milliards",
+    "C 13",
+)
+
+
+def test_le_plancher_de_la_patente_mord():
+    """LE SEUL PRODUIT DU TAUX SERAIT FAUX pour une petite entreprise.
+
+    0,494 % de 1 000 000 fait 4 940, mais la loi impose un plancher de
+    50 000. Rendre 4 940 serait une erreur au détriment de personne —
+    sauf du contribuable qui s'y fierait pour provisionner.
+    """
+    resultat = calculer_patente(SessionFactice(ARTICLE_C13), "1000000", PETITE)
+
+    assert resultat["resultat"]["montant"] == "50000"
+
+
+def test_le_plafond_de_la_patente_mord():
+    resultat = calculer_patente(SessionFactice(ARTICLE_C13), "40000000", PETITE)
+
+    assert resultat["resultat"]["montant"] == "140000"
+
+
+def test_entre_les_deux_bornes_le_taux_s_applique():
+    resultat = calculer_patente(
+        SessionFactice(ARTICLE_C13), "10000000000", GRANDE
+    )
+
+    assert resultat["resultat"]["montant"] == "15900000"
+
+
+def test_l_encadrement_est_annonce_dans_le_resultat():
+    """Un montant qui ne correspond pas au taux affiché, sans explication,
+    ressemble à une erreur de calcul — alors que c'est la loi."""
+    resultat = calculer_patente(SessionFactice(ARTICLE_C13), "1000000", PETITE)
+
+    libelles = [ligne["libelle"] for ligne in resultat["lignes"]]
+    assert any("Plancher" in x for x in libelles)
+
+
+def test_aucun_centime_n_est_ajoute_a_la_patente():
+    """CE N'EST PAS UN OUBLI.
+
+    L'alinéa 2 de l'article C 13 précise que le montant obtenu comprend
+    déjà la taxe de développement local, les centimes au profit des
+    chambres consulaires et la redevance audiovisuelle. Les ajouter les
+    compterait deux fois.
+    """
+    resultat = calculer_patente(
+        SessionFactice(ARTICLE_C13), "10000000000", GRANDE
+    )
+
+    libelles = " ".join(ligne["libelle"] for ligne in resultat["lignes"])
+    assert "entimes" not in libelles
+
+
+def test_un_plafond_ecrit_en_toutes_lettres_est_reconnu():
+    """« 2,5 milliards » ne se cherche pas comme « 2500000000 »."""
+    assert verifier_tarif(SessionFactice(ARTICLE_C13), GRANDE)["numero"] == "C 13"
+
+
+def test_un_plancher_deplace_bloque_le_calcul():
+    session = SessionFactice(
+        article(
+            "0,494 % sur le chiffre d'affaires des petites entreprises, pour "
+            "une contribution plancher de F CFA 75 000 et un plafond de F CFA "
+            "140 000.",
+            numero="C 13",
+        )
+    )
+
+    with pytest.raises(CalculRefuse, match="plancher"):
+        verifier_tarif(session, PETITE)

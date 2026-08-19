@@ -467,6 +467,48 @@ centimes sur l'IRPP, l'IS et la TVA ; l'article C 54 en fixe le taux.
 Sur 10 000 000 FCFA HT : 1 750 000 (art. 142) + 175 000 (art. C 54) =
 **1 925 000 de TVA**, soit un TTC de 11 925 000.
 
+### Quatre formes d'imposition, quatre calculs
+
+| Calculateur | Forme | Article |
+|---|---|---|
+| TVA | Taux unique, dans les deux sens (HT→TTC et TTC→HT) | 142 |
+| IS | Taux unique sur le résultat fiscal | 17 |
+| **IRPP** | **Barème progressif par tranches** | 69 |
+| **Patente** | **Taux sur le chiffre d'affaires, encadré par un plancher et un plafond** | C 13 |
+
+**L'IRPP ne s'applique pas à taux unique** : l'article 69 le calcule par
+tranches (10 %, 15 %, 25 %, 35 %). Un taux moyen serait faux pour tout
+le monde sauf par hasard. Chaque tranche est **une ligne du résultat** :
+rendre le seul total obligerait le professionnel à refaire le calcul
+pour le vérifier.
+
+La vérification porte sur **les taux ET les seuils**. Un barème dont les
+taux seraient justes mais les tranches périmées donnerait des résultats
+faux sans qu'aucun contrôle ne bronche — et c'est le cas le plus
+fréquent, une loi de finances déplaçant plus souvent les tranches
+qu'elle n'en change les taux.
+
+**La patente est encadrée.** 0,494 % de 1 000 000 fait 4 940, mais
+l'article C 13 impose un plancher de 50 000 aux petites entreprises.
+L'encadrement est **annoncé dans le résultat** : un montant qui ne
+correspond pas au taux affiché, sans explication, ressemble à une erreur
+de calcul alors que c'est la loi.
+
+Aucun centime communal n'est ajouté à la patente, et ce n'est pas un
+oubli : l'alinéa 2 de l'article C 13 précise que le montant obtenu
+comprend déjà la taxe de développement local, les centimes au profit des
+chambres consulaires et la redevance audiovisuelle.
+
+### Les droits d'enregistrement ne sont pas calculables ainsi
+
+L'article 265 les décrit comme « fixes ou proportionnels, progressifs ou
+dégressifs **suivant la nature des actes** ». Ce n'est pas un barème
+mais une taxonomie d'actes, dont les taux sont dispersés dans plusieurs
+dizaines d'articles du Titre VI. Un calculateur supposerait de les
+recenser tous, et se tromperait silencieusement sur ceux qu'il aurait
+manqués. Il reste à faire, et demande un travail de juriste plutôt que
+de développeur.
+
 ---
 
 ## Conditions d'utilisation

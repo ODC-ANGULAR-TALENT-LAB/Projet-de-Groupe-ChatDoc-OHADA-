@@ -64,6 +64,26 @@ export class CalculateursService {
     );
   }
 
+  async impotRevenu(montant: string): Promise<ResultatCalcul> {
+    return firstValueFrom(
+      this.api.post<ResultatCalcul>('/calculateurs/irpp', { montant }),
+    );
+  }
+
+  /** La patente dépend de la taille de l'entreprise : son tarif, son
+      plancher et son plafond en découlent. */
+  async patente(
+    montant: string,
+    categorie: 'grande' | 'moyenne' | 'petite',
+  ): Promise<ResultatCalcul> {
+    return firstValueFrom(
+      this.api.post<ResultatCalcul>('/calculateurs/patente', {
+        montant,
+        categorie,
+      }),
+    );
+  }
+
   /**
    * Remonte le message du serveur tel quel.
    *

@@ -41,14 +41,12 @@
     } @else if (!auth.connecte()) {
       <p class="vide">
         Le calcul demande un compte.
-        <a routerLink="/compte">Se connecter</a>
+        <a routerLink="/connexion">Se connecter</a>
       </p>
     } @else {
       <section class="bloc">
         <form class="saisie" (ngSubmit)="calculer()">
-          <label for="montant">
-            {{ choisi() === 'tva' ? 'Montant (FCFA)' : 'Résultat fiscal (FCFA)' }}
-          </label>
+          <label for="montant">{{ libelleBase() }}</label>
           <input
             id="montant"
             name="montant"
@@ -59,6 +57,29 @@
             [ngModel]="montant()"
             (ngModelChange)="montant.set($event)"
           />
+
+          @if (choisi() === 'patente') {
+            <!--
+              Le tarif, le plancher ET le plafond dépendent de la taille
+              de l'entreprise (article C 13). Sans ce choix, le calcul
+              n'aurait pas de sens : les trois catégories vont de
+              0,159 % à 0,494 %.
+            -->
+            <fieldset class="sens">
+              <legend>Taille de l'entreprise</legend>
+              @for (taille of ['petite', 'moyenne', 'grande']; track taille) {
+                <label>
+                  <input
+                    type="radio"
+                    name="categorie"
+                    [checked]="categorie() === taille"
+                    (change)="categorie.set($any(taille))"
+                  />
+                  {{ taille }}
+                </label>
+              }
+            </fieldset>
+          }
 
           @if (choisi() === 'tva') {
             <fieldset class="sens">

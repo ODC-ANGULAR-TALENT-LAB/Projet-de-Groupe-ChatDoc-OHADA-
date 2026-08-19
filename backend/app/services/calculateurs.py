@@ -304,3 +304,304 @@ def calculer_impot_proportionnel(
             "montant": str(arrondir(total)),
         },
     }
+
+
+# ---------------------------------------------------------------------
+# Bareme progressif
+#
+# L'IRPP des salaries ne s'applique pas a taux unique : l'article 69 du
+# CGI le calcule par tranches. Un taux moyen unique serait faux pour
+# tout le monde sauf par hasard.
+# ---------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Tranche:
+    """Une tranche du bareme : jusqu'a `plafond`, au taux `taux`.
+
+    `plafond` a None pour la derniere tranche, celle qui n'est pas
+    bornee. Un plafond invente — un tres grand nombre — se retrouverait
+    affiche a l'utilisateur comme s'il figurait dans la loi.
+    """
+
+    plafond: Decimal | None
+    taux: Decimal
+
+
+@dataclass(frozen=True)
+class Bareme:
+    """Un bareme progressif, et l'article qui le porte."""
+
+    cle: str
+    libelle: str
+    tranches: tuple[Tranche, ...]
+    numero_article: str
+
+
+def bareme(cle: str, libelle: str, tranches: list[tuple[str | None, str]],
+           numero_article: str) -> Bareme:
+    """Declare un bareme : [(plafond, taux), ...], plafond None a la fin."""
+    return Bareme(
+        cle=cle,
+        libelle=libelle,
+        numero_article=numero_article,
+        tranches=tuple(
+            Tranche(
+                plafond=None if plafond is None else Decimal(plafond),
+                taux=Decimal(taux.replace(",", ".")),
+            )
+            for plafond, taux in tranches
+        ),
+    )
+
+
+def _motif_montant(montant: Decimal) -> re.Pattern:
+    """Reconnait un montant quels que soient ses separateurs de milliers.
+
+    « 2000000 » s'ecrit « 2 000 000 » dans le Code, parfois avec une
+    espace insecable, parfois avec un point. On accepte n'importe quel
+    separateur ENTRE les groupes de chiffres, et aucun autre.
+    """
+    chiffres = str(int(montant))
+    return re.compile(r"[\s.,\u00a0]*".join(chiffres))
+
+
+def verifier_bareme(session: Session, declare: Bareme) -> dict:
+    """Confronte CHAQUE tranche a l'article qui doit la porter.
+
+    ON VERIFIE LES TAUX ET LES SEUILS. Un bareme dont les taux seraient
+    justes mais les seuils perimes donnerait des resultats faux sans
+    qu'aucun controle ne bronche — et c'est le cas le plus frequent,
+    puisqu'une loi de finances deplace plus souvent les tranches
+    qu'elle n'en change les taux.
+    """
+    article = lire_article(session, declare.numero_article)
+    contenu = article["contenu"]
+
+    for tranche in declare.tranches:
+        motif = taux("t", "", str(tranche.taux).replace(".", ","), "").motif
+        if not motif.search(contenu):
+            raise CalculRefuse(
+                f"L'article {declare.numero_article} du {SIGLE_CGI} ne "
+                f"mentionne plus le taux de {tranche.taux} %. Le barème a "
+                "probablement changé : le calcul est refusé."
+            )
+        if tranche.plafond is not None and not _motif_montant(
+            tranche.plafond
+        ).search(contenu):
+            raise CalculRefuse(
+                f"L'article {declare.numero_article} du {SIGLE_CGI} ne "
+                f"mentionne plus le seuil de {int(tranche.plafond):,} FCFA "
+                "— le barème a probablement changé.".replace(",", " ")
+            )
+
+    return {
+        "libelle": declare.libelle,
+        "valeur": "barème progressif",
+        "sigle": SIGLE_CGI,
+        "numero": article["numero"],
+        "chemin": article["chemin"],
+        "extrait": contenu,
+    }
+
+
+def calculer_impot_progressif(
+    session: Session,
+    montant,
+    declare: Bareme,
+    intitule: str,
+    libelle_base: str,
+    centimes: Parametre | None = None,
+) -> dict:
+    """Applique un bareme tranche par tranche.
+
+    CHAQUE TRANCHE EST UNE LIGNE DU RESULTAT. Rendre le seul total
+    obligerait le professionnel a refaire le calcul pour le verifier,
+    ce qui est exactement ce que l'outil doit lui epargner.
+    """
+    base = montant_valide(montant)
+    legale = verifier_bareme(session, declare)
+
+    lignes = [_ligne(libelle_base, base)]
+    total = Decimal(0)
+    plancher = Decimal(0)
+    premiere = True
+
+    for tranche in declare.tranches:
+        haut = tranche.plafond if tranche.plafond is not None else base
+        assiette = max(Decimal(0), min(base, haut) - plancher)
+        if assiette > 0:
+            part = assiette * tranche.taux / CENT
+            total += part
+            borne = (
+                f"jusqu'à {int(tranche.plafond):,}".replace(",", " ")
+                if tranche.plafond is not None
+                else f"au-delà de {int(plancher):,}".replace(",", " ")
+            )
+            lignes.append(
+                _ligne(
+                    f"{borne} FCFA — {tranche.taux} %",
+                    part,
+                    # L'article n'est rattache qu'a la PREMIERE tranche :
+                    # le repeter a chaque ligne afficherait cinq fois le
+                    # meme extrait sous le meme resultat.
+                    legale if premiere else None,
+                )
+            )
+            premiere = False
+        if tranche.plafond is None:
+            break
+        plancher = tranche.plafond
+
+    if centimes:
+        legale_centimes = verifier(session, centimes)
+        supplement = total * centimes.valeur / CENT
+        lignes.append(
+            _ligne(
+                f"{centimes.libelle} ({centimes.valeur} % du principal)",
+                supplement,
+                legale_centimes,
+            )
+        )
+        total += supplement
+
+    return {
+        "intitule": intitule,
+        "lignes": lignes,
+        "resultat": {
+            "libelle": f"{intitule} (centimes compris)" if centimes else intitule,
+            "montant": str(arrondir(total)),
+        },
+    }
+
+
+# ---------------------------------------------------------------------
+# Tarif encadre (contribution des patentes)
+#
+# L'article C 13 du CGI liquide la patente par un taux sur le chiffre
+# d'affaires, PLAFONNE ET PLANCHONNE selon la taille de l'entreprise.
+# Rendre le seul produit du taux serait faux dans les deux queues de la
+# distribution — c'est-a-dire pour les tres petites et les tres grandes,
+# justement celles ou l'encadrement mord.
+# ---------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Tarif:
+    """Un taux encadre, pour une categorie d'entreprise."""
+
+    categorie: str
+    libelle: str
+    taux: Decimal
+    plancher: Decimal
+    plafond: Decimal
+    numero_article: str
+    # Le plafond s'ecrit parfois en toutes lettres dans le Code
+    # (« 2,5 milliards »). On garde l'ecriture de l'article pour
+    # pouvoir l'y retrouver : chercher « 2500000000 » echouerait.
+    plafond_ecrit: str
+
+
+def tarif(
+    categorie: str,
+    libelle: str,
+    taux_: str,
+    plancher: str,
+    plafond: str,
+    plafond_ecrit: str,
+    numero_article: str,
+) -> Tarif:
+    return Tarif(
+        categorie=categorie,
+        libelle=libelle,
+        taux=Decimal(taux_.replace(",", ".")),
+        plancher=Decimal(plancher),
+        plafond=Decimal(plafond),
+        plafond_ecrit=plafond_ecrit,
+        numero_article=numero_article,
+    )
+
+
+def verifier_tarif(session: Session, declare: Tarif) -> dict:
+    """Confronte taux, plancher et plafond a l'article qui les porte."""
+    article = lire_article(session, declare.numero_article)
+    contenu = article["contenu"]
+
+    motif_taux = taux("t", "", str(declare.taux).replace(".", ","), "").motif
+    if not motif_taux.search(contenu):
+        raise CalculRefuse(
+            f"L'article {declare.numero_article} du {SIGLE_CGI} ne mentionne "
+            f"plus le taux de {declare.taux} % pour {declare.libelle}. "
+            "Le tarif a probablement changé : le calcul est refusé."
+        )
+
+    if not _motif_montant(declare.plancher).search(contenu):
+        raise CalculRefuse(
+            f"L'article {declare.numero_article} du {SIGLE_CGI} ne mentionne "
+            f"plus le plancher de {int(declare.plancher):,} FCFA.".replace(",", " ")
+        )
+
+    if not re.search(
+        r"[\s.,\u00a0]*".join(re.escape(c) for c in declare.plafond_ecrit if not c.isspace()),
+        contenu,
+        re.I,
+    ):
+        raise CalculRefuse(
+            f"L'article {declare.numero_article} du {SIGLE_CGI} ne mentionne "
+            f"plus le plafond de {declare.plafond_ecrit}."
+        )
+
+    return {
+        "libelle": declare.libelle,
+        "valeur": str(declare.taux),
+        "sigle": SIGLE_CGI,
+        "numero": article["numero"],
+        "chemin": article["chemin"],
+        "extrait": contenu,
+    }
+
+
+def calculer_patente(session: Session, montant, declare: Tarif) -> dict:
+    """Contribution des patentes : taux sur le chiffre d'affaires, encadre.
+
+    AUCUN CENTIME N'EST AJOUTE ICI, et ce n'est pas un oubli. L'alinea 2
+    de l'article C 13 precise que le montant ainsi determine « comprend
+    outre le principal de la patente, la taxe de developpement local,
+    les centimes additionnels au profit des chambres consulaires et la
+    redevance audiovisuelle ». Y ajouter les centimes communaux les
+    compterait deux fois.
+    """
+    base = montant_valide(montant)
+    legale = verifier_tarif(session, declare)
+
+    theorique = base * declare.taux / CENT
+    retenu = min(max(theorique, declare.plancher), declare.plafond)
+
+    lignes = [
+        _ligne("Chiffre d'affaires du dernier exercice clos", base),
+        _ligne(f"{declare.libelle} — {declare.taux} %", theorique, legale),
+    ]
+
+    # ON DIT QUAND L'ENCADREMENT A JOUE. Un montant qui ne correspond pas
+    # au taux affiche, sans explication, ressemble a une erreur de
+    # calcul — alors que c'est la loi qui l'impose.
+    if theorique < declare.plancher:
+        lignes.append(
+            _ligne(
+                f"Plancher applique ({int(declare.plancher):,} FCFA)".replace(",", " "),
+                retenu,
+            )
+        )
+    elif theorique > declare.plafond:
+        lignes.append(
+            _ligne(f"Plafond appliqué ({declare.plafond_ecrit})", retenu)
+        )
+
+    return {
+        "intitule": "Contribution des patentes",
+        "lignes": lignes,
+        "resultat": {
+            "libelle": "Contribution des patentes",
+            "montant": str(arrondir(retenu)),
+        },
+    }
