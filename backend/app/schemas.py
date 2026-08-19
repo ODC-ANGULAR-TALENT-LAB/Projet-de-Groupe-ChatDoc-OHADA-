@@ -575,3 +575,59 @@ class ProfilSortie(BaseModel):
     cgu_acceptees_le: datetime.datetime | None = None
 
     preferences: dict = {}
+
+
+# ---------------------------------------------------------------------
+# Avis sur l'application
+# ---------------------------------------------------------------------
+
+
+class AvisEntree(BaseModel):
+    """Avis depose par un utilisateur sur l'application.
+
+    LA NOTE EST OBLIGATOIRE, LE COMMENTAIRE NON. Donner une note coute
+    un clic ; ecrire coute du temps. Exiger les deux ferait renoncer
+    ceux qui n'ont qu'une impression a livrer — c'est-a-dire la plupart.
+
+    Les bornes sont posees ici ET en base : l'API refuse proprement, la
+    contrainte SQL garantit qu'aucune autre voie d'ecriture ne puisse
+    fausser la moyenne.
+    """
+
+    note: int = Field(ge=1, le=5)
+    commentaire: str | None = Field(default=None, max_length=4000)
+
+
+class AvisSortie(BaseModel):
+    note: int
+    commentaire: str | None = None
+    cree_le: datetime.datetime
+    modifie_le: datetime.datetime | None = None
+
+
+class AvisAdministration(AvisSortie):
+    """Un avis, vu par l'administration.
+
+    L'AUTEUR EST IDENTIFIE ICI, ET NULLE PART AILLEURS. Repondre a un
+    avis suppose de savoir de qui il vient ; en revanche rien de tout
+    ceci n'est expose aux autres utilisateurs.
+    """
+
+    utilisateur_id: int
+    email: str
+    prenom: str | None = None
+
+
+class SyntheseAvis(BaseModel):
+    """Ce que l'administration voit d'un coup d'oeil.
+
+    La moyenne seule trompe : 4,0 sur deux avis et 4,0 sur deux cents
+    ne disent pas la meme chose. Le nombre l'accompagne toujours, et la
+    repartition montre si la moyenne recouvre un consensus ou deux
+    camps.
+    """
+
+    nombre: int
+    moyenne: float | None = None
+    repartition: dict[int, int] = {}
+    avis: list[AvisAdministration] = []

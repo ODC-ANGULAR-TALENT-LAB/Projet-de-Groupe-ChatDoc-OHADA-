@@ -154,10 +154,15 @@ const DESTINATIONS: Destination[] = [
       </nav>
 
       <!-- Pages de transparence : des références, pas des destinations
-           quotidiennes. -->
-      <nav class="secondaire" aria-label="À propos du corpus">
+           quotidiennes. « Votre avis » les rejoint parce qu'on n'y va
+           pas non plus tous les jours — mais il faut pouvoir le trouver
+           sans passer par les réglages du compte. -->
+      <nav class="secondaire" aria-label="À propos">
         <a routerLink="/methodologie" routerLinkActive="actif">Méthodologie</a>
         <a routerLink="/journal" routerLinkActive="actif">Mises à jour</a>
+        @if (auth.connecte()) {
+          <a routerLink="/avis" routerLinkActive="actif">Votre avis</a>
+        }
       </nav>
 
       @if (auth.connecte()) {

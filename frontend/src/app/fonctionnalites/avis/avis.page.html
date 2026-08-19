@@ -1,0 +1,112 @@
+<section class="page">
+  <header>
+    <h1>Votre avis</h1>
+    <p class="intro">
+      Ce que vous pensez de ChatDocs OHADA dans son ensemble : ce qui vous
+      sert, ce qui vous manque, ce qui vous gêne.
+    </p>
+  </header>
+
+  @if (!auth.connecte()) {
+    <p class="vide">
+      Donner son avis demande un compte, pour qu'il reste modifiable.
+      <a routerLink="/connexion">Se connecter</a>
+    </p>
+  } @else if (charge()) {
+    <p class="attente" role="status">Chargement de votre avis…</p>
+  } @else {
+    <form (ngSubmit)="enregistrer()">
+      <!-- Des boutons radio, et non des boutons : la note est un choix
+           unique parmi cinq, ce que la sémantique native exprime déjà.
+           Elle apporte la navigation au clavier et l'annonce correcte
+           par les lecteurs d'écran, sans ARIA à maintenir. -->
+      <fieldset class="notation">
+        <legend>Votre note</legend>
+
+        <div class="etoiles">
+          @for (valeur of valeurs; track valeur) {
+            <label
+              class="etoile"
+              [class.pleine]="valeur <= note()"
+              [attr.title]="libelles[valeur - 1]"
+            >
+              <input
+                type="radio"
+                name="note"
+                [value]="valeur"
+                [checked]="note() === valeur"
+                (change)="note.set(valeur)"
+              />
+              <span class="invisible">{{ valeur }} sur 5 — {{ libelles[valeur - 1] }}</span>
+              <span aria-hidden="true">★</span>
+            </label>
+          }
+        </div>
+
+        @if (note()) {
+          <p class="libelle-note" role="status">{{ libelles[note() - 1] }}</p>
+        }
+      </fieldset>
+
+      <div class="commentaire">
+        <label for="commentaire">
+          Commentaire <span class="facultatif">(facultatif)</span>
+        </label>
+        <textarea
+          id="commentaire"
+          rows="5"
+          maxlength="4000"
+          placeholder="Ce qui vous a aidé, ce qui vous a manqué…"
+          [ngModel]="commentaire()"
+          (ngModelChange)="commentaire.set($event)"
+          name="commentaire"
+        ></textarea>
+        <p class="compteur">{{ commentaire().length }} / 4000</p>
+      </div>
+
+      @if (erreur()) {
+        <p class="erreur" role="alert">{{ erreur() }}</p>
+      }
+
+      <div class="actions">
+        <button
+          type="submit"
+          class="principal"
+          [disabled]="occupe() || !note()"
+        >
+          {{ occupe() ? 'Enregistrement…' : (existant() ? 'Modifier mon avis' : 'Envoyer') }}
+        </button>
+
+        @if (existant()) {
+          <button
+            type="button"
+            class="lien"
+            [disabled]="occupe()"
+            (click)="retirer()"
+          >
+            Retirer mon avis
+          </button>
+        }
+
+        @if (enregistre()) {
+          <span class="confirme" role="status">
+            <app-icone nom="valide" />
+            Merci, votre avis est enregistré
+          </span>
+        }
+      </div>
+    </form>
+
+    @if (existant(); as avis) {
+      <p class="depose">
+        Avis déposé le {{ avis.cree_le | date: 'longDate' }}@if (avis.modifie_le) {,
+        revu le {{ avis.modifie_le | date: 'longDate' }}}.
+      </p>
+    }
+
+    <p class="confidentialite">
+      Votre avis n'est lu que par l'équipe qui tient l'application. Il
+      n'est publié nulle part et n'est visible d'aucun autre utilisateur.
+    </p>
+  }
+</section>

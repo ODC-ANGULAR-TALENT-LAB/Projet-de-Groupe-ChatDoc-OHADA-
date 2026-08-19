@@ -13,6 +13,7 @@ from app.db import moteur
 from app.routers import (
     admin,
     auth,
+    avis,
     calculateurs,
     chat,
     conformite,
@@ -83,6 +84,7 @@ app.include_router(calculateurs.routeur)
 app.include_router(favoris.routeur)
 app.include_router(generateur.routeur)
 app.include_router(profil.routeur)
+app.include_router(avis.routeur)
 app.include_router(admin.routeur)
 
 

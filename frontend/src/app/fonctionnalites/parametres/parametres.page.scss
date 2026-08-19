@@ -308,3 +308,28 @@ header {
     border-color: var(--gris-bordure);
   }
 }
+
+.explication {
+  margin: 0 0 var(--e3);
+  font-size: 0.85rem;
+  color: var(--gris-texte);
+}
+
+.lien-avis {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--bleu-nuit);
+  background: var(--surface);
+  border: 1px solid var(--gris-bordure);
+  border-radius: var(--rayon);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--or);
+  }
+}

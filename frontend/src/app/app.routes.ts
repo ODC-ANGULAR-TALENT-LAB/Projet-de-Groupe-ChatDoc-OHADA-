@@ -99,6 +99,12 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'avis',
+    title: 'ChatDocs OHADA — Votre avis',
+    loadComponent: () =>
+      import('./fonctionnalites/avis/avis.page').then((m) => m.AvisPage),
+  },
+  {
     path: 'favoris',
     title: 'ChatDocs OHADA — Mes favoris',
     loadComponent: () =>
