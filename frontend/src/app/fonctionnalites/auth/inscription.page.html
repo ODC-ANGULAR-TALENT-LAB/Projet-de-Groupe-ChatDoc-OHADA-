@@ -73,20 +73,39 @@
             mots de passe d'en proposer un solide, plutôt que de tenter
             de remplir avec un mot de passe existant.
           -->
-          <input
-            id="mdp"
-            name="mdp"
-            type="password"
-            autocomplete="new-password"
-            [attr.minlength]="longueurMinimale"
-            [attr.aria-describedby]="
-              motDePasseTropCourt() ? 'mdp-erreur' : 'mdp-aide'
-            "
-            required
-            [ngModel]="motDePasse()"
-            (ngModelChange)="motDePasse.set($event)"
-            (blur)="motDePasseTouche.set(true)"
-          />
+          <div class="champ-mdp">
+            <input
+              id="mdp"
+              name="mdp"
+              [type]="mdpVisible() ? 'text' : 'password'"
+              autocomplete="new-password"
+              [attr.minlength]="longueurMinimale"
+              [attr.aria-describedby]="
+                motDePasseTropCourt() ? 'mdp-erreur' : 'mdp-aide'
+              "
+              required
+              [ngModel]="motDePasse()"
+              (ngModelChange)="motDePasse.set($event)"
+              (blur)="motDePasseTouche.set(true)"
+            />
+            <!--
+              À l'inscription, pouvoir relire ce qu'on tape compte
+              davantage encore : on choisit un mot de passe qu'on ne
+              connaît pas par cœur, et une faute de frappe invisible se
+              découvre à la première connexion.
+            -->
+            <button
+              type="button"
+              class="bascule-mdp"
+              [attr.aria-label]="
+                mdpVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
+              [attr.aria-pressed]="mdpVisible()"
+              (click)="mdpVisible.set(!mdpVisible())"
+            >
+              <app-icone [nom]="mdpVisible() ? 'oeil-barre' : 'oeil'" />
+            </button>
+          </div>
           @if (motDePasseTropCourt()) {
             <p id="mdp-erreur" class="erreur" role="alert">
               {{ longueurMinimale }} caractères au minimum.

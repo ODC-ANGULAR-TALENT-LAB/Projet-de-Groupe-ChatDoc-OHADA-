@@ -39,6 +39,18 @@ export class ConnexionPage {
   protected readonly erreur = signal<string | null>(null);
   protected readonly occupe = signal(false);
 
+  /**
+   * Le mot de passe est-il affiché en clair ?
+   *
+   * MASQUÉ PAR DÉFAUT, toujours : quelqu'un peut regarder par-dessus
+   * l'épaule, et un mot de passe affiché sans l'avoir demandé serait
+   * une surprise désagréable. C'est un geste explicite de
+   * l'utilisateur, jamais un état par défaut ni un état mémorisé d'une
+   * session sur l'autre.
+   */
+  protected readonly mdpVisible = signal(false);
+
+
   protected email = '';
   protected motDePasse = '';
 

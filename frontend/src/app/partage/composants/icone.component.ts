@@ -80,6 +80,20 @@ const TRACES: Record<string, string[]> = {
   menu: ['M4 6h16', 'M4 12h16', 'M4 18h16'],
   fermer: ['M18 6 6 18', 'M6 6l12 12'],
   recherche: ['M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16', 'm21 21-4.35-4.35'],
+  // Afficher / masquer un mot de passe. L'oeil BARRE signifie « masque »
+  // et l'oeil ouvert « visible » : le bouton montre donc l'etat qu'il
+  // FERA advenir, pas celui du champ. C'est la convention que suivent
+  // les gestionnaires de mots de passe, et l'inverser desoriente.
+  oeil: [
+    'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z',
+    'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',
+  ],
+  'oeil-barre': [
+    'M9.88 9.88a3 3 0 1 0 4.24 4.24',
+    'M10.73 5.08A10.4 10.4 0 0 1 12 5c7 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68',
+    'M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 5.39-1.61',
+    'M2 2l20 20',
+  ],
 };
 
 @Component({

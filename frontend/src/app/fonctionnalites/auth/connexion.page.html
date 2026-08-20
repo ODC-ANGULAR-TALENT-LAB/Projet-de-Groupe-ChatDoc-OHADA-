@@ -45,14 +45,34 @@
             permet au gestionnaire de mots de passe de proposer celui
             qui existe déjà, au lieu d'en générer un nouveau.
           -->
-          <input
-            id="mdp"
-            name="mdp"
-            type="password"
-            autocomplete="current-password"
-            required
-            [(ngModel)]="motDePasse"
-          />
+          <div class="champ-mdp">
+            <input
+              id="mdp"
+              name="mdp"
+              [type]="mdpVisible() ? 'text' : 'password'"
+              autocomplete="current-password"
+              required
+              [(ngModel)]="motDePasse"
+            />
+            <!--
+              L'intitulé décrit CE QUE FERA le bouton, pas l'état du
+              champ : un lecteur d'écran annonce « Afficher le mot de
+              passe », l'utilisateur sait donc à quoi s'attendre.
+              `aria-pressed` porte l'état, ce qui évite d'avoir à le
+              deviner du dessin de l'icône.
+            -->
+            <button
+              type="button"
+              class="bascule-mdp"
+              [attr.aria-label]="
+                mdpVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
+              [attr.aria-pressed]="mdpVisible()"
+              (click)="mdpVisible.set(!mdpVisible())"
+            >
+              <app-icone [nom]="mdpVisible() ? 'oeil-barre' : 'oeil'" />
+            </button>
+          </div>
         </div>
 
         <button type="submit" class="principal" [disabled]="occupe()">

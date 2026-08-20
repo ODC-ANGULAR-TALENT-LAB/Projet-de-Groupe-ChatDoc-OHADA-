@@ -36,7 +36,7 @@
   gap: 0.45em;
   margin-bottom: var(--e8);
   font-family: var(--police-serif);
-  font-size: 1.35rem;
+  font-size: var(--t-2xl);
   font-weight: 700;
   letter-spacing: -0.02em;
   text-decoration: none;
@@ -62,7 +62,7 @@
 h1 {
   margin: 0 0 var(--e2);
   font-family: var(--police-serif);
-  font-size: 1.75rem;
+  font-size: var(--t-3xl);
   color: var(--bleu-nuit);
 }
 
@@ -79,7 +79,7 @@ form {
 }
 
 label {
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   font-weight: 500;
   color: var(--texte);
 }
@@ -90,7 +90,7 @@ input[type='password'] {
   font: inherit;
   /* 16 px au minimum : en dessous, iOS agrandit la page au focus et
      l'utilisateur se retrouve à devoir dézoomer pour continuer. */
-  font-size: 1rem;
+  font-size: var(--t-lg);
   background: var(--surface);
   border: 1px solid var(--gris-bordure);
   border-radius: var(--rayon);
@@ -111,41 +111,21 @@ input[type='password'] {
 
 .aide {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   color: var(--gris-texte);
 }
 
 .erreur {
   margin: 0 0 var(--e3);
   padding: var(--e2) var(--e3);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: #8c2f2f;
   background: #fbf4f2;
   border-left: 3px solid #a94442;
   border-radius: var(--rayon);
 }
 
-.principal {
-  min-height: 48px;
-  margin-top: var(--e2);
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #fff;
-  background: var(--bleu-nuit);
-  border: 0;
-  border-radius: var(--rayon);
-  cursor: pointer;
 
-  &:hover:not(:disabled) {
-    background: var(--bleu-nuit-clair);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-}
 
 .separateur {
   display: flex;
@@ -153,7 +133,7 @@ input[type='password'] {
   gap: var(--e3);
   margin: var(--e5) 0;
   color: var(--gris-texte);
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
 
   &::before,
   &::after {
@@ -172,7 +152,7 @@ input[type='password'] {
 
 .bascule {
   margin: var(--e6) 0 0;
-  font-size: 0.9rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 
   a {
@@ -225,7 +205,7 @@ input[type='password'] {
   h2 {
     margin: 0 0 var(--e4);
     font-family: var(--police-serif);
-    font-size: 1.9rem;
+    font-size: var(--t-4xl);
     line-height: 1.25;
     color: #fff;
   }
@@ -246,7 +226,7 @@ input[type='password'] {
     align-items: flex-start;
     gap: var(--e3);
     margin-bottom: var(--e3);
-    font-size: 0.92rem;
+    font-size: var(--t-md);
     line-height: 1.6;
   }
 
@@ -267,7 +247,7 @@ input[type='password'] {
   p {
     margin: 0;
     font-family: var(--police-serif);
-    font-size: 0.92rem;
+    font-size: var(--t-md);
     font-style: italic;
     line-height: 1.7;
     color: #fff;
@@ -277,7 +257,7 @@ input[type='password'] {
     display: block;
     margin-top: var(--e2);
     font-family: var(--police-interface);
-    font-size: 0.78rem;
+    font-size: var(--t-xs);
     font-style: normal;
     color: var(--or);
   }
@@ -301,7 +281,7 @@ input[type='password'] {
   gap: var(--e3);
   margin: var(--e4) 0 var(--e2);
   font-weight: 400;
-  font-size: 0.86rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   color: var(--gris-texte);
   cursor: pointer;
@@ -341,10 +321,59 @@ input[type='password'] {
 .information {
   margin: 0 0 var(--e4);
   padding: var(--e3);
-  font-size: 0.86rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   color: var(--texte);
   background: var(--fond-citation);
   border-left: 3px solid var(--or);
   border-radius: 0 var(--rayon) var(--rayon) 0;
+}
+
+/* CHAMP MOT DE PASSE AVEC BASCULE.
+   Le bouton est POSÉ SUR le champ plutôt que placé à côté : à côté, il
+   rétrécirait la zone de saisie et casserait l'alignement avec les
+   autres champs du formulaire. Le champ réserve la place à droite par
+   son remplissage, si bien que le texte ne passe jamais dessous. */
+.champ-mdp {
+  position: relative;
+  display: flex;
+
+  input {
+    width: 100%;
+    /* 2,75rem : la largeur du bouton, pour que la fin d'un mot de passe
+       long reste lisible au lieu de glisser derrière l'œil. */
+    padding-right: 2.75rem;
+  }
+
+  .bascule-mdp {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 44 px de large : cible tactile, même si l'icône n'en fait que 18. */
+    width: 44px;
+    padding: 0;
+    color: var(--gris-texte);
+    background: none;
+    border: 0;
+    cursor: pointer;
+
+    --taille-icone: 1.125rem;
+
+    &:hover {
+      color: var(--bleu-nuit);
+    }
+
+    /* L'anneau se pose à l'intérieur : posé à l'extérieur, il
+       déborderait sur la bordure du champ et donnerait deux traits
+       concentriques. */
+    &:focus-visible {
+      outline: 2px solid var(--or);
+      outline-offset: -2px;
+      border-radius: var(--rayon);
+    }
+  }
 }
