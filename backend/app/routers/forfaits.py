@@ -49,7 +49,12 @@ from app.schemas import (
     ValidationAbonnement,
 )
 from app.services import campay
-from app.services.forfaits import FORFAITS, PAR_CODE, credits_du_plan, forfait
+from app.services.forfaits import (
+    PAR_CODE,
+    catalogue_visible,
+    credits_du_plan,
+    forfait,
+)
 
 journal = logging.getLogger(__name__)
 
@@ -75,7 +80,7 @@ def catalogue() -> list[ForfaitSortie]:
     s'inscrire. Le cacher derriere l'authentification obligerait a
     creer un compte pour savoir ce que coute le service.
     """
-    return [_en_sortie(f) for f in FORFAITS]
+    return [_en_sortie(f) for f in catalogue_visible()]
 
 
 @routeur.get("/moi/abonnement")

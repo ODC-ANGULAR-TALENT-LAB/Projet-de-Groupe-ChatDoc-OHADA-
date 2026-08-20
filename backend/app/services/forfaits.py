@@ -51,6 +51,17 @@ class Forfait:
     # oblige a formuler ce qu'on vend.
     atouts: tuple[str, ...]
 
+    # FORFAIT D'ESSAI : il sert a eprouver la chaine de paiement de bout
+    # en bout, pas a etre vendu. Il est donc EXCLU du plancher de marge —
+    # un montant symbolique ne peut pas la respecter, et l'y soumettre
+    # obligerait a truquer le chiffre du cout pour faire passer le test.
+    #
+    # Il n'apparait au catalogue QUE lorsque CamPay tourne en
+    # demonstration. En production il disparait de lui-meme : personne ne
+    # peut souscrire par megarde un forfait a 25 F, et il n'y a aucun
+    # drapeau a penser a refermer avant la mise en ligne.
+    essai: bool = False
+
     @property
     def cout_variable_fcfa(self) -> float:
         """Ce que coutent les credits s'ils sont tous consommes.
@@ -77,9 +88,14 @@ class Forfait:
 # ---------------------------------------------------------------------
 # Le catalogue
 #
-# TROIS FORFAITS ET PAS DAVANTAGE. Au-dela, le choix devient un travail :
-# l'utilisateur compare des colonnes au lieu de se decider. Trois lignes
-# se lisent d'un coup d'oeil — decouvrir, travailler, equiper un cabinet.
+# TROIS FORFAITS VENDUS, ET PAS DAVANTAGE. Au-dela, le choix devient un
+# travail : l'utilisateur compare des colonnes au lieu de se decider.
+# Trois lignes se lisent d'un coup d'oeil — decouvrir, travailler,
+# equiper un cabinet.
+#
+# Le quatrieme, « essai », n'est pas vendu : c'est un montant symbolique
+# qui sert a eprouver la chaine de paiement, et il disparait du
+# catalogue en production (voir catalogue_visible).
 #
 # Les volumes ne sont pas ronds par hasard : ils sont le plus grand
 # nombre de credits qui laisse la marge au-dessus du plancher, arrondi
@@ -124,9 +140,43 @@ FORFAITS: tuple[Forfait, ...] = (
             "Analyse de conformité et générateur de documents",
         ),
     ),
+    Forfait(
+        code="essai",
+        libelle="Essai (test technique)",
+        prix_fcfa=25,
+        credits=2,
+        argumentaire=(
+            "Montant symbolique pour éprouver la chaîne de paiement. "
+            "Ce forfait n'est pas destiné à la vente."
+        ),
+        atouts=(
+            "2 questions, le temps de vérifier que tout fonctionne",
+            "Débit réel de 25 FCFA sur le compte Mobile Money",
+            "Visible uniquement hors production",
+        ),
+        essai=True,
+    ),
 )
 
 PAR_CODE = {forfait.code: forfait for forfait in FORFAITS}
+
+
+def catalogue_visible() -> tuple[Forfait, ...]:
+    """Les forfaits proposes aux utilisateurs.
+
+    Le forfait d'essai n'y figure QUE hors production. En production il
+    disparait de lui-meme : personne ne peut le souscrire par megarde,
+    et il n'y a aucun drapeau a penser a refermer avant la mise en
+    ligne. Il reste connu de PAR_CODE, pour qu'un abonnement souscrit
+    pendant les essais continue de s'afficher correctement.
+    """
+    en_demonstration = parametres.campay_environnement.lower() not in {
+        "prod",
+        "production",
+        "live",
+    }
+    return tuple(f for f in FORFAITS if not f.essai or en_demonstration)
+
 
 # Conserve pour le code existant, qui lit le quota par plan.
 QUOTA_PAR_PLAN = {forfait.code: forfait.credits for forfait in FORFAITS}
