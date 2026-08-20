@@ -1,0 +1,328 @@
+.page {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: var(--e5) var(--e4) var(--e8);
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--police-serif);
+  font-size: var(--t-3xl);
+  color: var(--bleu-nuit);
+}
+
+.intro {
+  margin: var(--e2) 0 var(--e6);
+  max-width: 42rem;
+  color: var(--gris-texte);
+}
+
+/* --- État du compte ------------------------------------------------ */
+
+.etat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e6);
+  margin-bottom: var(--e5);
+  padding: var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+
+  .etiquette {
+    display: block;
+    font-size: var(--t-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gris-texte);
+  }
+
+  strong {
+    font-size: var(--t-lg);
+    color: var(--bleu-nuit);
+  }
+}
+
+.attente-demande {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e5);
+  padding: var(--e3) var(--e4);
+  background: var(--or-pale);
+  border: 1px solid var(--or);
+  border-radius: var(--rayon);
+
+  p {
+    margin: 0;
+    font-size: var(--t-md);
+  }
+}
+
+/* --- Catalogue ----------------------------------------------------- */
+
+.grille {
+  display: grid;
+  gap: var(--e4);
+  grid-template-columns: 1fr;
+}
+
+/* Trois colonnes seulement quand la place existe réellement : en
+   dessous, des cartes tassées se comparent plus mal qu'une pile. */
+@media (min-width: 780px) {
+  .grille {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.forfait {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  padding: var(--e5) var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+
+  /* Le forfait actuel se distingue par la bordure ET par le ruban :
+     la couleur seule ne porte pas une information. */
+  &.actuel {
+    border-color: var(--or);
+    box-shadow: 0 0 0 3px rgb(201 162 39 / 16%);
+  }
+
+  &.demande {
+    border-style: dashed;
+    border-color: var(--or);
+  }
+
+  /* Le seul reglage propre a la carte : coller l'action en bas
+     pour que les trois boutons s'alignent quelle que soit la
+     longueur des arguments. L'apparence du bouton, elle, vient
+     de styles.scss. */
+  .principal,
+  .secondaire {
+    margin-top: auto;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--police-serif);
+    font-size: var(--t-xl);
+    color: var(--bleu-nuit);
+  }
+
+
+
+}
+
+.ruban {
+  position: absolute;
+  top: calc(-1 * var(--e2));
+  right: var(--e3);
+  padding: 0.15rem 0.6rem;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bleu-encre);
+  background: var(--or);
+  border-radius: 999px;
+}
+
+.attente-ruban {
+  color: #fff;
+  background: var(--gris-texte);
+}
+
+.prix {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin: 0;
+
+  strong {
+    font-family: var(--police-serif);
+    font-size: var(--t-3xl);
+    color: var(--bleu-nuit);
+  }
+
+  .devise {
+    font-size: var(--t-md);
+    color: var(--gris-texte);
+  }
+
+  .periode {
+    font-size: var(--t-sm);
+  }
+}
+
+.argumentaire {
+  margin: 0 0 var(--e2);
+  font-size: var(--t-md);
+  color: var(--gris-texte);
+}
+
+.atouts {
+  list-style: none;
+  margin: 0 0 var(--e4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-size: var(--t-md);
+    line-height: 1.5;
+  }
+
+  app-icone {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    color: var(--vert);
+    --taille-icone: 0.95rem;
+  }
+}
+
+.mention {
+  margin: auto 0 0;
+  padding-top: var(--e2);
+  font-size: var(--t-sm);
+  color: var(--gris-texte);
+}
+
+/* --- Paiement ------------------------------------------------------ */
+
+.paiement {
+  margin-top: var(--e8);
+  padding: var(--e4);
+  background: var(--fond);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+
+  h2 {
+    margin: 0 0 var(--e2);
+    font-family: var(--police-serif);
+    font-size: var(--t-lg);
+    color: var(--bleu-nuit);
+  }
+
+  p {
+    margin: 0 0 var(--e2);
+    font-size: var(--t-md);
+    line-height: 1.6;
+    color: var(--gris-texte);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+
+
+.erreur {
+  margin: 0 0 var(--e3);
+  color: #8c2f2f;
+}
+
+.vide,
+.attente {
+  color: var(--gris-texte);
+}
+
+/* --- Règlement ----------------------------------------------------- */
+
+.regler {
+  margin-bottom: var(--e5);
+  padding: var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--or);
+  border-radius: var(--rayon);
+
+  h2 {
+    margin: 0 0 var(--e1);
+    font-family: var(--police-serif);
+    font-size: var(--t-xl);
+    color: var(--bleu-nuit);
+  }
+
+  .montant {
+    margin: 0 0 var(--e4);
+    font-size: var(--t-lg);
+    color: var(--gris-texte);
+
+    strong {
+      color: var(--bleu-nuit);
+    }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-width: 24rem;
+  }
+
+  label {
+    font-size: var(--t-md);
+    font-weight: 500;
+  }
+
+  input {
+    min-height: 44px;
+    padding: 0.6rem 0.7rem;
+    font: inherit;
+    /* 16 px minimum : en dessous, iOS zoome à la mise au point. */
+    font-size: var(--t-lg);
+    background: var(--surface);
+    border: 1px solid var(--gris-bordure);
+    border-radius: var(--rayon);
+
+    &:focus {
+      outline: none;
+      border-color: var(--or);
+      box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
+    }
+  }
+
+  .aide {
+    margin: 0.2rem 0 var(--e3);
+    font-size: var(--t-xs);
+    line-height: 1.5;
+    color: var(--gris-texte);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e3);
+  }
+
+}
+
+.confirmation {
+  p {
+    margin: 0 0 var(--e2);
+    font-size: var(--t-md);
+    line-height: 1.6;
+  }
+
+  .ussd strong {
+    font-family: var(--police-mono, monospace);
+    font-size: var(--t-lg);
+    color: var(--bleu-nuit);
+  }
+
+  .patience {
+    font-size: var(--t-sm);
+    color: var(--gris-texte);
+  }
+}

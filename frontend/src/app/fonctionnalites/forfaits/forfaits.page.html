@@ -1,0 +1,206 @@
+<section class="page">
+  <header>
+    <h1>Forfaits</h1>
+    <p class="intro">
+      Un crédit vaut une question à l'assistant. Consulter la
+      bibliothèque, chercher dans le corpus, ouvrir un article et
+      utiliser les calculateurs ne consomme rien.
+    </p>
+  </header>
+
+  @if (erreur()) {
+    <p class="erreur" role="alert">{{ erreur() }}</p>
+  }
+
+  @if (abonnement(); as mien) {
+    <!-- L'état du compte avant le catalogue : on décide en fonction de
+         ce qu'il reste, pas dans l'abstrait. -->
+    <section class="etat" aria-label="Votre abonnement">
+      <div>
+        <span class="etiquette">Forfait actuel</span>
+        <strong>{{ mien.forfait.libelle }}</strong>
+      </div>
+      <div>
+        <span class="etiquette">Crédits restants</span>
+        <strong>{{ mien.credits_restants }} / {{ mien.forfait.credits }}</strong>
+      </div>
+      @if (mien.echeance) {
+        <div>
+          <span class="etiquette">Valable jusqu'au</span>
+          <strong>{{ mien.echeance | date: 'longDate' }}</strong>
+        </div>
+      }
+    </section>
+
+    @if (mien.demande_en_attente; as attendu) {
+      <div class="attente-demande" role="status">
+        <p>
+          <strong>Demande en cours — {{ libelle(attendu) }}.</strong>
+          Elle sera activée dès que votre paiement aura été constaté.
+        </p>
+        <button type="button" class="lien" [disabled]="occupe()" (click)="annuler()">
+          Annuler ma demande
+        </button>
+      </div>
+    }
+  }
+
+  <!-- PAIEMENT MOBILE MONEY.
+       Un seul champ : le numéro. Il n'y a pas de champ « code secret »,
+       et il ne doit jamais y en avoir : le code se saisit sur le
+       téléphone de l'abonné, auprès de son opérateur. -->
+  @if (enPaiement(); as vise) {
+    <section class="regler" aria-label="Paiement du forfait">
+      <h2>Régler le forfait {{ vise.libelle }}</h2>
+      <p class="montant">
+        <strong>{{ vise.prix_fcfa | number }} FCFA</strong> pour trente jours
+      </p>
+
+      @if (!attenteConfirmation()) {
+        <form (ngSubmit)="lancerPaiement()">
+          <label for="telephone">Votre numéro Mobile Money</label>
+          <input
+            id="telephone"
+            name="telephone"
+            type="tel"
+            inputmode="numeric"
+            autocomplete="tel"
+            placeholder="6 99 00 00 00"
+            [ngModel]="telephone()"
+            (ngModelChange)="telephone.set($event)"
+          />
+          <p class="aide">
+            MTN MoMo ou Orange Money. Vous confirmerez avec votre code
+            secret sur votre téléphone — nous ne vous le demandons
+            jamais ici.
+          </p>
+
+          <div class="actions">
+            <button
+              type="submit"
+              class="principal"
+              [disabled]="occupe() || !telephone().trim()"
+            >
+              {{ occupe() ? 'Envoi…' : 'Envoyer la demande de paiement' }}
+            </button>
+            <button type="button" class="lien" (click)="annulerPaiement()">
+              Annuler
+            </button>
+          </div>
+        </form>
+      } @else {
+        <div class="confirmation" role="status">
+          <p>
+            <strong>Vérifiez votre téléphone.</strong>
+            Une demande de confirmation vous a été envoyée
+            @if (paiement()?.operateur) {
+              par {{ paiement()!.operateur }}
+            }. Validez-la avec votre code secret.
+          </p>
+          @if (paiement()?.code_ussd; as ussd) {
+            <p class="ussd">
+              Si rien n'apparaît, composez <strong>{{ ussd }}</strong> sur
+              votre téléphone.
+            </p>
+          }
+          <p class="patience">
+            Vos crédits s'ouvrent dès la confirmation. Cette page se met à
+            jour toute seule — ne la fermez pas.
+          </p>
+          <button type="button" class="lien" (click)="annulerPaiement()">
+            Arrêter d'attendre
+          </button>
+        </div>
+      }
+    </section>
+  }
+
+  @if (charge()) {
+    <p class="attente" role="status">Chargement des forfaits…</p>
+  } @else {
+    <div class="grille">
+      @for (forfait of catalogue(); track forfait.code) {
+        <article
+          class="forfait"
+          [class.actuel]="estActuel(forfait.code)"
+          [class.demande]="estDemande(forfait.code)"
+        >
+          @if (estActuel(forfait.code)) {
+            <span class="ruban">Votre forfait</span>
+          } @else if (estDemande(forfait.code)) {
+            <span class="ruban attente-ruban">En attente</span>
+          }
+
+          <h2>{{ forfait.libelle }}</h2>
+
+          <p class="prix">
+            @if (forfait.prix_fcfa) {
+              <strong>{{ forfait.prix_fcfa | number }}</strong>
+              <span class="devise">FCFA<span class="periode"> / mois</span></span>
+            } @else {
+              <strong>Gratuit</strong>
+            }
+          </p>
+
+          <p class="argumentaire">{{ forfait.argumentaire }}</p>
+
+          <ul class="atouts">
+            @for (atout of forfait.atouts; track atout) {
+              <li>
+                <app-icone nom="valide" />
+                {{ atout }}
+              </li>
+            }
+          </ul>
+
+          @if (estActuel(forfait.code)) {
+            <p class="mention">Vous en bénéficiez actuellement.</p>
+          } @else if (estDemande(forfait.code)) {
+            <p class="mention">Demande déposée, en attente d'activation.</p>
+          } @else {
+            <button
+              type="button"
+              [class.principal]="forfait.prix_fcfa > 0"
+              [class.secondaire]="forfait.prix_fcfa === 0"
+              [disabled]="occupe() || !auth.connecte()"
+              (click)="choisir(forfait)"
+            >
+              @if (forfait.prix_fcfa) {
+                Choisir {{ forfait.libelle }}
+              } @else {
+                Revenir au gratuit
+              }
+            </button>
+          }
+        </article>
+      }
+    </div>
+
+    @if (!auth.connecte()) {
+      <p class="vide">
+        Changer de forfait demande un compte.
+        <a routerLink="/connexion">Se connecter</a>
+      </p>
+    }
+
+    <!-- Dire comment on paie, et surtout que l'application ne demande
+         aucun code : c'est ce qu'un utilisateur se demande au moment de
+         cliquer. -->
+    <section class="paiement">
+      <h2>Comment se fait le paiement</h2>
+      <p>
+        Le règlement passe par Mobile Money — MTN MoMo ou Orange Money.
+        Vous saisissez votre numéro, votre opérateur vous envoie une
+        demande de confirmation sur votre téléphone, et vous validez
+        avec votre code secret <strong>sur votre appareil</strong>.
+      </p>
+      <p>
+        ChatDocs OHADA ne vous demande jamais votre code Mobile Money,
+        ni un numéro de carte. L'application ne les voit pas et n'en
+        conserve aucun. Un règlement en espèces ou par virement reste
+        possible : votre demande est alors activée par l'équipe.
+      </p>
+      <p>Vos crédits s'ouvrent pour trente jours dès le paiement confirmé.</p>
+    </section>
+  }
+</section>

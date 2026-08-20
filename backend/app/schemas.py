@@ -631,3 +631,103 @@ class SyntheseAvis(BaseModel):
     moyenne: float | None = None
     repartition: dict[int, int] = {}
     avis: list[AvisAdministration] = []
+
+
+# ---------------------------------------------------------------------
+# Forfaits et abonnements
+# ---------------------------------------------------------------------
+
+
+class ForfaitSortie(BaseModel):
+    """Un forfait du catalogue, tel que l'interface le presente.
+
+    LE PRIX ET LES CREDITS VOYAGENT ENSEMBLE. Afficher l'un sans
+    l'autre laisserait comparer des forfaits sans savoir ce qu'ils
+    contiennent. La marge, elle, ne sort jamais d'ici : c'est une
+    donnee interne.
+    """
+
+    code: str
+    libelle: str
+    prix_fcfa: int
+    credits: int
+    argumentaire: str
+    atouts: list[str]
+
+
+class AbonnementSortie(BaseModel):
+    """L'abonnement du compte courant."""
+
+    forfait: ForfaitSortie
+    credits_restants: int
+    echeance: datetime.date | None = None
+    # Une demande en attente empeche d'en deposer une autre : l'interface
+    # a besoin de le savoir pour afficher l'attente plutot qu'un bouton.
+    demande_en_attente: str | None = None
+    # CamPay est-il configure sur ce serveur ? Sans lui, l'interface doit
+    # proposer le reglement hors ligne plutot qu'un bouton qui echouera.
+    paiement_mobile: bool = False
+
+
+class DemandeAbonnementEntree(BaseModel):
+    forfait: str
+
+
+class DemandeAbonnementSortie(BaseModel):
+    id: int
+    utilisateur_id: int
+    email: str
+    prenom: str | None = None
+    forfait_code: str
+    statut: str
+    demande_le: datetime.datetime
+    traite_le: datetime.datetime | None = None
+    reference: str | None = None
+    motif_refus: str | None = None
+
+
+class ValidationAbonnement(BaseModel):
+    """Ce que l'administrateur constate en ouvrant les credits.
+
+    LA REFERENCE DE PAIEMENT EST EXIGEE. Valider sans elle rendrait
+    tout litige insoluble : plus rien ne relierait l'abonnement ouvert
+    au paiement recu.
+    """
+
+    reference: str = Field(min_length=3, max_length=120)
+    # Duree de validite, en mois. Un mois par defaut, parce que c'est ce
+    # que le prix affiche represente.
+    mois: int = Field(default=1, ge=1, le=12)
+
+
+class RefusAbonnement(BaseModel):
+    motif: str = Field(min_length=3, max_length=500)
+
+
+class PaiementEntree(BaseModel):
+    """Ce que le navigateur envoie pour lancer un paiement.
+
+    LE MONTANT N'Y FIGURE PAS, ET C'EST VOULU. Il est lu dans le
+    catalogue a partir du code de forfait, cote serveur. L'accepter
+    depuis le navigateur reviendrait a laisser l'abonne choisir son
+    prix.
+
+    Le numero n'est pas un secret : c'est un identifiant. Le code
+    Mobile Money, lui, est saisi par l'abonne sur son telephone et
+    n'entre jamais dans l'application.
+    """
+
+    forfait: str
+    telephone: str = Field(min_length=9, max_length=20)
+
+
+class PaiementSortie(BaseModel):
+    reference: str
+    statut: str
+    # Code a composer si l'invite USSD n'apparait pas d'elle-meme :
+    # sans lui, l'abonne attend un ecran qui ne vient parfois pas.
+    code_ussd: str | None = None
+    operateur: str | None = None
+    # Renseigne des que le paiement aboutit, pour que l'interface
+    # affiche le nouveau forfait sans second appel.
+    abonnement: AbonnementSortie | None = None

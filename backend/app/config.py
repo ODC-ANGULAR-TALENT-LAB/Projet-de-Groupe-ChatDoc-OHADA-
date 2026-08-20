@@ -142,5 +142,66 @@ class Parametres(BaseSettings):
     seuil_pertinence: float = 0.55
     nb_articles_contexte: int = 8
 
+    # COUT VARIABLE MOYEN D'UNE QUESTION, EN FRANCS CFA.
+    #
+    # C'est le seul chiffre dont depend le dimensionnement des forfaits.
+    # Il est ici, et non code en dur dans le catalogue, parce qu'il
+    # change avec le fournisseur et avec ses tarifs — pas avec le
+    # produit.
+    #
+    # Comment il a ete obtenu, pour pouvoir etre refait :
+    #   entree  ~2 500 jetons (8 articles de 584 caracteres en moyenne
+    #           dans cette base, prompt systeme de 1046 caracteres,
+    #           question, fil, schema de sortie impose) ;
+    #   sortie  ~800 jetons en pratique, sur un plafond de 4 096 ;
+    #   plus l'embedding de la question, negligeable.
+    #
+    # VERIFIEZ-LE CONTRE LA FACTURE REELLE DU FOURNISSEUR avant
+    # d'ouvrir les paiements : la valeur par defaut est une estimation,
+    # et toute la grille tarifaire en decoule. Une facture par question
+    # deux fois plus elevee ferait tomber la marge de 55 % a 10 %.
+    cout_question_fcfa: float = 25.0
+
+    # --- CamPay : encaissement Mobile Money (MTN MoMo, Orange Money) ---
+    #
+    # CE QUE L'APPLICATION NE VOIT JAMAIS : le code secret du payeur. Le
+    # flux « collect » de CamPay envoie une invite USSD sur le telephone
+    # de l'abonne, qui valide sur SON appareil. Nous n'envoyons qu'un
+    # numero de telephone et un montant, et nous recevons un etat. Aucun
+    # secret de paiement ne transite ni n'est stocke ici.
+    #
+    # Les identifiants ci-dessous sont ceux de l'APPLICATION marchande,
+    # pas ceux d'un utilisateur. Ils restent cote serveur.
+    campay_username: str = ""
+    campay_password: str = ""
+    # Cle de signature des rappels (webhook). SANS ELLE, N'IMPORTE QUI
+    # POUVANT ATTEINDRE L'URL DE RAPPEL S'OFFRE UN ABONNEMENT : il
+    # suffirait d'envoyer un faux « SUCCESSFUL ». Le rappel est refuse
+    # tant qu'elle n'est pas configuree.
+    campay_webhook_cle: str = ""
+    # "demo" tant que les tests ne sont pas termines : l'environnement de
+    # demonstration ne debite personne.
+    campay_environnement: str = "demo"
+
+    @property
+    def campay_url(self) -> str:
+        return (
+            "https://www.campay.net"
+            if self.campay_environnement.lower() in {"prod", "production", "live"}
+            else "https://demo.campay.net"
+        )
+
+    @property
+    def campay_configure(self) -> bool:
+        """Peut-on encaisser ?
+
+        Sans identifiants, l'interface doit proposer le paiement hors
+        ligne plutot que d'echouer au moment du clic.
+        """
+        return bool(
+            _valeur_reelle(self.campay_username)
+            and _valeur_reelle(self.campay_password)
+        )
+
 
 parametres = Parametres()

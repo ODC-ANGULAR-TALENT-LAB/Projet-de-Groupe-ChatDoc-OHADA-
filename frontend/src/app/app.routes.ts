@@ -99,6 +99,14 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'forfaits',
+    title: 'ChatDocs OHADA — Forfaits',
+    loadComponent: () =>
+      import('./fonctionnalites/forfaits/forfaits.page').then(
+        (m) => m.ForfaitsPage,
+      ),
+  },
+  {
     path: 'avis',
     title: 'ChatDocs OHADA — Votre avis',
     loadComponent: () =>

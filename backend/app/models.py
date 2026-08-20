@@ -93,6 +93,9 @@ class Utilisateur(Base):
     plan: Mapped[str] = mapped_column(String(20), default="gratuit")
     quota_restant: Mapped[int] = mapped_column(Integer, default=5)
     quota_reinit_le: Mapped[datetime.date | None] = mapped_column(Date)
+    # Dernier jour de validite du forfait paye. NULL sur le gratuit.
+    # Depassee, le compte retombe sur le gratuit (voir dependances.py).
+    plan_echeance: Mapped[datetime.date | None] = mapped_column(Date)
 
     # ACCEPTATION DES CONDITIONS D'UTILISATION.
     #

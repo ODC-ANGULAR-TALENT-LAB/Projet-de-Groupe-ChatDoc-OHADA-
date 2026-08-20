@@ -19,6 +19,7 @@ from app.routers import (
     conformite,
     corpus,
     favoris,
+    forfaits,
     generateur,
     profil,
 )
@@ -85,6 +86,7 @@ app.include_router(favoris.routeur)
 app.include_router(generateur.routeur)
 app.include_router(profil.routeur)
 app.include_router(avis.routeur)
+app.include_router(forfaits.routeur)
 app.include_router(admin.routeur)
 
 
