@@ -46,6 +46,7 @@ from app.db import get_db
 from app.dependances import administrateur, redacteur_corpus
 from app.models import Article, Depot, Texte, Utilisateur
 from app.schemas import (
+    RepartitionAdmin,
     ArticleDepot,
     DepotDetail,
     DepotSortie,
@@ -56,6 +57,7 @@ from app.schemas import (
     UtilisateurSortie,
 )
 from app.services.analyse_depot import resumer_modifications
+from app.services.forfaits import forfait
 from app.services.controles import BLOQUANT
 from app.services.diff_corpus import a_relire, comparer
 from app.services.ingestion import DepotRefuse, ingerer
@@ -582,3 +584,77 @@ def etat_corpus(
         }
         for ligne in lignes
     ]
+
+
+# Le routeur porte deja prefix="/admin" : ecrire "/admin/..."
+# ici produirait /admin/admin/... — la route repondrait 404 sans
+# que rien ne le signale, puisqu'elle EXISTE, ailleurs.
+@routeur.get("/tableau-de-bord")
+def tableau_de_bord(
+    _: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> RepartitionAdmin:
+    """Les chiffres qui disent l'etat du service en un coup d'oeil.
+
+    POURQUOI UNE ROUTE ET NON SIX APPELS. L'interface d'administration
+    ouvrait autrement six requetes pour dessiner un en-tete, et les
+    chiffres arrivaient les uns apres les autres, dans le desordre. Ici
+    ils sont pris au meme instant : ils se rapportent donc au meme etat,
+    ce qui n'est pas un detail quand on compare des abonnes a un revenu.
+
+    LE REVENU NE COMPTE QUE LES ABONNEMENTS ENCORE VALIDES. Additionner
+    les forfaits echus gonflerait un chiffre dont on se sert pour
+    decider : mieux vaut un revenu exact et modeste qu'un revenu flatteur
+    et faux.
+    """
+    aujourd_hui = datetime.date.today()
+
+    roles = dict(
+        db.execute(
+            text("SELECT role, count(*) FROM utilisateur GROUP BY role")
+        ).all()
+    )
+
+    actifs = db.execute(
+        text(
+            "SELECT plan, count(*) FROM utilisateur "
+            "WHERE plan <> 'gratuit' "
+            "  AND (plan_echeance IS NULL OR plan_echeance >= :jour) "
+            "GROUP BY plan"
+        ),
+        {"jour": aujourd_hui},
+    ).all()
+    par_forfait = {plan: n for plan, n in actifs}
+    revenu = sum(forfait(plan).prix_fcfa * n for plan, n in actifs)
+
+    notes = db.execute(text("SELECT note FROM avis")).scalars().all()
+    corpus = db.execute(
+        text(
+            "SELECT (SELECT count(*) FROM texte) AS textes, "
+            "       (SELECT count(*) FROM article) AS articles, "
+            "       (SELECT count(embedding) FROM article) AS vectorises"
+        )
+    ).mappings().first()
+
+    return RepartitionAdmin(
+        comptes=sum(roles.values()),
+        comptes_par_role=roles,
+        comptes_google=db.execute(
+            text("SELECT count(*) FROM utilisateur WHERE google_sub IS NOT NULL")
+        ).scalar()
+        or 0,
+        abonnes_payants=sum(par_forfait.values()),
+        abonnes_par_forfait=par_forfait,
+        revenu_mensuel_fcfa=revenu,
+        demandes_en_attente=db.execute(
+            text(
+                "SELECT count(*) FROM demande_abonnement WHERE statut = 'en_attente'"
+            )
+        ).scalar()
+        or 0,
+        avis_nombre=len(notes),
+        avis_moyenne=round(sum(notes) / len(notes), 2) if notes else None,
+        textes=corpus["textes"],
+        articles=corpus["articles"],
+        articles_vectorises=corpus["vectorises"],
+    )

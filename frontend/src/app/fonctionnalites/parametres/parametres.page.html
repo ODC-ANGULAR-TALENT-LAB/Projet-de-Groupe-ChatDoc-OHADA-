@@ -181,10 +181,29 @@
       active.
     </p>
 
-    <!-- L'avis vit hors du formulaire de réglages, et hors de son bouton
-         « Enregistrer » : ce n'est pas un paramètre du compte, et le
-         ranger parmi eux laisserait croire qu'il se sauvegarde avec le
-         reste. -->
+    <!-- CE QUI SUIT VIT HORS DU FORMULAIRE DE RÉGLAGES, et hors de son
+         bouton « Enregistrer » : ce ne sont pas des paramètres du
+         compte, et les ranger parmi eux laisserait croire qu'ils se
+         sauvegardent avec le reste. Ce sont des portes vers d'autres
+         pages. -->
+
+    <!-- Chemin d'accès à l'administration sur téléphone : la barre du
+         bas est plafonnée à cinq onglets, et l'administration en est le
+         sixième. Sans ce lien, elle serait injoignable hors poste de
+         travail. -->
+    @if (p.role === 'admin') {
+      <section class="bloc">
+        <h2>Administration</h2>
+        <p class="explication">
+          Comptes, abonnements et avis. Le corpus se tient dans l'espace
+          juriste.
+        </p>
+        <a class="lien-avis" routerLink="/administration">
+          Ouvrir l'administration
+        </a>
+      </section>
+    }
+
     <section class="bloc">
       <h2>Forfait et crédits</h2>
       <p class="explication">

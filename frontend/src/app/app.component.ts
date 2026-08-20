@@ -35,6 +35,9 @@ interface Destination {
   icone: string;
   /** Réservée à ceux qui tiennent le corpus : juriste ou administrateur. */
   juriste?: boolean;
+  /** Réservée à l'administration du service. Le juriste ne l'a PAS :
+      il tient le corpus, il ne distribue pas les droits. */
+  admin?: boolean;
 }
 
 /** Au-delà, la barre latérale devient une liste à défiler plutôt
@@ -47,6 +50,12 @@ const DESTINATIONS: Destination[] = [
   { chemin: '/historique', libelle: 'Historique', icone: 'historique' },
   { chemin: '/parametres', libelle: 'Profil', icone: 'compte' },
   { chemin: '/admin', libelle: 'Corpus', icone: 'corpus', juriste: true },
+  {
+    chemin: '/administration',
+    libelle: 'Administration',
+    icone: 'compte',
+    admin: true,
+  },
 ];
 
 @Component({
@@ -206,7 +215,7 @@ const DESTINATIONS: Destination[] = [
     @if (coquille()) {
     <!-- ONGLETS — téléphone uniquement -->
     <nav class="onglets" aria-label="Navigation principale">
-      @for (destination of destinationsVisibles(); track destination.chemin) {
+      @for (destination of destinationsOnglets(); track destination.chemin) {
         <a
           [routerLink]="destination.chemin"
           routerLinkActive="actif"
@@ -723,7 +732,30 @@ export class AppComponent {
   protected destinationsVisibles(): Destination[] {
     const role = this.auth.quota()?.role;
     const tientLeCorpus = role === 'juriste' || role === 'admin';
-    return DESTINATIONS.filter((destination) => !destination.juriste || tientLeCorpus);
+    const administre = role === 'admin';
+    return DESTINATIONS.filter(
+      (destination) =>
+        (!destination.juriste || tientLeCorpus) &&
+        (!destination.admin || administre),
+    );
+  }
+
+  /**
+   * Les mêmes destinations, plafonnées à cinq pour la barre du bas.
+   *
+   * CINQ EST UN MAXIMUM, PAS UNE PRÉFÉRENCE. Au-delà, les libellés se
+   * tronquent et les cibles tactiles passent sous le seuil confortable :
+   * la barre cesse d'être utilisable d'une main. Un administrateur
+   * dispose de six destinations ; la sixième reste atteignable depuis la
+   * barre latérale sur poste de travail, et depuis la page Profil sur
+   * téléphone.
+   *
+   * On coupe la FIN plutôt que le début : les premières entrées sont les
+   * gestes quotidiens, la dernière est un espace où l'on se rend
+   * exprès.
+   */
+  protected destinationsOnglets(): Destination[] {
+    return this.destinationsVisibles().slice(0, 5);
   }
 
   protected nouvelleConversation(): void {

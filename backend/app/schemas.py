@@ -151,12 +151,61 @@ class RoleEntree(BaseModel):
 
 
 class UtilisateurSortie(BaseModel):
+    """Un compte, vu par l'administration.
+
+    CE QUI EST EXPOSE, ET CE QUI NE L'EST PAS. L'administrateur voit
+    l'identite du compte, son role, son forfait et sa consommation :
+    c'est ce dont il a besoin pour attribuer un droit, constater un
+    paiement ou repondre a une reclamation.
+
+    Il ne voit NI les conversations, NI les favoris, NI les annotations
+    personnelles. Ce sont des notes de travail sur des dossiers
+    clients ; administrer le service ne donne aucune legitimite a les
+    lire, et aucune route ne les expose.
+
+    Le mot de passe n'apparait evidemment pas : il n'est de toute facon
+    stocke que sous forme d'empreinte.
+    """
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     email: str
+    prenom: str | None = None
     role: str
     plan: str
+    quota_restant: int = 0
+    plan_echeance: datetime.date | None = None
+    # Le compte est-il rattache a Google ? Utile au diagnostic : un
+    # compte Google n'a pas de mot de passe a reinitialiser.
+    connexion_google: bool = False
+    # Date d'acceptation des conditions. C'EST NOTRE MEILLEURE
+    # APPROXIMATION DE LA DATE D'INSCRIPTION : la table ne porte pas de
+    # `cree_le`. A ne pas presenter comme autre chose qu'elle est.
+    cgu_acceptees_le: datetime.datetime | None = None
+
+
+class RepartitionAdmin(BaseModel):
+    """Les chiffres qui disent l'etat du service en un coup d'oeil."""
+
+    comptes: int
+    comptes_par_role: dict[str, int] = {}
+    comptes_google: int = 0
+
+    abonnes_payants: int = 0
+    abonnes_par_forfait: dict[str, int] = {}
+    # Revenu mensuel recurrent, en francs CFA : somme des prix des
+    # forfaits payants ENCORE VALIDES. On ne compte pas les echus, qui
+    # ne rapportent plus rien.
+    revenu_mensuel_fcfa: int = 0
+    demandes_en_attente: int = 0
+
+    avis_nombre: int = 0
+    avis_moyenne: float | None = None
+
+    textes: int = 0
+    articles: int = 0
+    articles_vectorises: int = 0
 
 
 # ---------------------------------------------------------------------

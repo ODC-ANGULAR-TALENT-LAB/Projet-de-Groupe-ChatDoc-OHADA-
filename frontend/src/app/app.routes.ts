@@ -99,6 +99,18 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    // Distinct de /admin, qui est l'espace JURISTE. Le juriste tient le
+    // corpus et en répond ; l'administrateur tient le service. Une même
+    // page pour les deux mélangerait une responsabilité juridique et
+    // une responsabilité d'exploitation.
+    path: 'administration',
+    title: 'ChatDocs OHADA — Administration',
+    loadComponent: () =>
+      import('./fonctionnalites/administration/administration.page').then(
+        (m) => m.AdministrationPage,
+      ),
+  },
+  {
     path: 'forfaits',
     title: 'ChatDocs OHADA — Forfaits',
     loadComponent: () =>

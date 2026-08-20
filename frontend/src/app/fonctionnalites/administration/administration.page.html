@@ -1,0 +1,466 @@
+<section class="page">
+  @if (!estAdmin()) {
+    <h1>Administration</h1>
+    <p class="vide">
+      Cet espace est réservé à l'administration de l'application. Si vous
+      tenez le corpus, votre espace est
+      <a routerLink="/admin">l'espace juriste</a>.
+    </p>
+  } @else {
+    <header class="entete">
+      <div>
+        <h1>Administration</h1>
+        <p class="intro">
+          Le service : comptes, abonnements, avis. Le corpus se tient
+          dans <a routerLink="/admin">l'espace juriste</a>.
+        </p>
+      </div>
+    </header>
+
+    @if (charge()) {
+      <p class="attente" role="status">Chargement de l'administration…</p>
+    } @else {
+      <!-- Le compteur de demandes est porté par l'onglet lui-même :
+           c'est la seule chose qui réclame une action immédiate, et
+           quelqu'un attend au bout. -->
+      <nav class="onglets" aria-label="Domaines d'administration">
+        <button
+          type="button"
+          [class.actif]="onglet() === 'apercu'"
+          [attr.aria-current]="onglet() === 'apercu' ? 'page' : null"
+          (click)="onglet.set('apercu')"
+        >
+          Aperçu
+        </button>
+        <button
+          type="button"
+          [class.actif]="onglet() === 'abonnements'"
+          [attr.aria-current]="onglet() === 'abonnements' ? 'page' : null"
+          (click)="onglet.set('abonnements')"
+        >
+          Abonnements
+          @if (enAttente().length) {
+            <span class="pastille">{{ enAttente().length }}</span>
+          }
+        </button>
+        <button
+          type="button"
+          [class.actif]="onglet() === 'comptes'"
+          [attr.aria-current]="onglet() === 'comptes' ? 'page' : null"
+          (click)="onglet.set('comptes')"
+        >
+          Comptes
+        </button>
+        <button
+          type="button"
+          [class.actif]="onglet() === 'avis'"
+          [attr.aria-current]="onglet() === 'avis' ? 'page' : null"
+          (click)="onglet.set('avis')"
+        >
+          Avis
+        </button>
+        <button
+          type="button"
+          [class.actif]="onglet() === 'forfaits'"
+          [attr.aria-current]="onglet() === 'forfaits' ? 'page' : null"
+          (click)="onglet.set('forfaits')"
+        >
+          Forfaits
+        </button>
+      </nav>
+
+      @if (erreur()) {
+        <p class="erreur" role="alert">{{ erreur() }}</p>
+      }
+      @if (confirmation()) {
+        <p class="confirme" role="status">
+          <app-icone nom="valide" />
+          {{ confirmation() }}
+        </p>
+      }
+
+      <!-- ================= APERÇU ================= -->
+      @if (onglet() === 'apercu' && bord(); as b) {
+        <div class="cartes">
+          <article class="carte" [class.alerte]="b.demandes_en_attente > 0">
+            <span class="etiquette">Demandes en attente</span>
+            <strong class="valeur">{{ b.demandes_en_attente }}</strong>
+            @if (b.demandes_en_attente) {
+              <button type="button" class="lien" (click)="onglet.set('abonnements')">
+                Les traiter
+              </button>
+            } @else {
+              <span class="note">Rien à traiter.</span>
+            }
+          </article>
+
+          <article class="carte">
+            <span class="etiquette">Revenu mensuel</span>
+            <strong class="valeur">{{ b.revenu_mensuel_fcfa | number }} F</strong>
+            <span class="note">
+              {{ b.abonnes_payants }} abonnement{{ b.abonnes_payants > 1 ? 's' : '' }}
+              en cours de validité
+            </span>
+          </article>
+
+          <article class="carte">
+            <span class="etiquette">Comptes</span>
+            <strong class="valeur">{{ b.comptes }}</strong>
+            <span class="note">
+              {{ b.comptes_par_role['juriste'] ?? 0 }} juriste(s),
+              {{ b.comptes_par_role['admin'] ?? 0 }} administrateur(s)
+            </span>
+          </article>
+
+          <article class="carte">
+            <span class="etiquette">Satisfaction</span>
+            <strong class="valeur">
+              @if (b.avis_moyenne !== null) {
+                {{ b.avis_moyenne }} / 5
+              } @else {
+                —
+              }
+            </strong>
+            <span class="note">
+              {{ b.avis_nombre }} avis déposé{{ b.avis_nombre > 1 ? 's' : '' }}
+            </span>
+          </article>
+
+          <!-- Le corpus non vectorisé est un état dégradé silencieux :
+               la recherche continue de répondre, en moins bien. Il doit
+               se voir. -->
+          <article
+            class="carte"
+            [class.alerte]="b.articles_vectorises < b.articles"
+          >
+            <span class="etiquette">Corpus vectorisé</span>
+            <strong class="valeur">
+              {{ b.articles_vectorises | number }} / {{ b.articles | number }}
+            </strong>
+            <span class="note">
+              @if (b.articles_vectorises < b.articles) {
+                Recherche dégradée en plein texte pour le reste.
+              } @else {
+                {{ b.textes }} textes au corpus.
+              }
+            </span>
+          </article>
+
+          <article class="carte">
+            <span class="etiquette">Comptes Google</span>
+            <strong class="valeur">{{ b.comptes_google }}</strong>
+            <span class="note">Sans mot de passe à réinitialiser.</span>
+          </article>
+        </div>
+      }
+
+      <!-- ================= ABONNEMENTS ================= -->
+      @if (onglet() === 'abonnements') {
+        <section aria-label="Demandes d'abonnement">
+          <h2>À traiter</h2>
+          @if (!enAttente().length) {
+            <p class="vide">Aucune demande en attente.</p>
+          }
+          @for (d of enAttente(); track d.id) {
+            <article class="demande">
+              <header>
+                <strong>{{ d.prenom || d.email }}</strong>
+                <span class="forfait-vise">
+                  demande {{ libelleForfait(d.forfait_code) }}
+                </span>
+                <time [attr.datetime]="d.demande_le">
+                  {{ d.demande_le | date: 'short' }}
+                </time>
+              </header>
+              <p class="courriel">{{ d.email }}</p>
+
+              <div class="traitement">
+                <div class="champ">
+                  <label [attr.for]="'ref-' + d.id">
+                    Référence du paiement constaté
+                  </label>
+                  <input
+                    [id]="'ref-' + d.id"
+                    type="text"
+                    placeholder="MoMo, reçu, virement…"
+                    [ngModel]="reference(d.id)"
+                    (ngModelChange)="poserReference(d.id, $event)"
+                    [name]="'ref-' + d.id"
+                  />
+                  <p class="aide">
+                    Elle relie l'abonnement au paiement reçu. Sans elle,
+                    un litige ne se tranche pas.
+                  </p>
+                </div>
+
+                <div class="champ">
+                  <label [attr.for]="'motif-' + d.id">Motif de refus</label>
+                  <input
+                    [id]="'motif-' + d.id"
+                    type="text"
+                    placeholder="Paiement non reçu…"
+                    [ngModel]="motif(d.id)"
+                    (ngModelChange)="poserMotif(d.id, $event)"
+                    [name]="'motif-' + d.id"
+                  />
+                  <p class="aide">
+                    Il sera la seule explication dont disposera la personne.
+                  </p>
+                </div>
+              </div>
+
+              <div class="actions">
+                <button
+                  type="button"
+                  class="principal"
+                  [disabled]="occupe()"
+                  (click)="valider(d)"
+                >
+                  Ouvrir le forfait
+                </button>
+                <button
+                  type="button"
+                  class="destructif"
+                  [disabled]="occupe()"
+                  (click)="refuser(d)"
+                >
+                  Refuser
+                </button>
+              </div>
+            </article>
+          }
+
+          @if (traitees().length) {
+            <h2>Historique</h2>
+            <div class="tableau-enveloppe">
+              <table>
+                <caption class="invisible">
+                  Demandes d'abonnement déjà traitées
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Compte</th>
+                    <th scope="col">Forfait</th>
+                    <th scope="col">État</th>
+                    <th scope="col">Traitée le</th>
+                    <th scope="col">Référence / motif</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (d of traitees(); track d.id) {
+                    <tr>
+                      <td>{{ d.email }}</td>
+                      <td>{{ libelleForfait(d.forfait_code) }}</td>
+                      <td>
+                        <span class="etat" [class.refusee]="d.statut === 'refusee'">
+                          {{ d.statut === 'validee' ? 'Validée' : 'Refusée' }}
+                        </span>
+                      </td>
+                      <td>{{ d.traite_le | date: 'short' }}</td>
+                      <td>{{ d.reference || d.motif_refus || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ================= COMPTES ================= -->
+      @if (onglet() === 'comptes') {
+        <section aria-label="Comptes et rôles">
+          <div class="barre-filtre">
+            <label for="filtre">Filtrer</label>
+            <input
+              id="filtre"
+              type="search"
+              placeholder="e-mail, prénom, rôle, forfait…"
+              [ngModel]="filtre()"
+              (ngModelChange)="filtre.set($event)"
+              name="filtre"
+            />
+            <span class="compte-resultats">
+              {{ comptesFiltres().length }} / {{ comptes().length }}
+            </span>
+          </div>
+
+          <div class="tableau-enveloppe">
+            <table>
+              <caption class="invisible">Comptes de l'application</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Compte</th>
+                  <th scope="col">Forfait</th>
+                  <th scope="col">Crédits</th>
+                  <th scope="col">Inscrit le</th>
+                  <th scope="col">Rôle</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of comptesFiltres(); track c.id) {
+                  <tr>
+                    <td>
+                      <strong>{{ c.prenom || '—' }}</strong>
+                      <span class="courriel">{{ c.email }}</span>
+                      @if (c.connexion_google) {
+                        <span class="marqueur">Google</span>
+                      }
+                    </td>
+                    <td>
+                      {{ libelleForfait(c.plan) }}
+                      @if (c.plan_echeance) {
+                        <span class="echeance">
+                          jusqu'au {{ c.plan_echeance | date: 'shortDate' }}
+                        </span>
+                      }
+                    </td>
+                    <td class="chiffre">{{ c.quota_restant }}</td>
+                    <td>{{ (c.cgu_acceptees_le | date: 'shortDate') || '—' }}</td>
+                    <td>
+                      <!-- Changer un rôle EST une action, pas un réglage :
+                           l'étiquette invisible nomme la personne, sinon un
+                           lecteur d'écran annonce quinze fois « Rôle ». -->
+                      <label class="invisible" [attr.for]="'role-' + c.id">
+                        Rôle de {{ c.email }}
+                      </label>
+                      <select
+                        [id]="'role-' + c.id"
+                        [value]="c.role"
+                        [disabled]="occupe()"
+                        (change)="changerRole(c, $any($event.target).value)"
+                      >
+                        @for (r of roles; track r) {
+                          <option [value]="r">{{ r }}</option>
+                        }
+                      </select>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <p class="confidentialite">
+            L'administration voit l'identité, le rôle, le forfait et la
+            consommation. Elle ne voit ni les conversations, ni les
+            favoris, ni les annotations : ce sont des notes de travail
+            sur des dossiers clients, et aucune route ne les expose.
+          </p>
+        </section>
+      }
+
+      <!-- ================= AVIS ================= -->
+      @if (onglet() === 'avis' && avis(); as a) {
+        <section aria-label="Avis des utilisateurs">
+          @if (!a.nombre) {
+            <p class="vide">Aucun avis déposé pour l'instant.</p>
+          } @else {
+            <div class="synthese">
+              <div>
+                <span class="etiquette">Moyenne</span>
+                <strong class="valeur">{{ a.moyenne }} / 5</strong>
+                <span class="note">sur {{ a.nombre }} avis</span>
+              </div>
+              <!-- La répartition accompagne toujours la moyenne : 3/5
+                   peut recouvrir un consensus tiède comme deux camps. -->
+              <ul class="repartition">
+                @for (n of [5, 4, 3, 2, 1]; track n) {
+                  <li>
+                    <span class="etoiles-note">{{ n }}</span>
+                    <span
+                      class="jauge"
+                      [style.width.%]="(a.repartition[n] / a.nombre) * 100"
+                    ></span>
+                    <span class="compte-note">{{ a.repartition[n] }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <div class="tableau-enveloppe">
+              <table>
+                <caption class="invisible">Avis déposés</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Note</th>
+                    <th scope="col">Compte</th>
+                    <th scope="col">Commentaire</th>
+                    <th scope="col">Déposé le</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (avis of a.avis; track avis.utilisateur_id) {
+                    <tr>
+                      <td class="chiffre">{{ avis.note }} / 5</td>
+                      <td>
+                        <strong>{{ avis.prenom || '—' }}</strong>
+                        <span class="courriel">{{ avis.email }}</span>
+                      </td>
+                      <td class="commentaire">{{ avis.commentaire || '—' }}</td>
+                      <td>
+                        {{ (avis.modifie_le || avis.cree_le) | date: 'shortDate' }}
+                        @if (avis.modifie_le) {
+                          <span class="marqueur">revu</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ================= FORFAITS ================= -->
+      @if (onglet() === 'forfaits') {
+        <section aria-label="Catalogue des forfaits">
+          <div class="tableau-enveloppe">
+            <table>
+              <caption class="invisible">Forfaits du catalogue</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Forfait</th>
+                  <th scope="col">Prix</th>
+                  <th scope="col">Crédits</th>
+                  <th scope="col">Abonnés</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of forfaits(); track f.code) {
+                  <tr>
+                    <td>
+                      <strong>{{ f.libelle }}</strong>
+                      <span class="courriel">{{ f.argumentaire }}</span>
+                    </td>
+                    <td class="chiffre">
+                      @if (f.prix_fcfa) {
+                        {{ f.prix_fcfa | number }} F
+                      } @else {
+                        Gratuit
+                      }
+                    </td>
+                    <td class="chiffre">{{ f.credits }}</td>
+                    <td class="chiffre">
+                      {{ bord()?.abonnes_par_forfait?.[f.code] ?? 0 }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <p class="confidentialite">
+            Le catalogue est défini dans le code, et un test refuse toute
+            grille dont la marge tomberait sous 50 %. C'est ce qui
+            empêche d'ajouter des crédits sans revoir le prix : la
+            contrainte casse la suite de tests plutôt que le compte en
+            banque. Le rendre modifiable ici demanderait de déplacer
+            cette vérification côté serveur — faisable, à décider.
+          </p>
+        </section>
+      }
+    }
+  }
+</section>

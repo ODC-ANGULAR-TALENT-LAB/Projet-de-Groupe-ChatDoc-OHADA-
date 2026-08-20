@@ -142,6 +142,16 @@ class Utilisateur(Base):
         return self.role == "admin"
 
     @property
+    def connexion_google(self) -> bool:
+        """Le compte est-il rattache a Google ?
+
+        Sert au diagnostic cote administration : un compte Google n'a
+        pas de mot de passe a reinitialiser, et proposer de le faire
+        enverrait quelqu'un dans une impasse.
+        """
+        return self.google_sub is not None
+
+    @property
     def redige_le_corpus(self) -> bool:
         """Peut deposer, analyser et valider un texte du corpus.
 

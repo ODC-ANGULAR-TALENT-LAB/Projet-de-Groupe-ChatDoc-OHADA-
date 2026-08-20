@@ -1,0 +1,450 @@
+.page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--e5) var(--e4) var(--e8);
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--police-serif);
+  font-size: var(--t-3xl);
+  color: var(--bleu-nuit);
+}
+
+h2 {
+  margin: var(--e6) 0 var(--e3);
+  font-family: var(--police-serif);
+  font-size: var(--t-xl);
+  color: var(--bleu-nuit);
+}
+
+.intro {
+  margin: var(--e2) 0 var(--e5);
+  color: var(--gris-texte);
+
+  a {
+    color: var(--bleu-nuit);
+  }
+}
+
+/* --- Onglets --------------------------------------------------------
+   Un filet sous l'onglet actif plutôt qu'un fond coloré : le fond
+   ferait un bouton, et ces onglets ne déclenchent rien — ils changent
+   de vue. Le filet dit « vous êtes ici ». */
+
+.onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e1);
+  margin-bottom: var(--e5);
+  border-bottom: 1px solid var(--bordure);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    min-height: 44px;
+    padding: 0.6rem var(--e3);
+    font: inherit;
+    font-size: var(--t-md);
+    font-weight: 500;
+    color: var(--gris-texte);
+    background: none;
+    border: 0;
+    /* Le filet est toujours présent, transparent au repos : sans lui,
+       l'onglet sauterait de 2 px en devenant actif. */
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--bleu-nuit);
+    }
+
+    &.actif {
+      color: var(--bleu-nuit);
+      border-bottom-color: var(--or);
+    }
+  }
+}
+
+.pastille {
+  min-width: 20px;
+  padding: 0.05rem 0.4rem;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--bleu-encre);
+  background: var(--or);
+  border-radius: 999px;
+}
+
+/* --- Cartes de l'aperçu -------------------------------------------- */
+
+.cartes {
+  display: grid;
+  gap: var(--e4);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+  padding: var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-carte);
+
+  /* Ce qui réclame une action se signale par la bordure ET par le
+     texte de la carte : la couleur seule ne porte pas d'information. */
+  &.alerte {
+    border-color: var(--or);
+    box-shadow: 0 0 0 3px rgb(201 162 39 / 14%);
+  }
+
+  .valeur {
+    font-family: var(--police-serif);
+    font-size: var(--t-3xl);
+    line-height: 1.1;
+    color: var(--bleu-nuit);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .note {
+    font-size: var(--t-sm);
+    color: var(--gris-texte);
+  }
+
+  .lien {
+    align-self: flex-start;
+    padding-left: 0;
+  }
+}
+
+.etiquette {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gris-texte);
+}
+
+/* --- Demandes d'abonnement ----------------------------------------- */
+
+.demande {
+  margin-bottom: var(--e4);
+  padding: var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--or);
+  border-radius: var(--rayon-carte);
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--e2);
+    margin-bottom: var(--e1);
+
+    strong {
+      font-size: var(--t-lg);
+      color: var(--bleu-nuit);
+    }
+
+    time {
+      margin-left: auto;
+      font-size: var(--t-sm);
+      color: var(--gris-texte);
+    }
+  }
+
+  .forfait-vise {
+    font-size: var(--t-md);
+    color: var(--or-fonce);
+  }
+}
+
+.traitement {
+  display: grid;
+  gap: var(--e4);
+  margin: var(--e4) 0;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .traitement {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+
+  label {
+    font-size: var(--t-md);
+    font-weight: 500;
+  }
+
+  input,
+  select {
+    min-height: 44px;
+    padding: 0.55rem 0.65rem;
+    font: inherit;
+    /* 16 px : en dessous, iOS zoome à la mise au point. */
+    font-size: var(--t-lg);
+    background: var(--surface);
+    border: 1px solid var(--gris-bordure);
+    border-radius: var(--rayon);
+
+    &:focus {
+      outline: none;
+      border-color: var(--or);
+      box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
+    }
+  }
+}
+
+.aide {
+  margin: 0;
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  color: var(--gris-texte);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e3);
+}
+
+/* --- Filtre --------------------------------------------------------- */
+
+.barre-filtre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e3);
+  margin-bottom: var(--e3);
+
+  label {
+    font-size: var(--t-md);
+    font-weight: 500;
+  }
+
+  input {
+    flex: 1;
+    min-width: 12rem;
+    min-height: 44px;
+    padding: 0.55rem 0.65rem;
+    font: inherit;
+    font-size: var(--t-lg);
+    background: var(--surface);
+    border: 1px solid var(--gris-bordure);
+    border-radius: var(--rayon);
+
+    &:focus {
+      outline: none;
+      border-color: var(--or);
+      box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
+    }
+  }
+}
+
+.compte-resultats {
+  font-size: var(--t-sm);
+  color: var(--gris-texte);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Tableaux -------------------------------------------------------
+   Le tableau défile DANS son propre conteneur : sans cela, la page
+   entière se décalerait horizontalement sur téléphone, ce qui rend
+   toute la lecture pénible pour une colonne de trop. */
+
+.tableau-enveloppe {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-carte);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-md);
+}
+
+thead th {
+  padding: var(--e3);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--gris-texte);
+  background: var(--surface-basse);
+  border-bottom: 1px solid var(--bordure);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: var(--e3);
+  vertical-align: top;
+  border-bottom: 1px solid var(--bordure);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.chiffre {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.courriel {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--gris-texte);
+}
+
+.commentaire {
+  min-width: 18rem;
+  line-height: 1.6;
+}
+
+.echeance {
+  display: block;
+  font-size: var(--t-xs);
+  color: var(--gris-texte);
+}
+
+.marqueur {
+  display: inline-block;
+  margin-left: var(--e1);
+  padding: 0.05rem 0.4rem;
+  font-size: var(--t-xs);
+  color: var(--gris-texte);
+  background: var(--surface-haute);
+  border-radius: var(--rayon);
+}
+
+.etat {
+  font-weight: 500;
+  color: var(--vert);
+
+  &.refusee {
+    color: #8c2f2f;
+  }
+}
+
+/* --- Synthèse des avis ---------------------------------------------- */
+
+.synthese {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e8);
+  align-items: center;
+  margin-bottom: var(--e4);
+  padding: var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-carte);
+
+  .valeur {
+    display: block;
+    font-family: var(--police-serif);
+    font-size: var(--t-4xl);
+    line-height: 1.1;
+    color: var(--bleu-nuit);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .note {
+    font-size: var(--t-sm);
+    color: var(--gris-texte);
+  }
+}
+
+.repartition {
+  flex: 1;
+  min-width: 14rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr 2rem;
+    align-items: center;
+    gap: var(--e2);
+    height: 1.5rem;
+  }
+
+  .etoiles-note,
+  .compte-note {
+    font-size: var(--t-sm);
+    color: var(--gris-texte);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .compte-note {
+    text-align: right;
+  }
+
+  /* La jauge vit dans une piste grise : sans piste, une note à zéro
+     laisserait une ligne vide qu'on lit comme une donnée absente. */
+  .jauge {
+    display: block;
+    height: 0.5rem;
+    min-width: 2px;
+    background: var(--or);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 100vmax var(--or);
+    outline: 1px solid var(--surface-haute);
+    outline-offset: 0;
+  }
+}
+
+/* --- Messages -------------------------------------------------------- */
+
+.confirme {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  margin: 0 0 var(--e3);
+  padding: var(--e2) var(--e3);
+  font-size: var(--t-md);
+  color: var(--vert);
+  background: #f1f7f3;
+  border-left: 3px solid var(--vert);
+  border-radius: var(--rayon);
+}
+
+.erreur {
+  margin: 0 0 var(--e3);
+  padding: var(--e2) var(--e3);
+  font-size: var(--t-md);
+  color: #8c2f2f;
+  background: #fbf4f2;
+  border-left: 3px solid #a94442;
+  border-radius: var(--rayon);
+}
+
+.confidentialite {
+  margin: var(--e4) 0 0;
+  max-width: 46rem;
+  font-size: var(--t-sm);
+  line-height: 1.6;
+  color: var(--gris-texte);
+}
+
+.vide,
+.attente {
+  color: var(--gris-texte);
+
+  a {
+    color: var(--bleu-nuit);
+  }
+}
