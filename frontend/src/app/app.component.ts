@@ -29,12 +29,28 @@ import { IconeComponent } from './partage/composants/icone.component';
  * de largeur en TypeScript, qui se tromperait au premier rendu et
  * ferait clignoter la navigation.
  */
+/**
+ * À QUI S'ADRESSE UNE DESTINATION.
+ *
+ *   client    — fonctionnalité de service : elle n'a aucun sens pour un
+ *               compte d'exploitation, qui n'a ni forfait, ni crédits,
+ *               ni dossiers personnels à suivre.
+ *   personnel — outil de travail du juriste ou de l'administrateur.
+ *   tous      — utile aux deux.
+ *
+ * SANS CE CHAMP, un administrateur voyait Favoris, Calculateurs,
+ * Conformité, Forfaits et « Votre avis » : des fonctions de client,
+ * dans un compte qui n'en est pas un. Le drapeau dit l'intention, là
+ * où une liste de chemins tenue à part se serait désynchronisée au
+ * premier renommage.
+ */
+type Audience = 'client' | 'personnel' | 'tous';
+
 interface Destination {
   chemin: string;
   libelle: string;
   icone: string;
-  /** Réservée à ceux qui tiennent le corpus : juriste ou administrateur. */
-  juriste?: boolean;
+  audience: Audience;
   /** Réservée à l'administration du service. Le juriste ne l'a PAS :
       il tient le corpus, il ne distribue pas les droits. */
   admin?: boolean;
@@ -45,15 +61,36 @@ interface Destination {
 const MAX_FILS = 12;
 
 const DESTINATIONS: Destination[] = [
-  { chemin: '/chat', libelle: 'Assistant', icone: 'nouveau-chat' },
-  { chemin: '/bibliotheque', libelle: 'Bibliothèque', icone: 'bibliotheque' },
-  { chemin: '/historique', libelle: 'Historique', icone: 'historique' },
-  { chemin: '/parametres', libelle: 'Profil', icone: 'compte' },
-  { chemin: '/admin', libelle: 'Corpus', icone: 'corpus', juriste: true },
+  // L'assistant et la bibliothèque servent aux deux : le juriste doit
+  // pouvoir interroger l'assistant pour vérifier que le texte qu'il
+  // vient de déposer produit les bonnes citations. C'est son outil de
+  // contrôle, pas une commodité.
+  { chemin: '/chat', libelle: 'Assistant', icone: 'nouveau-chat', audience: 'tous' },
+  {
+    chemin: '/bibliotheque',
+    libelle: 'Bibliothèque',
+    icone: 'bibliotheque',
+    audience: 'tous',
+  },
+  // L'historique suit des dossiers personnels : c'est un usage client.
+  {
+    chemin: '/historique',
+    libelle: 'Historique',
+    icone: 'historique',
+    audience: 'client',
+  },
+  { chemin: '/parametres', libelle: 'Profil', icone: 'compte', audience: 'tous' },
+  {
+    chemin: '/admin',
+    libelle: 'Corpus',
+    icone: 'corpus',
+    audience: 'personnel',
+  },
   {
     chemin: '/administration',
     libelle: 'Administration',
     icone: 'compte',
+    audience: 'personnel',
     admin: true,
   },
 ];
@@ -145,6 +182,10 @@ const DESTINATIONS: Destination[] = [
         </a>
       }
 
+      <!-- OUTILS DU CLIENT. Favoris, calculateurs et conformité suivent
+           des dossiers : un compte d'exploitation n'en a aucun, et les
+           lui proposer laisse croire qu'il lui manque quelque chose. -->
+      @if (!estPersonnel()) {
       <nav class="nav-outils" aria-label="Outils">
         <a routerLink="/favoris" routerLinkActive="actif">
           Favoris
@@ -161,16 +202,24 @@ const DESTINATIONS: Destination[] = [
         <a routerLink="/calculateurs" routerLinkActive="actif">Calculateurs</a>
         <a routerLink="/conformite" routerLinkActive="actif">Conformité</a>
       </nav>
+      }
 
       <!-- Pages de transparence : des références, pas des destinations
            quotidiennes. « Votre avis » les rejoint parce qu'on n'y va
            pas non plus tous les jours — mais il faut pouvoir le trouver
            sans passer par les réglages du compte. -->
       <nav class="nav-outils" aria-label="À propos">
-        <a routerLink="/forfaits" routerLinkActive="actif">Forfaits</a>
+        <!-- Forfaits et avis sont des pages de client : le premier
+             vend des crédits, le second demande son opinion sur le
+             service à celui qui le rend. Méthodologie et mises à jour
+             restent : ce sont des pages de transparence sur le corpus,
+             utiles à tous. -->
+        @if (!estPersonnel()) {
+          <a routerLink="/forfaits" routerLinkActive="actif">Forfaits</a>
+        }
         <a routerLink="/methodologie" routerLinkActive="actif">Méthodologie</a>
         <a routerLink="/journal" routerLinkActive="actif">Mises à jour</a>
-        @if (auth.connecte()) {
+        @if (auth.connecte() && !estPersonnel()) {
           <a routerLink="/avis" routerLinkActive="actif">Votre avis</a>
         }
       </nav>
@@ -729,15 +778,33 @@ export class AppComponent {
   /** L'onglet Corpus n'apparaît que pour un juriste ou un administrateur.
       Le serveur refuse de toute façon les routes /admin aux autres :
       masquer n'est pas protéger, c'est juste ne pas encombrer. */
+  /**
+   * Les destinations que ce compte doit voir.
+   *
+   * DEUX SENS, ET C'EST LE POINT. Un client ne voit pas les outils
+   * d'exploitation — c'était déjà le cas. Mais un compte
+   * d'exploitation ne doit pas davantage voir les fonctions de client :
+   * il n'a ni forfait, ni crédits, ni dossiers à suivre, et lui
+   * proposer « Favoris » ou « Forfaits » laisse croire qu'il lui manque
+   * quelque chose alors que ces pages ne le concernent pas.
+   */
   protected destinationsVisibles(): Destination[] {
     const role = this.auth.quota()?.role;
-    const tientLeCorpus = role === 'juriste' || role === 'admin';
+    const personnel = role === 'juriste' || role === 'admin';
     const administre = role === 'admin';
-    return DESTINATIONS.filter(
-      (destination) =>
-        (!destination.juriste || tientLeCorpus) &&
-        (!destination.admin || administre),
-    );
+
+    return DESTINATIONS.filter((destination) => {
+      if (destination.admin && !administre) return false;
+      if (destination.audience === 'personnel') return personnel;
+      if (destination.audience === 'client') return !personnel;
+      return true;
+    });
+  }
+
+  /** Ce compte sert-il à exploiter le service plutôt qu'à s'en servir ? */
+  protected estPersonnel(): boolean {
+    const role = this.auth.quota()?.role;
+    return role === 'juriste' || role === 'admin';
   }
 
   /**

@@ -377,3 +377,29 @@ input[type='password'] {
     }
   }
 }
+
+/* Session déjà ouverte : on la nomme au lieu de rediriger en silence. */
+.session-ouverte {
+  margin-bottom: var(--e5);
+  padding: var(--e3) var(--e4);
+  background: var(--or-pale);
+  border: 1px solid var(--or);
+  border-radius: var(--rayon);
+
+  p {
+    margin: 0 0 var(--e3);
+    font-size: var(--t-md);
+    line-height: 1.6;
+  }
+
+  .role {
+    color: var(--gris-texte);
+  }
+}
+
+.session-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e3);
+}

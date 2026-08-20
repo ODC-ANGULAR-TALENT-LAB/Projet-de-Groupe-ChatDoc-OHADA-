@@ -11,6 +11,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ErreurApi } from '../../core/services/api.service';
 import { GoogleService } from '../../core/services/google.service';
+import { ProfilService } from '../../core/services/profil.service';
 import { IconeComponent } from '../../partage/composants/icone.component';
 
 /**
@@ -35,6 +36,7 @@ export class ConnexionPage {
   protected readonly google = inject(GoogleService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  protected readonly profils = inject(ProfilService);
 
   protected readonly erreur = signal<string | null>(null);
   protected readonly occupe = signal(false);
@@ -74,9 +76,18 @@ export class ConnexionPage {
       );
     }
 
+    // ON NE REDIRIGE PLUS SILENCIEUSEMENT, et c'est une correction de
+    // fond. Cette page renvoyait vers /accueil dès qu'une session
+    // existait : quelqu'un connecté sous un compte, venu ici pour
+    // passer sur un AUTRE compte — par Google, par exemple — était
+    // ramené sur la session en cours sans jamais voir le formulaire.
+    // Le symptôme est déroutant au possible : « je me connecte avec
+    // Google et l'application m'ouvre le compte administrateur ».
+    //
+    // Le compte n'avait pas changé ; il n'avait simplement jamais été
+    // quitté. On l'affiche donc, nommément, et on laisse choisir.
     if (this.auth.connecte()) {
-      void this.router.navigate(['/accueil'], { replaceUrl: true });
-      return;
+      void this.profils.charger().catch(() => undefined);
     }
 
     // `allowSignalWrites` : afficherBouton() marque le script Google
@@ -125,6 +136,18 @@ export class ConnexionPage {
     } finally {
       this.occupe.set(false);
     }
+  }
+
+  /**
+   * Quitter la session en cours pour en ouvrir une autre.
+   *
+   * `deconnexion(false)` : on reste sur cette page. Laisser le service
+   * rediriger vers /connexion ferait recharger la page qu'on occupe
+   * déjà, et le formulaire perdrait ce qui y avait été saisi.
+   */
+  protected changerDeCompte(): void {
+    this.auth.deconnexion(false);
+    this.erreur.set(null);
   }
 
   protected async entrer(): Promise<void> {

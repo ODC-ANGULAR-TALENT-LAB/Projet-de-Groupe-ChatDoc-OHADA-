@@ -15,6 +15,31 @@
         </span>
       </a>
 
+      <!-- UNE SESSION EST DÉJÀ OUVERTE. On la NOMME au lieu de rediriger
+           en silence : quelqu'un venu ici pour changer de compte doit
+           comprendre pourquoi le formulaire ne s'ouvre pas, et sous
+           quelle identité il se trouve. Sans cela, se connecter avec
+           Google semblait ouvrir le compte de la session précédente. -->
+      @if (auth.connecte()) {
+        <div class="session-ouverte" role="status">
+          <p>
+            Vous êtes déjà connecté
+            @if (profils.profil(); as moi) {
+              en tant que <strong>{{ moi.prenom || moi.email }}</strong>
+              @if (moi.role !== 'utilisateur') {
+                <span class="role">({{ moi.role }})</span>
+              }
+            }.
+          </p>
+          <div class="session-actions">
+            <a class="principal" routerLink="/accueil">Continuer</a>
+            <button type="button" class="lien" (click)="changerDeCompte()">
+              Utiliser un autre compte
+            </button>
+          </div>
+        </div>
+      }
+
       <h1>Connexion</h1>
       <p class="intro">
         Retrouvez vos conversations, vos favoris et vos annotations.

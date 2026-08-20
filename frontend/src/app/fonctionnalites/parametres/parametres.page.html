@@ -42,7 +42,13 @@
       <div class="qui">
         <p class="email">{{ p.email }}</p>
         <p class="meta">
-          Plan {{ p.plan }} · {{ p.quota_restant }} question(s) restante(s)
+          @if (p.role === 'utilisateur') {
+            Plan {{ p.plan }} · {{ p.quota_restant }} question(s) restante(s)
+          } @else {
+            <!-- Dire ce que le compte EST, plutôt qu'un forfait qui ne
+                 le concerne pas et un compteur qui ne bouge jamais. -->
+            Compte d'exploitation · questions sans limite
+          }
           @if (p.connexion_google) {
             · connecté avec Google
           }
@@ -204,23 +210,30 @@
       </section>
     }
 
-    <section class="bloc">
-      <h2>Forfait et crédits</h2>
-      <p class="explication">
-        Un crédit vaut une question à l'assistant. Consulter la
-        bibliothèque et les calculateurs ne consomme rien.
-      </p>
-      <a class="lien-avis" routerLink="/forfaits">Voir mon forfait</a>
-    </section>
+    <!-- FORFAIT ET AVIS SONT DES PAGES DE CLIENT. Un compte
+         d'exploitation n'a ni forfait ni crédits — il est exempté du
+         quota — et on ne demande pas son avis sur le service à celui
+         qui le rend. Les afficher laisserait croire qu'il lui manque
+         quelque chose. -->
+    @if (p.role === 'utilisateur') {
+      <section class="bloc">
+        <h2>Forfait et crédits</h2>
+        <p class="explication">
+          Un crédit vaut une question à l'assistant. Consulter la
+          bibliothèque et les calculateurs ne consomme rien.
+        </p>
+        <a class="lien-avis" routerLink="/forfaits">Voir mon forfait</a>
+      </section>
 
-    <section class="bloc">
-      <h2>Votre avis</h2>
-      <p class="explication">
-        Ce que vous pensez de l'application dans son ensemble. Un avis par
-        compte, modifiable à tout moment.
-      </p>
-      <a class="lien-avis" routerLink="/avis">Donner mon avis</a>
-    </section>
+      <section class="bloc">
+        <h2>Votre avis</h2>
+        <p class="explication">
+          Ce que vous pensez de l'application dans son ensemble. Un avis par
+          compte, modifiable à tout moment.
+        </p>
+        <a class="lien-avis" routerLink="/avis">Donner mon avis</a>
+      </section>
+    }
     }
   }
 </section>
