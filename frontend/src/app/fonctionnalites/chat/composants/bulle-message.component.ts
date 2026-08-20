@@ -158,7 +158,7 @@ import { ChatService } from '../../../core/services/chat.service';
 
     .etiquette {
       margin: 0 0 0.5rem;
-      font-size: 0.68rem;
+      font-size: var(--t-xs);
       font-weight: 600;
       letter-spacing: 0.07em;
       text-transform: uppercase;
@@ -191,7 +191,7 @@ import { ChatService } from '../../../core/services/chat.service';
       border-radius: var(--rayon);
       color: var(--gris-texte);
       font: inherit;
-      font-size: 0.78rem;
+      font-size: var(--t-xs);
       cursor: pointer;
 
       --taille-icone: 0.95rem;
@@ -210,7 +210,7 @@ import { ChatService } from '../../../core/services/chat.service';
       padding: var(--e3);
       background: var(--surface-basse);
       border-radius: var(--rayon-carte);
-      font-size: 0.85rem;
+      font-size: var(--t-md);
 
       label {
         display: block;
@@ -225,7 +225,7 @@ import { ChatService } from '../../../core/services/chat.service';
         margin-bottom: var(--e3);
         padding: 0.45rem 0.55rem;
         font: inherit;
-        font-size: 0.85rem;
+        font-size: var(--t-md);
         background: var(--surface);
         border: 1px solid var(--gris-bordure);
         border-radius: var(--rayon);
@@ -243,7 +243,7 @@ import { ChatService } from '../../../core/services/chat.service';
       margin: 0.75rem 0 0.5rem;
       padding-left: 0.7rem;
       border-left: 2px solid var(--gris-bordure);
-      font-size: 0.85rem;
+      font-size: var(--t-md);
       color: var(--gris-texte);
     }
   `,

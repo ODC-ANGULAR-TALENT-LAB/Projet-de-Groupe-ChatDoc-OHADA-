@@ -96,7 +96,7 @@ import { BoutonFavoriComponent } from '../../partage/composants/bouton-favori.co
       display: flex;
       flex-wrap: wrap;
       gap: 0.35rem;
-      font-size: 0.75rem;
+      font-size: var(--t-xs);
       color: var(--gris-texte);
       margin-bottom: 1rem;
 
@@ -107,19 +107,19 @@ import { BoutonFavoriComponent } from '../../partage/composants/bouton-favori.co
 
     h1 {
       font-family: var(--police-serif);
-      font-size: 1.5rem;
+      font-size: var(--t-2xl);
       margin: 0;
     }
 
     .texte-source {
       margin: 0.2rem 0 1.25rem;
-      font-size: 0.85rem;
+      font-size: var(--t-md);
       color: var(--gris-texte);
     }
 
     .contenu {
       font-family: var(--police-serif);
-      font-size: 1.05rem;
+      font-size: var(--t-lg);
       line-height: 1.75;
       white-space: pre-wrap;
       border-left: 3px solid var(--or);
@@ -135,11 +135,11 @@ import { BoutonFavoriComponent } from '../../partage/composants/bouton-favori.co
       padding: 0.75rem 0;
       border-top: 1px solid var(--bordure);
       border-bottom: 1px solid var(--bordure);
-      font-size: 0.8rem;
+      font-size: var(--t-sm);
 
       dt {
         color: var(--gris-texte);
-        font-size: 0.7rem;
+        font-size: var(--t-xs);
         text-transform: uppercase;
         letter-spacing: 0.06em;
       }

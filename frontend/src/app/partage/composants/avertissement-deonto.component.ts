@@ -26,7 +26,7 @@ import { RouterLink } from '@angular/router';
   styles: `
     .avertissement {
       margin: 0;
-      font-size: 0.75rem;
+      font-size: var(--t-xs);
       line-height: 1.4;
       color: var(--gris-texte);
       border-top: 1px solid var(--bordure);

@@ -77,7 +77,7 @@ import { NoeudSommaire } from '../../../core/models';
       border: none;
       padding: 0.7rem 0.25rem;
       font: inherit;
-      font-size: 0.9rem;
+      font-size: var(--t-md);
       text-align: left;
       color: var(--texte);
       cursor: pointer;
@@ -105,7 +105,7 @@ import { NoeudSommaire } from '../../../core/models';
     }
 
     .compte {
-      font-size: 0.7rem;
+      font-size: var(--t-xs);
       color: var(--gris-texte);
       background: var(--fond);
       border-radius: 999px;
@@ -121,7 +121,7 @@ import { NoeudSommaire } from '../../../core/models';
 
       a {
         display: inline-block;
-        font-size: 0.8rem;
+        font-size: var(--t-sm);
         color: var(--bleu-nuit);
         text-decoration: none;
         border: 1px solid var(--bordure);

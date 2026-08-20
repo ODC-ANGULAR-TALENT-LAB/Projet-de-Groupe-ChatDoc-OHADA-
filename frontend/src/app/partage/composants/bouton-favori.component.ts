@@ -86,7 +86,7 @@ import { IconeComponent } from './icone.component';
       min-height: 44px;
       padding: 0.5rem 0.9rem;
       font: inherit;
-      font-size: 0.88rem;
+      font-size: var(--t-md);
       font-weight: 500;
       color: var(--bleu-nuit);
       background: var(--surface);
@@ -124,14 +124,14 @@ import { IconeComponent } from './icone.component';
       margin-top: 0.75rem;
 
       label {
-        font-size: 0.78rem;
+        font-size: var(--t-xs);
         color: var(--gris-texte);
       }
 
       textarea {
         padding: 0.6rem;
         font: inherit;
-        font-size: 0.9rem;
+        font-size: var(--t-md);
         line-height: 1.6;
         background: var(--surface);
         border: 1px solid var(--gris-bordure);
@@ -150,7 +150,7 @@ import { IconeComponent } from './icone.component';
       min-height: 40px;
       padding: 0.45rem 0.9rem;
       font: inherit;
-      font-size: 0.85rem;
+      font-size: var(--t-md);
       font-weight: 500;
       color: #fff;
       background: var(--bleu-nuit);
@@ -167,13 +167,13 @@ import { IconeComponent } from './icone.component';
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
-      font-size: 0.8rem;
+      font-size: var(--t-sm);
       color: var(--vert);
     }
 
     .erreur {
       margin: 0.5rem 0 0;
-      font-size: 0.82rem;
+      font-size: var(--t-sm);
       color: #8c2f2f;
     }
   `,

@@ -86,7 +86,7 @@ import { IconeComponent } from '../../../partage/composants/icone.component';
       align-items: center;
       gap: 0.4rem;
       margin: 0 0 var(--e2);
-      font-size: 0.72rem;
+      font-size: var(--t-xs);
       font-weight: 600;
       letter-spacing: 0.09em;
       text-transform: uppercase;
@@ -98,7 +98,7 @@ import { IconeComponent } from '../../../partage/composants/icone.component';
     .reference {
       margin: 0;
       font-family: var(--police-serif);
-      font-size: 1.3rem;
+      font-size: var(--t-2xl);
       font-weight: 600;
       line-height: 1.3;
       color: var(--bleu-nuit);
@@ -106,7 +106,7 @@ import { IconeComponent } from '../../../partage/composants/icone.component';
 
     .chemin {
       margin: var(--e1) 0 0;
-      font-size: 0.75rem;
+      font-size: var(--t-xs);
       color: var(--gris-texte);
     }
 
@@ -115,7 +115,7 @@ import { IconeComponent } from '../../../partage/composants/icone.component';
       padding-left: var(--e3);
       border-left: 2px solid var(--gris-bordure);
       font-family: var(--police-serif);
-      font-size: 1.05rem;
+      font-size: var(--t-lg);
       font-style: italic;
       line-height: 1.6;
       color: var(--texte);
@@ -123,7 +123,7 @@ import { IconeComponent } from '../../../partage/composants/icone.component';
 
     .pourquoi {
       margin: var(--e3) 0 0;
-      font-size: 0.82rem;
+      font-size: var(--t-sm);
       color: var(--gris-texte);
     }
 
@@ -136,7 +136,7 @@ import { IconeComponent } from '../../../partage/composants/icone.component';
          bas pour atteindre les 44 px réglementaires. */
       padding: 0.5rem 0;
       color: var(--or-fonce);
-      font-size: 0.9rem;
+      font-size: var(--t-md);
       font-weight: 600;
       text-decoration: none;
 
