@@ -349,3 +349,98 @@ def test_un_forfait_inconnu_est_refuse(client, abonne):
     assert client.post(
         "/moi/abonnement", json={"forfait": "platine"}, headers=entete
     ).status_code == 404
+
+
+# ---------------------------------------------------------------------
+# Un compte de personnel n'est pas un client
+# ---------------------------------------------------------------------
+
+
+@pytest.fixture
+def juriste():
+    email = "essai-forfait-juriste@chatdocs-ohada.cm"
+    identifiant = _compte(email, role="juriste")
+    yield identifiant, {"Authorization": f"Bearer {creer_jeton(identifiant)}"}
+    _effacer(email)
+
+
+@pytest.mark.parametrize("role", ["juriste", "admin"])
+def test_le_personnel_ne_souscrit_pas_de_forfait(client, role):
+    """LE TEST QUI PORTE LA REGLE.
+
+    Un juriste depose et valide des textes ; un administrateur tient le
+    service. Ni l'un ni l'autre n'achete un forfait. Leur en vendre un
+    gonflerait le chiffre d'affaires d'une vente interne, et n'aurait
+    aucun effet utile puisqu'ils sont deja exemptes du quota.
+    """
+    email = f"essai-personnel-{role}@chatdocs-ohada.cm"
+    identifiant = _compte(email, role=role)
+    entete = {"Authorization": f"Bearer {creer_jeton(identifiant)}"}
+    try:
+        reponse = client.post(
+            "/moi/abonnement", json={"forfait": "essentiel"}, headers=entete
+        )
+        assert reponse.status_code == 409
+
+        paiement = client.post(
+            "/moi/abonnement/payer",
+            json={"forfait": "essentiel", "telephone": "699000000"},
+            headers=entete,
+        )
+        assert paiement.status_code == 409
+    finally:
+        _effacer(email)
+
+
+def test_l_abonnement_du_personnel_se_declare_comme_tel(client, juriste):
+    """L'interface doit pouvoir le dire plutot que d'afficher des
+    boutons qui repondront 409."""
+    _, entete = juriste
+
+    mien = client.get("/moi/abonnement", headers=entete).json()
+
+    assert mien["personnel"] is True
+
+
+def test_un_client_ordinaire_n_est_pas_marque_personnel(client, abonne):
+    _, entete = abonne
+
+    assert client.get("/moi/abonnement", headers=entete).json()["personnel"] is False
+
+
+def test_le_personnel_est_exempte_du_quota():
+    """Un juriste doit pouvoir interroger l'assistant autant qu'il le
+    faut pour verifier les citations d'un texte qu'il vient d'ingerer.
+
+    On verifie la PROPRIETE du modele : la garde des routes de chat s'y
+    adosse, et c'est elle qui doit rester vraie.
+    """
+    from app.models import Utilisateur
+
+    for role, attendu in (
+        ("utilisateur", False),
+        ("juriste", True),
+        ("admin", True),
+    ):
+        compte = Utilisateur(email=f"x-{role}@essai.cm", role=role)
+        assert compte.est_personnel is attendu
+
+
+def test_le_personnel_ne_compte_pas_dans_les_abonnes(client, patron):
+    """Sinon le chiffre d'affaires afficherait des ventes internes."""
+    email = "essai-personnel-compte@chatdocs-ohada.cm"
+    identifiant = _compte(email, role="juriste")
+    with FabriqueSession() as session:
+        session.execute(
+            text(
+                "UPDATE utilisateur SET plan = 'cabinet', "
+                "plan_echeance = CURRENT_DATE + 30 WHERE id = :id"
+            ),
+            {"id": identifiant},
+        )
+        session.commit()
+    try:
+        bord = client.get("/admin/tableau-de-bord", headers=patron).json()
+        assert bord["abonnes_par_forfait"].get("cabinet", 0) == 0
+    finally:
+        _effacer(email)

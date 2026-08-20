@@ -61,6 +61,26 @@ journal = logging.getLogger(__name__)
 routeur = APIRouter(tags=["forfaits"])
 
 
+REFUS_PERSONNEL = (
+    "Ce compte sert à exploiter le service, pas à s'en servir : il n'a "
+    "ni forfait ni crédits à acheter."
+)
+
+
+def _refuser_si_personnel(utilisateur: Utilisateur) -> None:
+    """Un compte de personnel n'achete pas de forfait.
+
+    UN JURISTE ET UN ADMINISTRATEUR NE SONT PAS DES CLIENTS. Leur
+    vendre un forfait n'aurait aucun sens — ils sont deja exemptes du
+    quota — et gonflerait le chiffre d'affaires d'une vente interne.
+
+    409 et non 403 : le droit n'est pas en cause, c'est la demande qui
+    n'a pas de sens pour ce compte.
+    """
+    if utilisateur.est_personnel:
+        raise HTTPException(status.HTTP_409_CONFLICT, REFUS_PERSONNEL)
+
+
 def _en_sortie(f) -> ForfaitSortie:
     return ForfaitSortie(
         code=f.code,
@@ -103,6 +123,7 @@ def mon_abonnement(
         echeance=utilisateur.plan_echeance,
         demande_en_attente=en_attente,
         paiement_mobile=parametres.campay_configure,
+        personnel=utilisateur.est_personnel,
     )
 
 
@@ -122,6 +143,8 @@ def demander_un_forfait(
     que l'application ne recoit pas. Les credits ne s'ouvrent qu'une
     fois ce paiement constate.
     """
+    _refuser_si_personnel(utilisateur)
+
     vise = PAR_CODE.get(corps.forfait)
     if vise is None:
         raise HTTPException(
@@ -284,6 +307,8 @@ def payer_par_mobile(
     Le montant est lu dans le catalogue a partir du seul code de
     forfait : le navigateur ne peut pas le proposer.
     """
+    _refuser_si_personnel(utilisateur)
+
     vise = PAR_CODE.get(corps.forfait)
     if vise is None or vise.prix_fcfa == 0:
         raise HTTPException(

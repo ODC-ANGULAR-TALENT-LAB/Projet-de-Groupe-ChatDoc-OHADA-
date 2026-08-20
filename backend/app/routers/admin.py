@@ -615,10 +615,15 @@ def tableau_de_bord(
         ).all()
     )
 
+    # LE PERSONNEL EST EXCLU DES CHIFFRES CLIENTS. Un juriste ou un
+    # administrateur n'achete pas de forfait : les compter parmi les
+    # abonnes gonflerait le nombre d'abonnes et le chiffre d'affaires
+    # d'une vente qui n'a jamais eu lieu.
     actifs = db.execute(
         text(
             "SELECT plan, count(*) FROM utilisateur "
             "WHERE plan <> 'gratuit' "
+            "  AND role = 'utilisateur' "
             "  AND (plan_echeance IS NULL OR plan_echeance >= :jour) "
             "GROUP BY plan"
         ),
@@ -637,6 +642,10 @@ def tableau_de_bord(
     ).mappings().first()
 
     return RepartitionAdmin(
+        # `comptes` compte TOUT LE MONDE, personnel compris : c'est le
+        # nombre de comptes de l'application. `comptes_par_role` permet
+        # de distinguer clients et exploitants, plutot que de masquer
+        # les seconds dans un total qu'on ne pourrait plus recouper.
         comptes=sum(roles.values()),
         comptes_par_role=roles,
         comptes_google=db.execute(

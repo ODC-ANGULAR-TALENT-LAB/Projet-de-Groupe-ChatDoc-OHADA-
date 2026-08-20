@@ -13,6 +13,23 @@
   }
 
   @if (abonnement(); as mien) {
+    @if (mien.personnel) {
+      <!-- UN COMPTE D'EXPLOITATION N'EST PAS UN CLIENT. Lui montrer des
+           boutons d'achat serait doublement faux : ils échouent (409),
+           et ils laissent croire qu'il lui manque quelque chose alors
+           qu'il a déjà plus que tous les forfaits. -->
+      <section class="etat exploitation" aria-label="Votre compte">
+        <div>
+          <span class="etiquette">Compte d'exploitation</span>
+          <strong>Questions sans limite</strong>
+          <span class="note-exploitation">
+            Ce compte sert à tenir le service et le corpus, pas à s'en
+            servir : il n'a ni forfait ni crédits à acheter. Le catalogue
+            ci-dessous est celui que voient vos utilisateurs.
+          </span>
+        </div>
+      </section>
+    } @else {
     <!-- L'état du compte avant le catalogue : on décide en fonction de
          ce qu'il reste, pas dans l'abstrait. -->
     <section class="etat" aria-label="Votre abonnement">
@@ -31,6 +48,7 @@
         </div>
       }
     </section>
+    }
 
     @if (mien.demande_en_attente; as attendu) {
       <div class="attente-demande" role="status">
@@ -162,7 +180,7 @@
               type="button"
               [class.principal]="forfait.prix_fcfa > 0"
               [class.secondaire]="forfait.prix_fcfa === 0"
-              [disabled]="occupe() || !auth.connecte()"
+              [disabled]="occupe() || !auth.connecte() || estPersonnel()"
               (click)="choisir(forfait)"
             >
               @if (forfait.prix_fcfa) {

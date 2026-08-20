@@ -85,6 +85,11 @@ export class ForfaitsPage {
     }
   }
 
+  /** Compte d'exploitation : aucun forfait ne le concerne. */
+  protected estPersonnel(): boolean {
+    return this.abonnement()?.personnel === true;
+  }
+
   protected estActuel(code: string): boolean {
     return this.abonnement()?.forfait.code === code;
   }
@@ -98,6 +103,10 @@ export class ForfaitsPage {
   }
 
   protected choisir(forfait: Forfait): void {
+    // Garde de surface : le serveur refuse déjà (409). Elle évite un
+    // aller-retour et un message d'erreur là où il n'y a pas d'erreur.
+    if (this.estPersonnel()) return;
+
     this.erreur.set(null);
 
     // Le gratuit ne se paie pas : le changement est immédiat.

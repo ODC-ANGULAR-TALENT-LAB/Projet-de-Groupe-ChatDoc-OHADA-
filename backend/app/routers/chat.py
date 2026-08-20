@@ -5,6 +5,8 @@ Plus l'historique des conversations, qui en est la trace.
 
 from __future__ import annotations
 
+import logging
+
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -33,8 +35,15 @@ from app.schemas import (
     SignalementEntree,
 )
 from app.services.export_pdf import construire as construire_pdf
-from app.services.profil import preferences_completes
+from app.services.profil import (
+    PREFERENCES,
+    ProfilRefuse,
+    nettoyer_prenom,
+    preferences_completes,
+)
 from app.services.rag import ServiceIndisponible, repondre, repondre_en_flux
+
+journal = logging.getLogger(__name__)
 
 routeur = APIRouter(tags=["chat"])
 
@@ -131,13 +140,60 @@ def _enregistrer(
     return message.id
 
 
+def _prenom_pour_salutation(utilisateur: Utilisateur) -> str | None:
+    """Le prenom a transmettre au prompt systeme, ou None.
+
+    CETTE FONCTION MANQUAIT, et son absence faisait planter la route de
+    chat non diffusee en 500 a chaque question — un NameError leve au
+    moment de l'appel, invisible a l'import et non couvert par les
+    tests. Elle est reecrite ici avec les deux garanties qu'elle doit
+    porter.
+
+    PREMIERE GARANTIE : LE CHOIX DE L'UTILISATEUR. La preference
+    « salutation » est vraie par defaut, mais celui qui la desactive ne
+    veut pas etre appele par son prenom. On ne transmet alors rien.
+
+    SECONDE GARANTIE, ET C'EST LA PLUS IMPORTANTE : LE PRENOM EST
+    REVALIDE ICI. Il est deja nettoye a l'ecriture, mais c'est la SEULE
+    donnee ecrite par l'utilisateur qui atteigne le prompt systeme —
+    tout le reste du produit repose sur le fait qu'aucune ne l'atteint.
+    Une revalidation a la lecture coute une expression reguliere et
+    protege contre ce qui aurait pu entrer par une autre voie :
+    migration, import, correction manuelle en base.
+
+    En cas de doute, on renvoie None : perdre une salutation est sans
+    consequence, laisser passer une instruction ne l'est pas.
+    """
+    if not utilisateur.prenom:
+        return None
+
+    preferences = utilisateur.preferences or {}
+    if preferences.get("salutation", PREFERENCES["salutation"]["defaut"]) is False:
+        return None
+
+    try:
+        return nettoyer_prenom(utilisateur.prenom)
+    except ProfilRefuse:
+        journal.warning(
+            "Prenom refuse a la lecture pour le compte %s : non transmis au "
+            "prompt.",
+            utilisateur.id,
+        )
+        return None
+
+
 @routeur.post("/chat/question")
 def poser_question(
     corps: QuestionEntree,
     utilisateur: Utilisateur = Depends(utilisateur_courant),
     db: Session = Depends(get_db),
 ) -> ReponseChat:
-    if utilisateur.quota_restant <= 0:
+    # LE PERSONNEL N'EST PAS SOUMIS AU QUOTA. Un juriste doit pouvoir
+    # interroger l'assistant autant qu'il le faut pour verifier que le
+    # texte qu'il vient d'ingerer produit les bonnes citations : c'est
+    # son travail, pas une consommation. L'arreter a dix questions
+    # l'empecherait de faire ce pour quoi son compte existe.
+    if not utilisateur.est_personnel and utilisateur.quota_restant <= 0:
         raise HTTPException(
             status.HTTP_402_PAYMENT_REQUIRED, "Quota mensuel epuise"
         )
@@ -168,7 +224,8 @@ def poser_question(
     # Meme raisonnement pour une reponse sans synthese : le service de
     # redaction etait indisponible, l'utilisateur n'a pas a le payer.
     if not resultat.get("refus") and not resultat.get("sans_synthese"):
-        utilisateur.quota_restant -= 1
+        if not utilisateur.est_personnel:
+            utilisateur.quota_restant -= 1
 
     message_id = _enregistrer(db, conversation, corps.question, resultat)
     db.commit()
@@ -199,7 +256,10 @@ def poser_question_en_flux(
     Le point de terminaison non diffusé reste en place — c'est lui que
     joue le jeu d'évaluation, où le streaming n'apporte rien.
     """
-    if utilisateur.quota_restant <= 0:
+    # Meme exemption que sur la route non diffusee : les deux portes
+    # doivent dire la meme chose, sinon le flux resterait ferme au
+    # personnel alors que l'autre s'ouvre.
+    if not utilisateur.est_personnel and utilisateur.quota_restant <= 0:
         raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED, "Quota mensuel epuise")
 
     conversation = _conversation(db, utilisateur, corps.conversation_id, corps.question)
@@ -241,7 +301,11 @@ def poser_question_en_flux(
         with FabriqueSession() as session:
             conversation_courante = session.get(Conversation, conversation_id)
             compte = session.get(Utilisateur, utilisateur_id)
-            if not resultat.get("refus") and not resultat.get("sans_synthese"):
+            if (
+                not compte.est_personnel
+                and not resultat.get("refus")
+                and not resultat.get("sans_synthese")
+            ):
                 compte.quota_restant -= 1
             message_id = _enregistrer(
                 session, conversation_courante, corps.question, resultat

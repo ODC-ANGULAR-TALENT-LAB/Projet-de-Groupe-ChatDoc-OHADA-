@@ -716,6 +716,10 @@ class AbonnementSortie(BaseModel):
     # CamPay est-il configure sur ce serveur ? Sans lui, l'interface doit
     # proposer le reglement hors ligne plutot qu'un bouton qui echouera.
     paiement_mobile: bool = False
+    # Compte d'exploitation (juriste, administrateur) : il n'achete pas
+    # de forfait et n'est pas soumis au quota. L'interface doit le dire
+    # plutot que d'afficher des boutons qui repondront 409.
+    personnel: bool = False
 
 
 class DemandeAbonnementEntree(BaseModel):

@@ -142,6 +142,27 @@ class Utilisateur(Base):
         return self.role == "admin"
 
     @property
+    def est_personnel(self) -> bool:
+        """Ce compte sert-il a EXPLOITER le service, ou a s'en servir ?
+
+        UN COMPTE DE PERSONNEL N'EST PAS UN CLIENT. Le juriste depose et
+        valide des textes ; l'administrateur tient le service. Ni l'un ni
+        l'autre n'achete un forfait, et les compter parmi les abonnes
+        fausserait le chiffre d'affaires comme le nombre d'abonnes.
+
+        CONSEQUENCE SUR LE QUOTA : ils en sont exemptes. Un juriste doit
+        pouvoir interroger l'assistant autant qu'il le faut pour verifier
+        que le texte qu'il vient d'ingerer produit les bonnes citations —
+        c'est son travail, pas une consommation. L'arreter a dix
+        questions l'empecherait de faire ce pour quoi le compte existe.
+
+        Le cout de cet usage est reel mais borne : ces comptes sont peu
+        nombreux et nominatifs, contrairement a un quota ouvert qui
+        protege d'inconnus.
+        """
+        return self.role in ("juriste", "admin")
+
+    @property
     def connexion_google(self) -> bool:
         """Le compte est-il rattache a Google ?
 

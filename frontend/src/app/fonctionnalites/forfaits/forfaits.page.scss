@@ -326,3 +326,23 @@ h1 {
     color: var(--gris-texte);
   }
 }
+
+/* Compte d'exploitation : le bandeau remplace l'etat d'abonnement. */
+.etat.exploitation {
+  border-color: var(--bleu-nuit);
+
+  strong {
+    display: block;
+    font-family: var(--police-serif);
+    font-size: var(--t-xl);
+  }
+}
+
+.note-exploitation {
+  display: block;
+  max-width: 44rem;
+  margin-top: var(--e1);
+  font-size: var(--t-sm);
+  line-height: 1.6;
+  color: var(--gris-texte);
+}

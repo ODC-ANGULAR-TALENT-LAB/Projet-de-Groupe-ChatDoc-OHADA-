@@ -20,6 +20,13 @@ export interface Abonnement {
   demande_en_attente: string | null;
   /** CamPay configuré côté serveur : sinon, règlement hors ligne. */
   paiement_mobile: boolean;
+  /**
+   * Compte d'exploitation (juriste, administrateur).
+   *
+   * Il n'achète pas de forfait et n'est pas soumis au quota. L'interface
+   * doit le dire plutôt que d'afficher des boutons qui répondront 409.
+   */
+  personnel: boolean;
 }
 
 export interface Paiement {
