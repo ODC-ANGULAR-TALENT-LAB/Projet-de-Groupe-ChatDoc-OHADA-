@@ -209,9 +209,36 @@ ne commiter que si elle passe.
 **Vérifier que l'installation est complète :**
 
 ```bash
-pytest -q                      # 342 tests
+pytest -q                      # 404 tests
 python -c "import app.main"    # l'API se construit
 ```
+
+### 3 bis. Le premier compte d'administration
+
+```bash
+cd backend
+python scripts/creer_admin.py
+```
+
+Le script demande une adresse, puis le mot de passe **à la saisie
+masquée**, avec confirmation. Il le hache immédiatement en bcrypt.
+
+**Pourquoi un script et non une route.** Une route qui fabrique un
+administrateur est une porte dérobée : il suffit de l'atteindre pour
+s'octroyer tous les droits. Le premier administrateur doit naître d'un
+geste posé sur le serveur, par quelqu'un qui y a déjà accès. Les
+suivants se nomment depuis la console d'administration
+(`/administration`, onglet *Comptes*).
+
+**Pourquoi le mot de passe n'est ni généré ni passé en argument.** Un
+secret qu'on transmet est un secret compromis : en argument, il resterait
+dans l'historique du terminal ; généré puis affiché, il traverserait un
+canal de discussion. Saisi à la main, il ne quitte jamais le poste. C'est
+la même raison qui fait que `createsuperuser` de Django procède ainsi.
+
+Le script est **idempotent** : relancé sur une adresse existante, il
+propose de promouvoir le compte sans toucher à son mot de passe — le cas
+courant, quand on donne les droits à quelqu'un qui a déjà un compte.
 
 ### 4. Frontend
 
