@@ -12,7 +12,7 @@ header {
   h1 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.6rem;
+    font-size: var(--t-3xl);
     color: var(--bleu-nuit);
   }
 }
@@ -29,7 +29,7 @@ header {
   h2 {
     margin: 0 0 var(--e3);
     font-family: var(--police-serif);
-    font-size: 1.15rem;
+    font-size: var(--t-xl);
     color: var(--bleu-nuit);
   }
 }
@@ -51,7 +51,7 @@ header {
 
 .aide {
   margin: var(--e3) 0 0;
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   color: var(--gris-texte);
 
@@ -73,7 +73,7 @@ header {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
 }
 
 thead th {
@@ -82,7 +82,7 @@ thead th {
   background: var(--surface-basse);
   text-align: left;
   padding: var(--e2) var(--e3);
-  font-size: 0.72rem;
+  font-size: var(--t-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -109,7 +109,7 @@ tbody td {
 .titre {
   display: block;
   margin-top: 0.15rem;
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   color: var(--gris-texte);
   /* L'intitulé complet d'un acte uniforme dépasse la centaine de
      caractères : on le borne plutôt que d'écraser les autres colonnes. */
@@ -125,7 +125,7 @@ tbody td {
 .alerte {
   display: block;
   margin-top: 0.15rem;
-  font-size: 0.72rem;
+  font-size: var(--t-xs);
   color: var(--or-fonce);
 }
 
@@ -133,7 +133,7 @@ tbody td {
   display: block;
   margin-top: 0.15rem;
   font-family: ui-monospace, Consolas, monospace;
-  font-size: 0.7rem;
+  font-size: var(--t-xs);
   color: var(--texte-faible);
 }
 
@@ -144,7 +144,7 @@ tbody td {
 
 .vide {
   color: var(--gris-texte);
-  font-size: 0.9rem;
+  font-size: var(--t-md);
 }
 
 /* Les liens du tableau suivent la palette : le bleu par défaut du

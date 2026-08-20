@@ -8,13 +8,13 @@
 
 h1 {
   font-family: var(--police-serif);
-  font-size: 1.35rem;
+  font-size: var(--t-2xl);
   margin: 0;
 }
 
 .intro {
   margin: 0.25rem 0 1.5rem;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   color: var(--gris-texte);
 }
@@ -55,12 +55,12 @@ h1 {
   }
 
   .titre {
-    font-size: 0.92rem;
+    font-size: var(--t-md);
     color: var(--bleu-nuit);
   }
 
   .date {
-    font-size: 0.72rem;
+    font-size: var(--t-xs);
     color: var(--gris-texte);
   }
 
@@ -76,7 +76,7 @@ h1 {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   color: var(--gris-texte);
 }
 
@@ -88,7 +88,7 @@ h1 {
   border-radius: 4px;
   padding: 0.15rem 0.55rem;
   font: inherit;
-  font-size: 0.75rem;
+  font-size: var(--t-xs);
   color: #9a2a2a;
   cursor: pointer;
 
@@ -99,30 +99,16 @@ h1 {
   }
 }
 
-.lien {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  font-size: 0.75rem;
-  color: var(--gris-texte);
-  text-decoration: underline;
-  cursor: pointer;
 
-  &:hover,
-  &:focus-visible {
-    color: var(--bleu-nuit);
-  }
-}
 
 .attente,
 .vide {
   color: var(--gris-texte);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   line-height: 1.6;
 }
 
 .erreur {
   color: #9a2a2a;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
 }

@@ -12,7 +12,7 @@ header {
   h1 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.6rem;
+    font-size: var(--t-3xl);
     color: var(--bleu-nuit);
   }
 }
@@ -32,7 +32,7 @@ header {
     gap: var(--e2);
     margin: 0 0 var(--e3);
     font-family: var(--police-serif);
-    font-size: 1.15rem;
+    font-size: var(--t-xl);
     color: var(--bleu-nuit);
   }
 }
@@ -43,7 +43,7 @@ header {
 
 .explication {
   margin: 0 0 var(--e4);
-  font-size: 0.86rem;
+  font-size: var(--t-md);
   line-height: 1.65;
   color: var(--gris-texte);
 }
@@ -73,7 +73,7 @@ header {
 
 .pastille {
   padding: 0.15rem 0.5rem;
-  font-size: 0.7rem;
+  font-size: var(--t-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -91,14 +91,14 @@ header {
 }
 
 .versions {
-  font-size: 0.76rem;
+  font-size: var(--t-xs);
   color: var(--gris-texte);
 }
 
 .reference {
   display: inline-block;
   font-family: var(--police-serif);
-  font-size: 1.05rem;
+  font-size: var(--t-lg);
   font-weight: 600;
   color: var(--bleu-nuit);
   text-decoration: none;
@@ -110,14 +110,14 @@ header {
 
 .chemin {
   margin: var(--e1) 0 0;
-  font-size: 0.76rem;
+  font-size: var(--t-xs);
   color: var(--gris-texte);
 }
 
 .apercu {
   margin: var(--e2) 0 0;
   font-family: var(--police-serif);
-  font-size: 0.92rem;
+  font-size: var(--t-md);
   line-height: 1.7;
   color: var(--texte);
 }
@@ -125,7 +125,7 @@ header {
 .note {
   margin: var(--e3) 0 0;
   padding: var(--e2) var(--e3);
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   background: var(--surface-basse);
   border-radius: var(--rayon);
@@ -140,7 +140,7 @@ header {
   margin-top: var(--e3);
   padding: 0.4rem 0.7rem;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
   color: var(--gris-texte);
   background: none;
   border: 1px solid var(--bordure);
@@ -175,21 +175,11 @@ header {
   .aide {
     max-width: 26rem;
     margin: var(--e2) auto var(--e5);
-    font-size: 0.86rem;
+    font-size: var(--t-md);
     line-height: 1.65;
     color: var(--gris-texte);
   }
 
-  .principal {
-    display: inline-block;
-    padding: 0.6rem 1.1rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #fff;
-    background: var(--bleu-nuit);
-    border-radius: var(--rayon);
-    text-decoration: none;
-  }
 }
 
 .vide,
@@ -199,7 +189,7 @@ header {
 
 .erreur {
   padding: var(--e2) var(--e3);
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   color: #8c2f2f;
   background: #fbf4f2;
   border-left: 3px solid #a94442;
@@ -210,7 +200,7 @@ header {
   margin: var(--e6) 0 0;
   padding-top: var(--e4);
   border-top: 1px solid var(--bordure);
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
   line-height: 1.65;
   color: var(--gris-texte);
 }

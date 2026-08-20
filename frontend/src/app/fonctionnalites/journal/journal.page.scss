@@ -12,7 +12,7 @@ header {
   h1 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.6rem;
+    font-size: var(--t-3xl);
     color: var(--bleu-nuit);
   }
 }
@@ -56,7 +56,7 @@ header {
 
 .date {
   font-variant-numeric: tabular-nums;
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   color: var(--texte-faible);
 }
 
@@ -69,7 +69,7 @@ article {
   h2 {
     margin: 0;
     font-family: var(--police-serif);
-    font-size: 1.1rem;
+    font-size: var(--t-xl);
     font-weight: 600;
     color: var(--bleu-nuit);
   }
@@ -81,7 +81,7 @@ article {
 
 .titre {
   margin: var(--e1) 0 var(--e3);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 }
 
@@ -94,7 +94,7 @@ article {
 /* La couleur ne porte jamais seule l'information : chaque pastille
    affiche son libellé en toutes lettres. */
 .pastille {
-  font-size: 0.75rem;
+  font-size: var(--t-xs);
   font-weight: 600;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
@@ -110,7 +110,7 @@ article {
 .faits {
   margin: var(--e3) 0 0;
   padding-left: 1.1rem;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   color: var(--texte);
 

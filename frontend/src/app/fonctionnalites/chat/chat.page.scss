@@ -23,13 +23,13 @@
 
   h1 {
     font-family: var(--police-serif);
-    font-size: 1.15rem;
+    font-size: var(--t-xl);
     margin: 0;
   }
 }
 
 .quota {
-  font-size: 0.75rem;
+  font-size: var(--t-xs);
   color: var(--vert);
   border: 1px solid currentcolor;
   border-radius: 999px;
@@ -58,14 +58,14 @@
   h2 {
     margin: 0 0 var(--e3);
     font-family: var(--police-serif);
-    font-size: 1.75rem;
+    font-size: var(--t-3xl);
     font-weight: 600;
     color: var(--bleu-nuit);
   }
 
   p {
     margin: 0;
-    font-size: 0.92rem;
+    font-size: var(--t-md);
     line-height: 1.65;
   }
 }
@@ -87,7 +87,7 @@
     border-radius: var(--rayon-carte);
     padding: 0.7rem 0.85rem;
     font: inherit;
-    font-size: 0.88rem;
+    font-size: var(--t-md);
     color: var(--bleu-nuit);
     cursor: pointer;
     transition: border-color 160ms ease-out, background-color 160ms ease-out;
@@ -106,7 +106,7 @@
   align-items: center;
   gap: 0.35rem;
   color: var(--gris-texte);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
 }
 
 .point {
@@ -178,7 +178,7 @@
     padding: 0.4rem 0.35rem;
     font: inherit;
     /* 16 px minimum : en dessous, iOS zoome à la mise au point. */
-    font-size: 1rem;
+    font-size: var(--t-lg);
     line-height: 1.5;
     color: var(--texte);
     max-height: 40vh;
@@ -223,7 +223,7 @@
 .mention {
   margin: var(--e2) 0 0;
   text-align: center;
-  font-size: 0.72rem;
+  font-size: var(--t-xs);
   color: var(--texte-faible);
 }
 
@@ -234,13 +234,13 @@
 
   h2 {
     font-family: var(--police-serif);
-    font-size: 1.5rem;
+    font-size: var(--t-2xl);
     margin: 0 0 var(--e3);
     color: var(--bleu-nuit);
   }
 
   .intro {
-    font-size: 0.9rem;
+    font-size: var(--t-md);
     line-height: 1.65;
     color: var(--gris-texte);
     margin: 0 0 var(--e3);
@@ -259,7 +259,7 @@
 
 .erreur {
   color: #9a2a2a;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   margin: var(--e2) 0;
 }
 

@@ -8,13 +8,13 @@
 
 h1 {
   font-family: var(--police-serif);
-  font-size: 1.35rem;
+  font-size: var(--t-2xl);
   margin: 0;
 }
 
 .intro {
   margin: 0.25rem 0 1.25rem;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 }
 
@@ -27,7 +27,7 @@ h1 {
     flex: 1;
     min-width: 0;
     font: inherit;
-    font-size: 0.9rem;
+    font-size: var(--t-md);
     padding: 0.5rem 0.65rem;
     border: 1px solid var(--gris-bordure);
     border-radius: 6px;
@@ -46,7 +46,7 @@ h1 {
   margin-bottom: 0.5rem;
 
   h2 {
-    font-size: 0.8rem;
+    font-size: var(--t-sm);
     text-transform: uppercase;
     letter-spacing: 0.07em;
     color: var(--gris-texte);
@@ -80,14 +80,14 @@ h1 {
 
   .chemin {
     display: block;
-    font-size: 0.72rem;
+    font-size: var(--t-xs);
     color: var(--gris-texte);
     margin: 0.1rem 0 0.35rem;
   }
 
   .extrait {
     display: block;
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     line-height: 1.5;
   }
 }
@@ -115,14 +115,14 @@ h1 {
 
   .sigle {
     font-family: var(--police-serif);
-    font-size: 1.05rem;
+    font-size: var(--t-lg);
     font-weight: 600;
     color: var(--bleu-nuit);
   }
 
   .titre {
     flex: 1;
-    font-size: 0.82rem;
+    font-size: var(--t-sm);
     color: var(--gris-texte);
   }
 }
@@ -131,11 +131,11 @@ h1 {
   display: flex;
   gap: 1.25rem;
   margin: 0.6rem 0;
-  font-size: 0.75rem;
+  font-size: var(--t-xs);
 
   dt {
     color: var(--gris-texte);
-    font-size: 0.65rem;
+    font-size: var(--t-xs);
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
@@ -149,25 +149,16 @@ h1 {
 .attente,
 .vide {
   color: var(--gris-texte);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   line-height: 1.6;
 }
 
 .erreur {
   color: #9a2a2a;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
 }
 
-.lien {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  font-size: 0.78rem;
-  color: var(--bleu-nuit);
-  text-decoration: underline;
-  cursor: pointer;
-}
+
 
 .invisible {
   position: absolute;

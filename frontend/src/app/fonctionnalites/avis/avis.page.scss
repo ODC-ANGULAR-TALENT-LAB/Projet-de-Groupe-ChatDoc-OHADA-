@@ -7,7 +7,7 @@
 h1 {
   margin: 0;
   font-family: var(--police-serif);
-  font-size: 1.6rem;
+  font-size: var(--t-3xl);
   color: var(--bleu-nuit);
 }
 
@@ -23,7 +23,7 @@ h1 {
 
   legend {
     padding: 0;
-    font-size: 0.8rem;
+    font-size: var(--t-sm);
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -50,7 +50,7 @@ h1 {
      collées les unes aux autres. */
   min-width: 44px;
   min-height: 44px;
-  font-size: 1.9rem;
+  font-size: var(--t-4xl);
   line-height: 1;
   color: var(--gris-bordure);
   cursor: pointer;
@@ -94,7 +94,7 @@ h1 {
 
 .libelle-note {
   margin: var(--e2) 0 0;
-  font-size: 0.9rem;
+  font-size: var(--t-md);
   font-weight: 500;
   color: var(--bleu-nuit);
 }
@@ -106,7 +106,7 @@ h1 {
   margin-bottom: var(--e5);
 
   label {
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     font-weight: 500;
   }
 
@@ -118,7 +118,7 @@ h1 {
   textarea {
     padding: 0.65rem;
     font: inherit;
-    font-size: 0.95rem;
+    font-size: var(--t-lg);
     line-height: 1.6;
     background: var(--surface);
     border: 1px solid var(--gris-bordure);
@@ -136,7 +136,7 @@ h1 {
 .compteur {
   margin: 0;
   align-self: flex-end;
-  font-size: 0.75rem;
+  font-size: var(--t-xs);
   color: var(--gris-texte);
 }
 
@@ -147,53 +147,28 @@ h1 {
   gap: var(--e3);
 }
 
-.principal {
-  min-height: 44px;
-  padding: 0.6rem 1.2rem;
-  font: inherit;
-  font-weight: 500;
-  color: #fff;
-  background: var(--bleu-nuit);
-  border: 0;
-  border-radius: var(--rayon);
-  cursor: pointer;
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
 
-.lien {
-  min-height: 44px;
-  padding: 0 0.5rem;
-  font: inherit;
-  font-size: 0.88rem;
-  color: var(--gris-texte);
-  background: none;
-  border: 0;
-  text-decoration: underline;
-  cursor: pointer;
-}
+
 
 .confirme {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   color: var(--vert);
 }
 
 .depose,
 .confidentialite {
   margin: var(--e5) 0 0;
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
   color: var(--gris-texte);
 }
 
 .erreur {
   margin: 0 0 var(--e3);
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   color: #8c2f2f;
 }
 

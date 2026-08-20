@@ -8,7 +8,7 @@
   align-items: center;
   gap: 0.45em;
   font-family: var(--police-serif);
-  font-size: 1.35rem;
+  font-size: var(--t-2xl);
   font-weight: 700;
   letter-spacing: -0.02em;
   text-decoration: none;
@@ -63,7 +63,7 @@
 
     a {
       color: var(--sur-nuit-faible);
-      font-size: 0.9rem;
+      font-size: var(--t-md);
       text-decoration: none;
 
       &:hover {
@@ -81,7 +81,7 @@
 
 .lien-connexion {
   color: var(--sur-nuit);
-  font-size: 0.9rem;
+  font-size: var(--t-md);
   font-weight: 500;
   text-decoration: none;
 
@@ -99,7 +99,7 @@
      ces boutons sont les seuls chemins vers le produit. */
   min-height: 44px;
   padding: 0.6rem 1.1rem;
-  font-size: 0.9rem;
+  font-size: var(--t-md);
   font-weight: 600;
   text-decoration: none;
   border-radius: var(--rayon);
@@ -131,7 +131,7 @@
 .grand {
   min-height: 52px;
   padding: 0.85rem 1.5rem;
-  font-size: 1rem;
+  font-size: var(--t-lg);
 }
 
 /* ------------------------------------------------------------------ */
@@ -256,7 +256,7 @@
   gap: var(--e2);
   margin: 0 0 var(--e5);
   padding: 0.35rem 0.85rem;
-  font-size: 0.74rem;
+  font-size: var(--t-xs);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -294,7 +294,7 @@
 .accroche {
   max-width: 34rem;
   margin: 0 0 var(--e6);
-  font-size: 1.05rem;
+  font-size: var(--t-lg);
   line-height: 1.7;
   color: var(--sur-nuit);
 }
@@ -308,7 +308,7 @@
 
 .mention {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--t-sm);
   color: var(--sur-nuit-faible);
 }
 
@@ -330,7 +330,7 @@
   align-items: center;
   gap: var(--e3);
   padding: var(--e3) var(--e4);
-  font-size: 0.76rem;
+  font-size: var(--t-xs);
   color: var(--gris-texte);
   background: var(--surface-basse);
   border-bottom: 1px solid var(--bordure);
@@ -356,7 +356,7 @@
   max-width: 88%;
   margin: 0 0 var(--e4) auto;
   padding: var(--e3);
-  font-size: 0.9rem;
+  font-size: var(--t-md);
   color: #fff;
   background: var(--bleu-nuit);
   border-radius: var(--rayon) var(--rayon) 0 var(--rayon);
@@ -365,7 +365,7 @@
 .reponse {
   p {
     margin: 0 0 var(--e2);
-    font-size: 0.9rem;
+    font-size: var(--t-md);
     line-height: 1.65;
     color: var(--texte);
   }
@@ -374,7 +374,7 @@
     display: flex;
     align-items: center;
     gap: var(--e2);
-    font-size: 0.78rem;
+    font-size: var(--t-xs);
     font-weight: 600;
     color: var(--or-fonce);
   }
@@ -393,7 +393,7 @@
   .reference {
     margin: 0 0 var(--e1);
     font-family: var(--police-serif);
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     font-weight: 600;
     color: var(--bleu-nuit);
   }
@@ -401,7 +401,7 @@
   .extrait {
     margin: 0;
     font-family: var(--police-serif);
-    font-size: 0.88rem;
+    font-size: var(--t-md);
     font-style: italic;
     line-height: 1.65;
     color: var(--texte);
@@ -449,13 +449,13 @@
   h3 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.1rem;
+    font-size: var(--t-xl);
     color: var(--bleu-nuit);
   }
 
   p {
     margin: 0;
-    font-size: 0.92rem;
+    font-size: var(--t-md);
     line-height: 1.7;
     color: var(--gris-texte);
   }
@@ -517,7 +517,7 @@
     align-items: flex-start;
     gap: var(--e3);
     margin-bottom: var(--e3);
-    font-size: 0.94rem;
+    font-size: var(--t-lg);
     line-height: 1.6;
   }
 
@@ -533,7 +533,7 @@
   align-items: center;
   gap: var(--e2);
   color: var(--or);
-  font-size: 0.92rem;
+  font-size: var(--t-md);
   font-weight: 600;
   text-decoration: none;
 
@@ -551,7 +551,7 @@
 
   .corpus-titre {
     margin: 0 0 var(--e4);
-    font-size: 0.72rem;
+    font-size: var(--t-xs);
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -565,14 +565,14 @@
   }
 
   dt {
-    font-size: 0.82rem;
+    font-size: var(--t-sm);
     color: var(--sur-nuit-faible);
   }
 
   dd {
     margin: var(--e1) 0 0;
     font-family: var(--police-serif);
-    font-size: 2rem;
+    font-size: var(--t-4xl);
     font-weight: 700;
     /* Chiffres à chasse fixe : deux nombres l'un sous l'autre doivent
        s'aligner, sinon la carte a l'air bancale. */
@@ -582,7 +582,7 @@
 
   .corpus-note {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: var(--t-sm);
     line-height: 1.6;
     color: var(--sur-nuit-faible);
   }
@@ -619,7 +619,7 @@
 
   a {
     color: var(--sur-nuit-faible);
-    font-size: 0.86rem;
+    font-size: var(--t-md);
     text-decoration: none;
 
     &:hover {
@@ -632,7 +632,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--e4) var(--e4) var(--e6);
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   line-height: 1.7;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }

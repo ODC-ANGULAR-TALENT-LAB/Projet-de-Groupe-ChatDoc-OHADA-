@@ -59,15 +59,45 @@
   --police-interface: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     system-ui, sans-serif;
 
+  /* --- Échelle typographique ------------------------------------------
+     NEUF ÉCHELONS, ET PAS UN DE PLUS. L'application en comptait
+     trente-deux : sept valeurs différentes rien qu'entre 12,5 et
+     14,7 px, choisies au jugé, page par page. Aucune ne se distingue de
+     sa voisine à l'œil, mais l'ensemble se voit — c'est ce qui donne à
+     une interface l'air d'avoir été assemblée plutôt que dessinée.
+
+     Le rapport entre échelons est d'environ 1,15 en bas et 1,25 en
+     haut : assez serré pour les nuances de l'interface, assez ouvert
+     pour que les titres se détachent.
+
+     `--t-xs` est le plancher : 12 px. En dessous, le texte cesse d'être
+     lisible pour une part des utilisateurs, et deux valeurs de
+     l'application y étaient tombées (9,9 et 10,4 px). */
+  --t-xs: 0.75rem;      /* 12 px — mentions, étiquettes capitales */
+  --t-sm: 0.8125rem;    /* 13 px — texte secondaire, aides */
+  --t-md: 0.875rem;     /* 14 px — texte d'interface courant */
+  --t-lg: 1rem;         /* 16 px — corps de lecture */
+  --t-xl: 1.125rem;     /* 18 px — titres de carte */
+  --t-2xl: 1.375rem;    /* 22 px — titres de section */
+  --t-3xl: 1.75rem;     /* 28 px — titres de page */
+  --t-4xl: 2rem;        /* 32 px — titres majeurs */
+  --t-5xl: 2.5rem;      /* 40 px — accroche */
+
   /* --- Rythme et formes ---------------------------------------------- */
   /* Base 4 px. Les valeurs intermédiaires se composent, on n'invente pas
      d'espacement au cas par cas. */
-  --e1: 0.25rem;
-  --e2: 0.5rem;
-  --e3: 0.75rem;
-  --e4: 1rem;
-  --e6: 1.5rem;
-  --e8: 2rem;
+  --e1: 0.25rem; /*  4 px */
+  --e2: 0.5rem; /*  8 px */
+  --e3: 0.75rem; /* 12 px */
+  --e4: 1rem; /* 16 px */
+  /* --e5 MANQUAIT, et il était pourtant appelé vingt-trois fois. Une
+     variable non définie rend la déclaration invalide : le navigateur
+     l'ignore en silence, et l'espacement disparaît. Rien dans la
+     console, rien à la compilation — seulement des marges absentes que
+     l'on finit par attribuer au hasard de la mise en page. */
+  --e5: 1.25rem; /* 20 px */
+  --e6: 1.5rem; /* 24 px */
+  --e8: 2rem; /* 32 px */
 
   /* Formes douces mais pas de pilules : on reste sur un outil sérieux. */
   --rayon: 4px;
@@ -114,44 +144,138 @@ select {
   outline-offset: 2px;
 }
 
-/* Boutons partagés */
-.principal {
-  background: var(--bleu-nuit);
-  color: #fff;
-  border: 1px solid var(--bleu-nuit);
-  border-radius: var(--rayon);
-  padding: 0.55rem 1rem;
+/* --- Boutons ---------------------------------------------------------
+   UNE SEULE DÉFINITION, ET ELLE VIT ICI. Ces classes étaient
+   redéfinies dans six feuilles de page : l'encapsulation d'Angular
+   faisait gagner la version locale, si bien que le « même » bouton
+   principal existait en trois hauteurs et cinq remplissages selon
+   l'écran. Personne ne remarque un écart de 2 px ; tout le monde
+   ressent l'incohérence de l'ensemble.
+
+   Les trois variantes disent une hiérarchie, pas un goût :
+     .principal  — l'action qui engage. Une seule par écran.
+     .secondaire — les autres actions, visuellement subordonnées.
+     .lien       — une action de service (annuler, effacer) qui ne doit
+                   pas peser autant qu'un bouton.
+
+   44 px de haut partout : c'est le minimum tactile confortable, et
+   c'est aussi ce qui aligne les boutons entre eux quand ils se
+   côtoient. */
+
+%socle-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e2);
+  /* Le socle tactile ne dépend pas du texte : un bouton court et un
+     bouton long font la même hauteur. */
+  min-height: 44px;
+  padding: 0.6rem 1.1rem;
   font: inherit;
+  font-size: var(--t-md);
   font-weight: 500;
+  line-height: 1.2;
+  border-radius: var(--rayon);
+  text-decoration: none;
   cursor: pointer;
-  transition: background-color 160ms ease-out;
+  /* Empêche le délai de 300 ms au toucher, sans désactiver le zoom. */
+  touch-action: manipulation;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out;
 
-  &:hover:not(:disabled) {
-    background: var(--bleu-nuit-clair);
-  }
-
-  &:disabled {
+  &:disabled,
+  &[aria-disabled='true'] {
+    /* 0,45 : assez éteint pour se lire comme inactif, assez présent
+       pour que l'intitulé reste déchiffrable. */
     opacity: 0.45;
     cursor: not-allowed;
   }
 }
 
-.secondaire {
-  background: transparent;
-  color: var(--bleu-nuit);
-  border: 1px solid var(--gris-bordure);
-  border-radius: var(--rayon);
-  padding: 0.5rem 0.9rem;
-  font: inherit;
-  font-size: 0.85rem;
-  text-decoration: none;
-  cursor: pointer;
-  transition: border-color 160ms ease-out;
+.principal {
+  @extend %socle-bouton;
+  color: #fff;
+  background: var(--bleu-nuit);
+  border: 1px solid var(--bleu-nuit);
 
-  &:hover,
+  &:hover:not(:disabled) {
+    background: var(--bleu-nuit-clair);
+    border-color: var(--bleu-nuit-clair);
+  }
+
+  /* L'enfoncement se marque par la couleur, jamais par un déplacement :
+     un bouton qui bouge décale ce qui l'entoure. */
+  &:active:not(:disabled) {
+    background: var(--bleu-encre);
+    border-color: var(--bleu-encre);
+  }
+}
+
+.secondaire {
+  @extend %socle-bouton;
+  color: var(--bleu-nuit);
+  background: var(--surface);
+  border: 1px solid var(--gris-bordure);
+
+  &:hover:not(:disabled),
   &:focus-visible {
     border-color: var(--or);
   }
+
+  &:active:not(:disabled) {
+    background: var(--surface-haute);
+  }
+}
+
+.lien {
+  @extend %socle-bouton;
+  padding: 0.6rem 0.5rem;
+  font-size: var(--t-sm);
+  font-weight: 400;
+  color: var(--gris-texte);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+
+  &:hover:not(:disabled) {
+    color: var(--bleu-nuit);
+  }
+}
+
+/* Action destructrice : couleur sémantique ET intitulé explicite, pour
+   qu'elle ne se distingue pas de la couleur seule. */
+.destructif {
+  @extend %socle-bouton;
+  color: #8c2f2f;
+  background: var(--surface);
+  border: 1px solid #d9bcbc;
+
+  &:hover:not(:disabled) {
+    color: #fff;
+    background: #8c2f2f;
+    border-color: #8c2f2f;
+  }
+}
+
+/* CHIFFRES À CHASSE FIXE, partout où un nombre change sous les yeux :
+   prix, crédits restants, compteurs, pastilles. Avec les chiffres
+   proportionnels par défaut, « 1 » est plus étroit que « 8 » : un
+   compteur qui passe de 18 à 17 décale ce qui l'entoure, et une colonne
+   de prix ne s'aligne pas. Le détail ne se remarque pas ; son absence,
+   si — c'est ce qui sépare un tableau de chiffres d'un vrai document
+   financier. */
+.prix,
+.pastille,
+.compteur,
+.etat strong,
+.montant,
+.quota,
+time,
+[data-chiffres] {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Masque à l'écran, reste lu par les lecteurs d'écran. */

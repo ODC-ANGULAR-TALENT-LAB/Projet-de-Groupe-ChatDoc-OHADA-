@@ -16,7 +16,7 @@
   h1 {
     margin: 0 0 var(--e3);
     font-family: var(--police-serif);
-    font-size: 2rem;
+    font-size: var(--t-4xl);
     line-height: 1.25;
     letter-spacing: -0.02em;
     color: var(--bleu-nuit);
@@ -29,7 +29,7 @@
 
 .promesse {
   margin: 0 0 var(--e6);
-  font-size: 1rem;
+  font-size: var(--t-lg);
   line-height: 1.7;
   color: var(--gris-texte);
 }
@@ -58,7 +58,7 @@
     padding: 0.5rem 0.35rem;
     font: inherit;
     /* 16 px minimum : en dessous, iOS zoome à la mise au point. */
-    font-size: 1rem;
+    font-size: var(--t-lg);
     color: var(--texte);
 
     &:focus {
@@ -94,7 +94,7 @@
 
 .note {
   margin: var(--e3) 0 0;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 
   a {
@@ -122,13 +122,13 @@
   h2 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.02rem;
+    font-size: var(--t-lg);
     color: var(--bleu-nuit);
   }
 
   p {
     margin: 0;
-    font-size: 0.88rem;
+    font-size: var(--t-md);
     line-height: 1.6;
     color: var(--gris-texte);
   }
@@ -145,7 +145,7 @@
   h2 {
     margin: 0 0 var(--e4);
     font-family: var(--police-serif);
-    font-size: 1.15rem;
+    font-size: var(--t-xl);
     color: var(--bleu-nuit);
   }
 }
@@ -158,7 +158,7 @@
 .personas article {
   h3 {
     margin: 0 0 var(--e1);
-    font-size: 0.95rem;
+    font-size: var(--t-lg);
     color: var(--bleu-nuit);
   }
 
@@ -179,7 +179,7 @@
     border-radius: var(--rayon-carte);
     padding: 0.6rem 0.75rem;
     font: inherit;
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     line-height: 1.45;
     color: var(--bleu-nuit);
     cursor: pointer;
@@ -195,7 +195,7 @@
 
 .besoin {
   margin: 0 0 var(--e3);
-  font-size: 0.82rem;
+  font-size: var(--t-sm);
   line-height: 1.5;
   color: var(--gris-texte);
 }
@@ -204,7 +204,7 @@
   margin: var(--e8) 0 0;
   padding-top: var(--e4);
   border-top: 1px solid var(--bordure);
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   line-height: 1.55;
   color: var(--texte-faible);
   text-align: center;
@@ -224,7 +224,7 @@
 
 @media (min-width: 1024px) {
   .entete h1 {
-    font-size: 2.5rem;
+    font-size: var(--t-5xl);
   }
 }
 
@@ -232,6 +232,6 @@
    accueille, elle n'annonce pas. */
 .salutation {
   margin: 0 0 var(--e2);
-  font-size: 0.95rem;
+  font-size: var(--t-lg);
   color: var(--or-fonce);
 }

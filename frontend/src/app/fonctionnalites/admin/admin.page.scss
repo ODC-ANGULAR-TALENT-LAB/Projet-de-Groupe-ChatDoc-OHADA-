@@ -8,19 +8,19 @@
 
 h1 {
   font-family: var(--police-serif);
-  font-size: 1.35rem;
+  font-size: var(--t-2xl);
   margin: 0;
 }
 
 h2 {
   font-family: var(--police-serif);
-  font-size: 1rem;
+  font-size: var(--t-lg);
   margin: 0 0 0.6rem;
 }
 
 .intro {
   margin: 0.3rem 0 1.5rem;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   color: var(--gris-texte);
 }
@@ -39,7 +39,7 @@ h2 {
   gap: 0.25rem;
 
   label {
-    font-size: 0.78rem;
+    font-size: var(--t-xs);
     color: var(--gris-texte);
     margin-top: 0.5rem;
   }
@@ -47,7 +47,7 @@ h2 {
   input,
   select {
     font: inherit;
-    font-size: 0.9rem;
+    font-size: var(--t-md);
     padding: 0.45rem 0.6rem;
     border: 1px solid var(--gris-bordure);
     border-radius: 6px;
@@ -81,7 +81,7 @@ h2 {
   border-bottom: 1px solid var(--bordure);
 
   dt {
-    font-size: 0.65rem;
+    font-size: var(--t-xs);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--gris-texte);
@@ -89,12 +89,12 @@ h2 {
 
   dd {
     margin: 0.15rem 0 0;
-    font-size: 1.1rem;
+    font-size: var(--t-xl);
     font-weight: 600;
   }
 
   .sha {
-    font-size: 0.8rem;
+    font-size: var(--t-sm);
     font-family: ui-monospace, monospace;
     font-weight: 400;
   }
@@ -110,7 +110,7 @@ h2 {
   margin: 0 0 1rem;
 
   li {
-    font-size: 0.82rem;
+    font-size: var(--t-sm);
     padding: 0.35rem 0.6rem;
     border-left: 3px solid var(--gris-bordure);
     margin-bottom: 0.3rem;
@@ -118,7 +118,7 @@ h2 {
 
     strong {
       text-transform: uppercase;
-      font-size: 0.68rem;
+      font-size: var(--t-xs);
       letter-spacing: 0.05em;
     }
 
@@ -147,14 +147,14 @@ h2 {
 
   .chemin {
     display: block;
-    font-size: 0.7rem;
+    font-size: var(--t-xs);
     color: var(--gris-texte);
     margin-bottom: 0.35rem;
   }
 
   p {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     line-height: 1.55;
   }
 }
@@ -170,7 +170,7 @@ h2 {
 
 .statut {
   margin-top: 1rem;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 }
 
@@ -191,7 +191,7 @@ h2 {
   border-bottom: 1px solid var(--bordure);
   padding: 0.55rem 0.2rem;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   text-align: left;
   cursor: pointer;
 
@@ -207,13 +207,13 @@ h2 {
   }
 
   .chiffres {
-    font-size: 0.75rem;
+    font-size: var(--t-xs);
     color: var(--gris-texte);
   }
 }
 
 .badge {
-  font-size: 0.62rem;
+  font-size: var(--t-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.1rem 0.45rem;
@@ -235,11 +235,11 @@ h2 {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-size: var(--t-sm);
 
   th {
     text-align: left;
-    font-size: 0.65rem;
+    font-size: var(--t-xs);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--gris-texte);
@@ -257,20 +257,20 @@ table {
   }
 
   .valideur {
-    font-size: 0.75rem;
+    font-size: var(--t-xs);
     color: var(--gris-texte);
   }
 }
 
 code {
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   background: var(--fond);
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
 }
 
 .aide {
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   line-height: 1.6;
   color: var(--gris-texte);
   margin: 0.5rem 0;
@@ -278,7 +278,7 @@ code {
 
 .vide {
   color: var(--gris-texte);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
 
   a {
     color: var(--bleu-nuit);
@@ -287,20 +287,11 @@ code {
 
 .erreur {
   color: #9a2a2a;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   margin: 0.75rem 0 0;
 }
 
-.lien {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  font-size: 0.78rem;
-  color: var(--bleu-nuit);
-  text-decoration: underline;
-  cursor: pointer;
-}
+
 
 /* --- Diff contre le corpus en vigueur ------------------------------ */
 
@@ -314,7 +305,7 @@ code {
 /* La couleur ne porte jamais seule l'information : chaque pastille
    affiche aussi son libellé en toutes lettres. */
 .pastille {
-  font-size: 0.75rem;
+  font-size: var(--t-xs);
   font-weight: 600;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
@@ -369,7 +360,7 @@ code {
 
     .numero {
       font-family: var(--police-serif);
-      font-size: 1.05rem;
+      font-size: var(--t-lg);
       font-weight: 600;
       color: var(--bleu-nuit);
     }
@@ -383,12 +374,12 @@ code {
   padding: var(--e2) var(--e3);
   background: var(--surface-basse);
   border-radius: var(--rayon);
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 
   .etiquette {
     display: block;
-    font-size: 0.68rem;
+    font-size: var(--t-xs);
     font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -403,7 +394,7 @@ code {
 
   h4 {
     margin: 0 0 var(--e1);
-    font-size: 0.7rem;
+    font-size: var(--t-xs);
     font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -413,7 +404,7 @@ code {
   p {
     margin: 0;
     font-family: var(--police-serif);
-    font-size: 0.95rem;
+    font-size: var(--t-lg);
     line-height: 1.6;
   }
 
@@ -431,7 +422,7 @@ code {
 
   summary {
     cursor: pointer;
-    font-size: 0.88rem;
+    font-size: var(--t-md);
     color: var(--bleu-nuit);
     padding: var(--e2) 0;
   }

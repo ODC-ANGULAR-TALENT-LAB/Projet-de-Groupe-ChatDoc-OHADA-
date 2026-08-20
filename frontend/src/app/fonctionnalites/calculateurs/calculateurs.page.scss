@@ -12,7 +12,7 @@ header {
   h1 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.6rem;
+    font-size: var(--t-3xl);
     color: var(--bleu-nuit);
   }
 }
@@ -36,7 +36,7 @@ header {
 .onglet {
   padding: var(--e2) var(--e3);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--t-md);
   font-weight: 500;
   color: var(--gris-texte);
   background: none;
@@ -61,7 +61,7 @@ header {
   align-items: center;
   gap: var(--e2);
   margin: 0 0 var(--e4);
-  font-size: 0.82rem;
+  font-size: var(--t-sm);
   color: var(--gris-texte);
 
   app-icone {
@@ -75,7 +75,7 @@ header {
   h2 {
     margin: 0 0 var(--e3);
     font-family: var(--police-serif);
-    font-size: 1.15rem;
+    font-size: var(--t-xl);
     color: var(--bleu-nuit);
   }
 }
@@ -90,7 +90,7 @@ header {
   padding: var(--e4);
 
   label {
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     font-weight: 500;
     color: var(--gris-texte);
   }
@@ -101,7 +101,7 @@ header {
     /* Chiffres à chasse fixe : sans eux, la largeur du champ danse à
        chaque frappe sur un montant à sept chiffres. */
     font-variant-numeric: tabular-nums;
-    font-size: 1rem;
+    font-size: var(--t-lg);
     background: var(--surface);
     border: 1px solid var(--gris-bordure);
     border-radius: var(--rayon);
@@ -123,7 +123,7 @@ header {
 
   legend {
     padding: 0;
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     font-weight: 500;
     color: var(--gris-texte);
   }
@@ -141,7 +141,7 @@ header {
 .erreur {
   margin: 0;
   padding: var(--e2) var(--e3);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: #8c2f2f;
   background: #fbf4f2;
   border-left: 3px solid #a94442;
@@ -151,7 +151,7 @@ header {
 .indisponible {
   margin: 0 0 var(--e4);
   padding: var(--e3);
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   line-height: 1.6;
   color: var(--texte);
   background: var(--fond-refus);
@@ -187,7 +187,7 @@ header {
 
   dt {
     color: var(--gris-texte);
-    font-size: 0.9rem;
+    font-size: var(--t-md);
   }
 
   dd {
@@ -207,13 +207,13 @@ header {
   border-top: 2px solid var(--or);
 
   span {
-    font-size: 0.9rem;
+    font-size: var(--t-md);
     color: var(--gris-texte);
   }
 
   strong {
     font-family: var(--police-serif);
-    font-size: 1.35rem;
+    font-size: var(--t-2xl);
     font-variant-numeric: tabular-nums;
     color: var(--bleu-nuit);
     white-space: nowrap;
@@ -234,7 +234,7 @@ header {
     align-items: center;
     gap: var(--e2);
     margin: 0 0 var(--e2);
-    font-size: 0.7rem;
+    font-size: var(--t-xs);
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -244,21 +244,21 @@ header {
   .reference {
     margin: 0;
     font-family: var(--police-serif);
-    font-size: 1rem;
+    font-size: var(--t-lg);
     font-weight: 600;
     color: var(--bleu-nuit);
   }
 
   .chemin {
     margin: var(--e1) 0 0;
-    font-size: 0.78rem;
+    font-size: var(--t-xs);
     color: var(--gris-texte);
   }
 
   blockquote {
     margin: var(--e2) 0 0;
     font-family: var(--police-serif);
-    font-size: 0.95rem;
+    font-size: var(--t-lg);
     line-height: 1.7;
     color: var(--texte);
     white-space: pre-line;
@@ -269,7 +269,7 @@ header {
   margin: var(--e4) 0 0;
   padding-top: var(--e3);
   border-top: 1px solid var(--bordure);
-  font-size: 0.76rem;
+  font-size: var(--t-xs);
   line-height: 1.6;
   color: var(--gris-texte);
 }

@@ -12,7 +12,7 @@ header {
   h1 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.6rem;
+    font-size: var(--t-3xl);
     color: var(--bleu-nuit);
   }
 }
@@ -33,7 +33,7 @@ header {
   h2 {
     margin: 0 0 var(--e4);
     font-family: var(--police-serif);
-    font-size: 1.1rem;
+    font-size: var(--t-xl);
     color: var(--bleu-nuit);
   }
 }
@@ -64,7 +64,7 @@ header {
   align-items: center;
   justify-content: center;
   font-family: var(--police-serif);
-  font-size: 1.5rem;
+  font-size: var(--t-2xl);
   font-weight: 700;
   color: var(--bleu-nuit);
   background: var(--or-pale);
@@ -83,7 +83,7 @@ header {
 
 .meta {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
   color: var(--gris-texte);
 }
 
@@ -97,7 +97,7 @@ header {
   gap: var(--e1);
 
   label {
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     font-weight: 500;
     color: var(--texte);
   }
@@ -106,7 +106,7 @@ header {
     padding: 0.6rem 0.7rem;
     font: inherit;
     /* 16 px : en dessous, iOS agrandit la page au focus. */
-    font-size: 1rem;
+    font-size: var(--t-lg);
     background: var(--surface);
     border: 1px solid var(--gris-bordure);
     border-radius: var(--rayon);
@@ -115,7 +115,7 @@ header {
 
 .aide {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   line-height: 1.55;
   color: var(--gris-texte);
 }
@@ -154,14 +154,14 @@ header {
   gap: 2px;
 
   strong {
-    font-size: 0.92rem;
+    font-size: var(--t-md);
     font-weight: 500;
     color: var(--texte);
   }
 
   em {
     font-style: normal;
-    font-size: 0.8rem;
+    font-size: var(--t-sm);
     line-height: 1.55;
     color: var(--gris-texte);
   }
@@ -177,7 +177,7 @@ header {
     flex-shrink: 0;
     padding: 0.45rem 0.6rem;
     font: inherit;
-    font-size: 0.88rem;
+    font-size: var(--t-md);
     background: var(--surface);
     border: 1px solid var(--gris-bordure);
     border-radius: var(--rayon);
@@ -194,40 +194,20 @@ header {
   gap: var(--e3);
 }
 
-.principal {
-  min-height: 44px;
-  padding: 0.6rem 1.2rem;
-  font: inherit;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: #fff;
-  background: var(--bleu-nuit);
-  border: 0;
-  border-radius: var(--rayon);
-  cursor: pointer;
 
-  &:hover:not(:disabled) {
-    background: var(--bleu-nuit-clair);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-}
 
 .confirme {
   display: inline-flex;
   align-items: center;
   gap: var(--e2);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: var(--vert);
 }
 
 .erreur {
   margin: 0 0 var(--e3);
   padding: var(--e2) var(--e3);
-  font-size: 0.86rem;
+  font-size: var(--t-md);
   color: #8c2f2f;
   background: #fbf4f2;
   border-left: 3px solid #a94442;
@@ -243,7 +223,7 @@ header {
   margin: var(--e6) 0 0;
   padding-top: var(--e4);
   border-top: 1px solid var(--bordure);
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
   line-height: 1.65;
   color: var(--gris-texte);
 }
@@ -266,7 +246,7 @@ header {
   align-items: center;
   min-height: 44px;
   padding: 0.55rem 1.1rem;
-  font-size: 0.9rem;
+  font-size: var(--t-md);
   font-weight: 500;
   color: var(--bleu-nuit);
   background: var(--surface);
@@ -292,26 +272,11 @@ header {
   }
 }
 
-.secondaire {
-  min-height: 44px;
-  padding: 0.55rem 1.1rem;
-  font: inherit;
-  font-size: 0.9rem;
-  color: var(--gris-texte);
-  background: none;
-  border: 1px solid var(--bordure);
-  border-radius: var(--rayon);
-  cursor: pointer;
 
-  &:hover {
-    color: var(--bleu-nuit);
-    border-color: var(--gris-bordure);
-  }
-}
 
 .explication {
   margin: 0 0 var(--e3);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 }
 
@@ -320,7 +285,7 @@ header {
   align-items: center;
   min-height: 44px;
   padding: 0.5rem 0.95rem;
-  font-size: 0.88rem;
+  font-size: var(--t-md);
   font-weight: 500;
   color: var(--bleu-nuit);
   background: var(--surface);

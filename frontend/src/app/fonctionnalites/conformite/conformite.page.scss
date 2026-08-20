@@ -12,7 +12,7 @@ header {
   h1 {
     margin: 0 0 var(--e2);
     font-family: var(--police-serif);
-    font-size: 1.6rem;
+    font-size: var(--t-3xl);
     color: var(--bleu-nuit);
   }
 }
@@ -29,7 +29,7 @@ header {
   h2 {
     margin: 0 0 var(--e3);
     font-family: var(--police-serif);
-    font-size: 1.15rem;
+    font-size: var(--t-xl);
     color: var(--bleu-nuit);
   }
 }
@@ -44,7 +44,7 @@ header {
   padding: var(--e4);
 
   label {
-    font-size: 0.85rem;
+    font-size: var(--t-md);
     font-weight: 500;
     color: var(--gris-texte);
   }
@@ -53,7 +53,7 @@ header {
   input[type='file'] {
     padding: 0.5rem 0.6rem;
     font: inherit;
-    font-size: 0.9rem;
+    font-size: var(--t-md);
     background: var(--surface);
     border: 1px solid var(--gris-bordure);
     border-radius: var(--rayon);
@@ -67,7 +67,7 @@ header {
 
 .aide {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
   line-height: 1.5;
   color: var(--texte-faible);
 }
@@ -82,7 +82,7 @@ header {
 /* La couleur ne porte jamais seule l'information : chaque pastille
    affiche son libellé en toutes lettres. */
 .pastille {
-  font-size: 0.75rem;
+  font-size: var(--t-xs);
   font-weight: 600;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
@@ -100,7 +100,7 @@ header {
   gap: 0.4rem;
   flex-wrap: wrap;
   margin: 0 0 var(--e4);
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   color: var(--gris-texte);
 
   --taille-icone: 1rem;
@@ -148,13 +148,13 @@ header {
 .libelle {
   flex: 1;
   min-width: 12rem;
-  font-size: 0.92rem;
+  font-size: var(--t-md);
   color: var(--texte);
 }
 
 .constat {
   margin: var(--e2) 0 0;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
   line-height: 1.55;
   color: var(--gris-texte);
 }
@@ -165,7 +165,7 @@ header {
   margin: var(--e6) 0 0;
   padding-top: var(--e3);
   border-top: 1px solid var(--bordure);
-  font-size: 0.8rem;
+  font-size: var(--t-sm);
   line-height: 1.55;
   color: var(--texte-faible);
 }
@@ -173,7 +173,7 @@ header {
 .erreur {
   margin: 0;
   color: #9a2a2a;
-  font-size: 0.85rem;
+  font-size: var(--t-md);
 }
 
 .vide {

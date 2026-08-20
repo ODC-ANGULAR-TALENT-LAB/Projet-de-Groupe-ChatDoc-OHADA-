@@ -136,7 +136,7 @@ const DESTINATIONS: Destination[] = [
         </a>
       }
 
-      <nav class="secondaire" aria-label="Outils">
+      <nav class="nav-outils" aria-label="Outils">
         <a routerLink="/favoris" routerLinkActive="actif">
           Favoris
           <!-- La pastille ne s'affiche que s'il y a réellement quelque
@@ -157,7 +157,8 @@ const DESTINATIONS: Destination[] = [
            quotidiennes. « Votre avis » les rejoint parce qu'on n'y va
            pas non plus tous les jours — mais il faut pouvoir le trouver
            sans passer par les réglages du compte. -->
-      <nav class="secondaire" aria-label="À propos">
+      <nav class="nav-outils" aria-label="À propos">
+        <a routerLink="/forfaits" routerLinkActive="actif">Forfaits</a>
         <a routerLink="/methodologie" routerLinkActive="actif">Méthodologie</a>
         <a routerLink="/journal" routerLinkActive="actif">Mises à jour</a>
         @if (auth.connecte()) {
@@ -286,17 +287,27 @@ const DESTINATIONS: Destination[] = [
     }
 
     .laterale {
+      /* 1.3rem et non 1.6 : la barre est large de 280 px, et le nom
+         devait desormais partager cette largeur avec le blason. A la
+         taille precedente, l'ensemble depassait et le mot-image sortait
+         de la barre. */
       .marque {
         padding: 0 var(--e2);
-        font-size: 1.6rem;
+        font-size: var(--t-2xl);
         font-weight: 700;
         letter-spacing: -0.02em;
+        /* Ceinture et bretelles : si la largeur venait a manquer de
+           nouveau — police systeme differente, texte traduit — le nom
+           passe a la ligne au lieu de deborder. Une marque sur deux
+           lignes reste lisible ; une marque coupee, non. */
+        max-width: 100%;
+        flex-wrap: wrap;
       }
 
       .marque-sous-titre {
         margin: var(--e1) 0 var(--e6);
         padding: 0 var(--e2);
-        font-size: 0.78rem;
+        font-size: var(--t-xs);
         color: var(--sur-nuit-faible);
       }
     }
@@ -314,7 +325,7 @@ const DESTINATIONS: Destination[] = [
       border: 1px solid rgb(255 255 255 / 18%);
       border-radius: var(--rayon);
       font: inherit;
-      font-size: 0.92rem;
+      font-size: var(--t-md);
       font-weight: 500;
       text-align: left;
       cursor: pointer;
@@ -342,7 +353,7 @@ const DESTINATIONS: Destination[] = [
         border-left: 3px solid transparent;
         border-radius: 0 var(--rayon) var(--rayon) 0;
         color: var(--sur-nuit-faible);
-        font-size: 0.92rem;
+        font-size: var(--t-md);
         font-weight: 500;
         text-decoration: none;
         transition: background-color 160ms ease-out, color 160ms ease-out;
@@ -376,7 +387,7 @@ const DESTINATIONS: Destination[] = [
         margin: 0 0 var(--e2);
         padding: 0 var(--e2);
         font-family: var(--police-interface);
-        font-size: 0.7rem;
+        font-size: var(--t-xs);
         font-weight: 600;
         letter-spacing: 0.09em;
         text-transform: uppercase;
@@ -393,7 +404,7 @@ const DESTINATIONS: Destination[] = [
       border-radius: var(--rayon);
       color: var(--sur-nuit-faible);
       font: inherit;
-      font-size: 0.85rem;
+      font-size: var(--t-md);
       text-align: left;
       /* Un titre de conversation est une question entière : on la coupe
          proprement plutôt que de laisser la barre s'élargir. */
@@ -413,7 +424,13 @@ const DESTINATIONS: Destination[] = [
       }
     }
 
-    .secondaire {
+    /* RENOMMÉ DEPUIS « .secondaire », qui est le nom d'une VARIANTE DE
+       BOUTON définie globalement. Les deux se disputaient la même
+       classe : le bloc de navigation héritait du socle de bouton —
+       bordure, hauteur minimale de 44 px, remplissage — sans que rien
+       ne le signale. Un nom de classe qui décrit un rôle ne doit pas
+       servir à deux rôles. */
+    .nav-outils {
       display: flex;
       flex-wrap: wrap;
       gap: var(--e3);
@@ -422,7 +439,7 @@ const DESTINATIONS: Destination[] = [
 
       a {
         color: var(--sur-nuit-faible);
-        font-size: 0.78rem;
+        font-size: var(--t-xs);
         text-decoration: none;
 
         &:hover,
@@ -465,7 +482,7 @@ const DESTINATIONS: Destination[] = [
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.72rem;
+        font-size: var(--t-xs);
         font-weight: 700;
         color: var(--bleu-encre);
         background: var(--or);
@@ -473,7 +490,7 @@ const DESTINATIONS: Destination[] = [
     }
 
     .moi-nom {
-      font-size: 0.85rem;
+      font-size: var(--t-md);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -487,7 +504,7 @@ const DESTINATIONS: Destination[] = [
       height: 18px;
       margin-left: var(--e2);
       padding: 0 5px;
-      font-size: 0.68rem;
+      font-size: var(--t-xs);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       color: var(--bleu-encre);
@@ -495,7 +512,7 @@ const DESTINATIONS: Destination[] = [
       border-radius: 999px;
     }
 
-    .secondaire + .secondaire {
+    .nav-outils + .nav-outils {
       margin-top: 0;
       padding-top: var(--e2);
     }
@@ -512,7 +529,7 @@ const DESTINATIONS: Destination[] = [
       margin-top: var(--e3);
       color: var(--sur-nuit-faible);
       font: inherit;
-      font-size: 0.88rem;
+      font-size: var(--t-md);
       text-align: left;
       cursor: pointer;
 
@@ -534,19 +551,21 @@ const DESTINATIONS: Destination[] = [
       color: #fff;
 
       .marque {
-        font-size: 1rem;
+        font-size: var(--t-lg);
         font-weight: 600;
       }
     }
 
+    /* Seule la couleur change : la barre haute est bleu nuit, et le gris
+       du lien partagé y tomberait sous le seuil de contraste. Tout le
+       reste — hauteur tactile, graisse, soulignement — vient de
+       styles.scss, pour que ce bouton reste le même que les autres. */
     .lien {
-      background: none;
-      border: none;
       color: var(--sur-nuit);
-      font: inherit;
-      font-size: 0.8rem;
-      text-decoration: underline;
-      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        color: var(--or);
+      }
     }
 
     main {
@@ -584,7 +603,7 @@ const DESTINATIONS: Destination[] = [
         /* 44 px minimum de hauteur de cible tactile. */
         min-height: 48px;
         padding: 0.45rem 0.25rem;
-        font-size: 0.68rem;
+        font-size: var(--t-xs);
         color: var(--gris-texte);
         text-decoration: none;
         border-top: 2px solid transparent;
