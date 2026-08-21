@@ -87,7 +87,21 @@ def calculer_embeddings(textes: list[str], simuler: bool = False) -> list[list[f
             "authorization": f"Bearer {parametres.cle_embeddings}",
             "content-type": "application/json",
         },
-        json={"model": parametres.embedding_modele, "input": textes},
+        json={
+            "model": parametres.embedding_modele,
+            "input": textes,
+            # LA DIMENSION EST DEMANDEE EXPLICITEMENT, jamais laissee au
+            # defaut du fournisseur. `gemini-embedding-001` rend 3072
+            # dimensions quand on ne dit rien, et la colonne est declaree
+            # `vector(1536)` : l'insertion echouerait article par
+            # article, apres avoir paye tous les appels.
+            #
+            # Le champ est compris aussi bien par la couche compatible de
+            # Gemini que par OpenAI, dont les modeles v3 acceptent la
+            # meme troncature. Il n'y a donc pas de fournisseur pour
+            # lequel l'envoyer soit une erreur.
+            "dimensions": parametres.embedding_dimensions,
+        },
         timeout=DELAI_APPEL,
     )
 

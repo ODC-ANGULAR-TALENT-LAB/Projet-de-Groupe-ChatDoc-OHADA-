@@ -44,7 +44,12 @@ pydantic-settings==2.15.0
 email-validator==2.3.0    # requis par pydantic.EmailStr
 
 # --- Fournisseur LLM (phase E) ---------------------------------------
-anthropic==0.121.0
+# AUCUN SDK DE FOURNISSEUR. Les appels passent par httpx, deja present
+# plus bas pour les embeddings. La surface utilisee tient en deux
+# requetes HTTP ; un SDK ajouterait une dependance qui evolue a son
+# rythme, et le changement de fournisseur a montre le cout de ce
+# couplage — il fallait desinstaller un paquet pour changer d'API.
+# Voir app/services/llm.py.
 
 # --- Securite (phase G) ----------------------------------------------
 python-jose[cryptography]==3.5.0
