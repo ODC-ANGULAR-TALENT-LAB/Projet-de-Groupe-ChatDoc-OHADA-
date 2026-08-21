@@ -658,15 +658,15 @@ Google, pas d'encaissement — au lieu d'échouer. Elles se renseignent
 plus tard dans le tableau de bord, sans retoucher le dépôt.
 
 C'est tout. Le schéma s'applique au démarrage du conteneur
-(`backend/scripts/demarrer_conteneur.sh`), et il n'y a **aucune URL à
-recopier** : `fromService` substitue les adresses réelles.
+(`backend/scripts/demarrer_conteneur.sh`).
 
-> **Aucune adresse n'est écrite nulle part.** Le site a besoin de
-> l'API, l'API a besoin de l'origine du site pour CORS : chacun dépend
-> de l'autre, et aucune des deux adresses n'existe avant la création
-> des services. `fromService` résout ce cycle. Attention, il livre un
-> **nom d'hôte nu**, sans `https://` — les deux côtés le complètent
-> (`config.py:liste_origines`, `frontend/scripts/environnement.mjs`).
+> **Ne pas remplacer les deux domaines par `fromService`.** Sa propriété
+> `host` renvoie l'hôte du **réseau privé** de Render — `chatdocs-api`,
+> sans domaine — et aucune propriété ne donne l'adresse publique. La
+> panne qui en résulte est silencieuse : tout passe au vert, `/sante`
+> répond, et le navigateur se heurte à une origine refusée. Si les
+> services sont renommés ou reçoivent un domaine personnalisé, les deux
+> valeurs à corriger sont dans `render.yaml`.
 
 ### 2. Ce qui reste manuel, et pourquoi
 

@@ -9,18 +9,21 @@
 #   Render > New > Blueprint > choisir ce depot > Apply.
 #
 # -----------------------------------------------------------------
-# POURQUOI LES URL NE SONT ECRITES NULLE PART
+# POURQUOI LES DEUX DOMAINES SONT ECRITS EN CLAIR
 # -----------------------------------------------------------------
 # Le site a besoin de l'adresse de l'API ; l'API a besoin de l'origine
-# du site pour autoriser CORS. Chacun depend de l'autre, et aucune des
-# deux adresses n'existe avant la creation des services : les ecrire a
-# la main demande un premier deploiement rate, deux copier-coller, puis
-# un second deploiement.
+# du site pour autoriser CORS. `fromService` semblait fait pour cela.
+# Il ne l'est pas : sa propriete `host` renvoie l'hote du RESEAU PRIVE
+# de Render — « chatdocs-api », sans domaine — et la specification ne
+# propose AUCUNE propriete donnant l'adresse publique.
 #
-# `fromService` supprime ce cycle : Render substitue les hotes reels au
-# moment du deploiement. Attention, cette reference livre un NOM D'HOTE
-# NU, sans `https://` — les deux cotes le completent (voir
-# config.py:liste_origines et frontend/scripts/environnement.mjs).
+# La panne qui en resulte est silencieuse : les deux services passent
+# au vert, /sante repond, et le navigateur se heurte a une origine
+# refusee. Rien dans le tableau de bord ne le signale.
+#
+# Ces deux domaines sont donc ecrits ici. Ils ne changent que si un
+# service est renomme ou recoit un domaine personnalise — auquel cas
+# cette ligne est exactement l'endroit ou l'on pense a regarder.
 #
 # -----------------------------------------------------------------
 # CE QUI N'EST PAS ICI : LES SECRETS
@@ -82,19 +85,21 @@ services:
           name: chatdocs-db
           property: connectionString
 
-      # SEUL POINT A SURVEILLER AU PREMIER « APPLY ». Les deux services
-      # se referencent mutuellement — le site veut l'hote de l'API, l'API
-      # veut celui du site — et la documentation de Render ne dit pas
-      # explicitement qu'elle accepte ce cycle. Si elle le refuse, le
-      # message apparait immediatement, avant toute construction, et le
-      # remede tient en une ligne : retirer ces quatre lignes, puis
-      # saisir ORIGINES_AUTORISEES a la main dans le tableau de bord une
-      # fois le site cree. Rien d'autre n'est a reprendre.
+      # NE PAS REMPLACER PAR `fromService`. La tentation est forte : ce
+      # domaine se deduit du nom du service, et une reference eviterait
+      # de l'ecrire. Cela a ete tente, et c'est faux.
+      #
+      # `fromService: { property: host }` renvoie l'hote du RESEAU PRIVE
+      # — ici « chatdocs-web », sans domaine. La specification est
+      # explicite : « the service's hostname on the private network ».
+      # Aucune propriete ne donne l'adresse publique.
+      #
+      # L'effet est particulierement traitre : le deploiement passe au
+      # vert, /sante repond, les deux services tournent — et l'API
+      # n'autorise qu'une origine qu'aucun navigateur n'enverra jamais.
+      # Le site est en ligne et ne fonctionne pas.
       - key: ORIGINES_AUTORISEES
-        fromService:
-          type: web
-          name: chatdocs-web
-          property: host
+        value: https://chatdocs-web.onrender.com
 
       # Active HSTS et masque le diagnostic detaille de /sante.
       - key: PRODUCTION
@@ -164,11 +169,13 @@ services:
       - key: NODE_VERSION
         value: "24.16.0"
 
+      # Adresse PUBLIQUE de l'API, ecrite en clair — voir la note sur
+      # ORIGINES_AUTORISEES : `fromService` livrerait « chatdocs-api »,
+      # l'hote du reseau prive, que le navigateur ne sait pas joindre.
+      # Ce n'est pas un secret : tout ce que le navigateur recoit est
+      # lisible, et cette URL est justement celle qu'il appelle.
       - key: URL_API
-        fromService:
-          type: web
-          name: chatdocs-api
-          property: host
+        value: https://chatdocs-api.onrender.com
       - key: GOOGLE_CLIENT_ID
         sync: false
 

@@ -4,6 +4,9 @@ Lancement, depuis le dossier backend/ :
     uvicorn app.main:app --reload
 """
 
+import logging
+from urllib.parse import urlparse
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
@@ -34,6 +37,54 @@ app = FastAPI(
     ),
     version="0.2.0",
 )
+
+journal = logging.getLogger(__name__)
+
+
+def _alerter_origines_injoignables() -> None:
+    """Crie si une origine autorisee ne peut venir d'aucun navigateur.
+
+    POURQUOI CE GARDE-FOU EXISTE. `ORIGINES_AUTORISEES` a ete alimente
+    par `fromService: { property: host }` sur Render, qui renvoie l'hote
+    du RESEAU PRIVE : « chatdocs-web », sans domaine. L'API a donc
+    autorise une origine qu'aucun navigateur n'envoie, et le site en
+    ligne ne fonctionnait pas.
+
+    Rien ne le signalait. Le deploiement etait vert, /sante repondait,
+    les journaux etaient vides — puisqu'une requete bloquee par CORS
+    n'atteint jamais l'API. Le seul symptome visible etait une
+    application qui ne repond a rien.
+
+    Un nom d'hote public porte toujours un point. Un hote de reseau
+    prive, jamais. Le critere est grossier, mais il attrape exactement
+    la faute commise.
+
+    LE CONTROLE NE S'APPLIQUE QU'EN PRODUCTION. En developpement,
+    `localhost` ne porte pas de point non plus : sans cette garde, tout
+    le monde verrait l'alerte a chaque demarrage local, et une alerte
+    permanente cesse d'etre lue — ce qui la rendrait inutile le jour ou
+    elle compte.
+    """
+    if not parametres.production:
+        return
+
+    suspectes = [
+        origine
+        for origine in parametres.liste_origines
+        if "." not in (urlparse(origine).hostname or "")
+    ]
+    if suspectes:
+        journal.error(
+            "ORIGINES_AUTORISEES contient %s : un hote sans point est un "
+            "hote de reseau prive, qu'aucun navigateur n'enverra comme "
+            "Origin. Le site sera en ligne et ne fonctionnera pas. "
+            "Attendu : le domaine public complet, par exemple "
+            "https://chatdocs-web.onrender.com",
+            ", ".join(suspectes),
+        )
+
+
+_alerter_origines_injoignables()
 
 # CORS restreint aux origines declarees. En production, une seule :
 # le domaine du frontend.
