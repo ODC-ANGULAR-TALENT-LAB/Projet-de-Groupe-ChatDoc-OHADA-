@@ -33,7 +33,7 @@ interface Fragment {
 }
 
 interface Bloc {
-  type: 'paragraphe' | 'liste' | 'liste-numerotee';
+  type: 'paragraphe' | 'liste' | 'liste-numerotee' | 'titre';
   lignes: Fragment[][];
 }
 
@@ -47,6 +47,15 @@ const MARQUEURS: { motif: RegExp; cle: keyof Fragment }[] = [
 
 const RE_PUCE = /^\s*[-–—*]\s+(.*)$/;
 const RE_NUMERO = /^\s*\d+[.)]\s+(.*)$/;
+
+// TITRES DE SECTION. Sans cette reconnaissance, une reponse structuree
+// afficherait « ## Ce que dit le texte » avec ses dieses en clair : le
+// prompt demande des sections, le rendu doit savoir les dessiner.
+//
+// Un seul niveau visuel, quel que soit le nombre de dieses. Une reponse
+// tient dans un ecran ; y hierarchiser trois rangs de titres n'aiderait
+// personne et multiplierait les tailles de police a l'ecran.
+const RE_TITRE = /^\s*#{1,4}\s+(.*?)\s*#*$/;
 
 /** Découpe une ligne en fragments, emphases comprises. */
 export function fragmenter(ligne: string): Fragment[] {
@@ -82,20 +91,28 @@ export function analyser(texte: string): Bloc[] {
       continue;
     }
 
-    const puce = RE_PUCE.exec(ligne);
-    const numero = RE_NUMERO.exec(ligne);
-    const type: Bloc['type'] = puce
-      ? 'liste'
-      : numero
-        ? 'liste-numerotee'
-        : 'paragraphe';
+    // Le titre est cherché EN PREMIER : « # 1. Champ d'application »
+    // satisfait aussi RE_NUMERO une fois le dièse retiré, et l'ordre
+    // inverse en ferait une liste numérotée à un seul élément.
+    const titre = RE_TITRE.exec(ligne);
+    const puce = titre ? null : RE_PUCE.exec(ligne);
+    const numero = titre ? null : RE_NUMERO.exec(ligne);
+    const type: Bloc['type'] = titre
+      ? 'titre'
+      : puce
+        ? 'liste'
+        : numero
+          ? 'liste-numerotee'
+          : 'paragraphe';
 
-    if (!courant || courant.type !== type) {
+    // Un titre ne se fond jamais dans le bloc précédent, même avec un
+    // autre titre : deux sections successives sont deux titres.
+    if (!courant || courant.type !== type || type === 'titre') {
       clore();
       courant = { type, lignes: [] };
     }
 
-    const contenu = puce?.[1] ?? numero?.[1] ?? nue;
+    const contenu = titre?.[1] ?? puce?.[1] ?? numero?.[1] ?? nue;
     if (type === 'paragraphe' && courant.lignes.length) {
       // Une phrase coupée sur plusieurs lignes reste un seul paragraphe.
       courant.lignes[0] = [...courant.lignes[0], { texte: ' ' + contenu }];
@@ -143,6 +160,18 @@ export function analyser(texte: string): Bloc[] {
             }
           </ol>
         }
+        @case ('titre') {
+          @for (ligne of bloc.lignes; track $index) {
+            <h3>
+              @for (f of ligne; track $index) {
+                <ng-container
+                  [ngTemplateOutlet]="frag"
+                  [ngTemplateOutletContext]="{ $implicit: f }"
+                />
+              }
+            </h3>
+          }
+        }
         @default {
           @for (ligne of bloc.lignes; track $index) {
             <p>
@@ -184,8 +213,30 @@ export function analyser(texte: string): Bloc[] {
 
     p:last-child,
     ul:last-child,
-    ol:last-child {
+    ol:last-child,
+    h3:last-child {
       margin-bottom: 0;
+    }
+
+    /* Titre de section. Il se distingue par la graisse et la famille,
+       non par la taille : une réponse comporte trois ou quatre
+       sections, et des titres nettement plus gros que le texte
+       hacheraient la lecture au lieu de la guider.
+
+       La marge haute est plus large que la basse : elle rattache
+       visuellement le titre à ce qui le suit plutôt qu'à ce qui le
+       précède. */
+    h3 {
+      margin: 1.4em 0 0.5em;
+      font-family: var(--police-titre, inherit);
+      font-size: 1em;
+      font-weight: 600;
+      color: var(--bleu-nuit);
+      line-height: 1.4;
+    }
+
+    h3:first-child {
+      margin-top: 0;
     }
 
     ul,

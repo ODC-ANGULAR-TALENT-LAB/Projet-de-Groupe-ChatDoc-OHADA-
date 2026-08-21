@@ -1,4 +1,12 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import {
   ActivatedRoute,
   NavigationEnd,
@@ -104,7 +112,13 @@ const DESTINATIONS: Destination[] = [
   // Tant qu'on ne sait pas (`null`), on reste en flux : c'est l'état
   // qui correspond à « aucune coquille dessinée », donc celui qui ne
   // laisse pas de bandes vides le temps d'une image.
-  host: { '[class.publique]': 'publique() !== false' },
+  host: {
+    '[class.publique]': 'publique() !== false',
+    // ÉCHAPPEMENT. Une feuille modale doit se fermer à la touche Échap :
+    // c'est le seul recours au clavier, et le voile n'est pas
+    // atteignable par tabulation.
+    '(document:keydown.escape)': 'fermerMenu()',
+  },
   template: `
     <a class="evitement" href="#principal">Aller au contenu</a>
 
@@ -249,11 +263,12 @@ const DESTINATIONS: Destination[] = [
           <span class="marque-suffixe">OHADA</span>
         </span>
       </a>
-      @if (auth.connecte()) {
-        <button type="button" class="lien" (click)="auth.deconnexion()">
-          Se déconnecter
-        </button>
-      }
+      <!-- PAS DE DÉCONNEXION ICI. Elle vit desormais dans la feuille
+           « Plus », avec le reste de ce que la barre latérale contient.
+           La dupliquer donnerait deux chemins pour un geste que l'on
+           fait une fois par session, et laisserait la barre haute
+           encombrée alors qu'elle ne sert plus qu'à identifier le
+           produit. -->
     </header>
     }
 
@@ -275,7 +290,115 @@ const DESTINATIONS: Destination[] = [
           {{ destination.libelle }}
         </a>
       }
+      <!-- LA CINQUIÈME PLACE EST TOUJOURS « PLUS ». Elle n'est pas
+           l'une des destinations : c'est la porte de tout ce que la
+           barre latérale montre sur poste de travail et que le
+           téléphone n'avait aucun moyen d'atteindre. -->
+      <button
+        type="button"
+        class="plus"
+        [class.actif]="menuOuvert()"
+        [attr.aria-expanded]="menuOuvert()"
+        aria-controls="menu-mobile"
+        aria-haspopup="dialog"
+        (click)="basculerMenu()"
+      >
+        <app-icone [nom]="menuOuvert() ? 'fermer' : 'menu'" />
+        Plus
+      </button>
     </nav>
+
+    @if (menuOuvert()) {
+      <!-- Le voile ferme au toucher : sur téléphone, c'est le geste que
+           tout le monde tente en premier, avant de chercher une croix. -->
+      <div class="voile-menu" (click)="fermerMenu()"></div>
+
+      <div
+        class="feuille"
+        id="menu-mobile"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        tabindex="-1"
+        #feuille
+      >
+        <div class="feuille-poignee" aria-hidden="true"></div>
+
+        @if (destinationsMenu().length) {
+          <p class="feuille-titre">Navigation</p>
+          <div class="feuille-liens">
+            @for (destination of destinationsMenu(); track destination.chemin) {
+              <a
+                [routerLink]="destination.chemin"
+                routerLinkActive="actif"
+                (click)="fermerMenu()"
+              >
+                <app-icone [nom]="destination.icone" />
+                {{ destination.libelle }}
+              </a>
+            }
+          </div>
+        }
+
+        @if (!estPersonnel()) {
+          <p class="feuille-titre">Outils</p>
+          <div class="feuille-liens">
+            <a routerLink="/favoris" routerLinkActive="actif" (click)="fermerMenu()">
+              <app-icone nom="favori" />
+              Favoris
+              @if (favoris.alertes().length) {
+                <span class="pastille" [attr.aria-label]="
+                  favoris.alertes().length + ' article(s) suivi(s) ont changé'
+                ">{{ favoris.alertes().length }}</span>
+              }
+            </a>
+            <a routerLink="/calculateurs" routerLinkActive="actif" (click)="fermerMenu()">
+              <app-icone nom="balance" />
+              Calculateurs
+            </a>
+            <a routerLink="/conformite" routerLinkActive="actif" (click)="fermerMenu()">
+              <app-icone nom="valide" />
+              Conformité
+            </a>
+          </div>
+        }
+
+        <p class="feuille-titre">À propos</p>
+        <div class="feuille-liens">
+          @if (!estPersonnel()) {
+            <a routerLink="/forfaits" routerLinkActive="actif" (click)="fermerMenu()">
+              <app-icone nom="compte" />
+              Forfaits
+            </a>
+          }
+          <!-- « corpus » et non « balance » : la balance est déjà celle
+               des calculateurs, quelques lignes plus haut. Deux entrées
+               voisines partageant une icône se confondent au coup
+               d'oeil, qui est le seul dont on dispose sur téléphone. -->
+          <a routerLink="/methodologie" routerLinkActive="actif" (click)="fermerMenu()">
+            <app-icone nom="corpus" />
+            Méthodologie
+          </a>
+          <a routerLink="/journal" routerLinkActive="actif" (click)="fermerMenu()">
+            <app-icone nom="historique" />
+            Mises à jour
+          </a>
+          @if (auth.connecte() && !estPersonnel()) {
+            <a routerLink="/avis" routerLinkActive="actif" (click)="fermerMenu()">
+              <app-icone nom="signaler" />
+              Votre avis
+            </a>
+          }
+        </div>
+
+        @if (auth.connecte()) {
+          <button type="button" class="feuille-quitter" (click)="quitter()">
+            <app-icone nom="deconnexion" />
+            Se déconnecter
+          </button>
+        }
+      </div>
+    }
     }
   `,
   styles: `
@@ -284,6 +407,12 @@ const DESTINATIONS: Destination[] = [
       grid-template-rows: auto 1fr auto;
       grid-template-areas: 'barre' 'principal' 'onglets';
       height: 100dvh;
+
+      /* Hauteur de la barre d'onglets, en un seul endroit. La barre la
+         pose, la feuille « Plus » s'y arrête : les deux ne peuvent plus
+         diverger. 3.7rem laisse 44 px de cible tactile une fois le
+         liseré et le rembourrage retirés. */
+      --h-onglets: 3.7rem;
     }
 
     /* Page publique : plus de coquille, donc plus de gabarit à tenir.
@@ -658,8 +787,14 @@ const DESTINATIONS: Destination[] = [
         align-items: center;
         justify-content: center;
         gap: 0.15rem;
-        /* 44 px minimum de hauteur de cible tactile. */
-        min-height: 48px;
+        /* HAUTEUR FIXE, PAS UN MINIMUM. La feuille « Plus » doit
+           s'arrêter exactement au-dessus de cette barre ; avec un
+           min-height, la hauteur réelle dépend du contenu — mesurée à
+           59 px là où le nombre écrit en dur disait 48 — et la feuille
+           la recouvrait de onze pixels, en mangeant le liseré doré qui
+           signale l'onglet courant. Une seule variable donne désormais
+           la mesure aux deux. */
+        height: var(--h-onglets);
         padding: 0.45rem 0.25rem;
         font-size: var(--t-xs);
         color: var(--gris-texte);
@@ -680,6 +815,137 @@ const DESTINATIONS: Destination[] = [
     }
 
     /* --- Poste de travail ------------------------------------------- */
+    /* Le bouton « Plus » doit être indiscernable d'un onglet : il occupe
+       la même place, la même largeur, la même cible tactile. Un bouton
+       qui se distingue visuellement de ses voisins passe pour un
+       contrôle d'une autre nature, et se touche moins. */
+    .onglets .plus {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15rem;
+      height: var(--h-onglets);
+      padding: 0.45rem 0.25rem;
+      font-family: inherit;
+      font-size: var(--t-xs);
+      color: var(--gris-texte);
+      background: none;
+      border: none;
+      border-top: 2px solid transparent;
+      cursor: pointer;
+
+      --taille-icone: 1.35rem;
+    }
+
+    .voile-menu {
+      position: fixed;
+      inset: 0;
+      /* Sous la feuille, au-dessus de tout le reste. */
+      z-index: 40;
+      background: rgb(27 42 74 / 45%);
+    }
+
+    .feuille {
+      position: fixed;
+      /* Elle s'arrête AU-DESSUS de la barre d'onglets : le bouton qui
+         l'a ouverte reste visible, et l'on voit où l'on retourne en le
+         touchant à nouveau. */
+      inset: auto 0 calc(var(--h-onglets) + env(safe-area-inset-bottom, 0px)) 0;
+      z-index: 41;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: var(--e2) var(--e3) var(--e3);
+      background: var(--surface);
+      border-top: 1px solid var(--bordure);
+      border-radius: var(--rayon) var(--rayon) 0 0;
+      box-shadow: 0 -8px 24px rgb(27 42 74 / 18%);
+      animation: monter 180ms ease-out;
+    }
+
+    /* Le glissement dit d'où vient la feuille. Sans lui, elle
+       apparaît d'un coup et l'on ne sait pas si l'on a ouvert un
+       panneau ou changé de page. */
+    @keyframes monter {
+      from {
+        transform: translateY(12%);
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .feuille {
+        animation: none;
+      }
+    }
+
+    .feuille-poignee {
+      width: 2.5rem;
+      height: 0.25rem;
+      margin: 0 auto var(--e2);
+      background: var(--bordure);
+      border-radius: 999px;
+    }
+
+    .feuille-titre {
+      margin: var(--e2) 0 var(--e1);
+      font-size: var(--t-xs);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--gris-texte);
+    }
+
+    .feuille-liens {
+      display: flex;
+      flex-direction: column;
+
+      a {
+        display: flex;
+        align-items: center;
+        gap: var(--e2);
+        /* 44 px : même seuil que partout ailleurs. Une liste dense est
+           le premier endroit où l'on se trompe de ligne. */
+        min-height: 44px;
+        padding: 0 var(--e1);
+        color: var(--bleu-nuit);
+        text-decoration: none;
+        border-radius: var(--rayon);
+
+        --taille-icone: 1.15rem;
+      }
+
+      .actif {
+        background: var(--papier);
+        font-weight: 600;
+
+        app-icone {
+          color: var(--or-fonce);
+        }
+      }
+    }
+
+    .feuille-quitter {
+      display: flex;
+      align-items: center;
+      gap: var(--e2);
+      width: 100%;
+      min-height: 44px;
+      margin-top: var(--e3);
+      padding: 0 var(--e1);
+      font-family: inherit;
+      font-size: inherit;
+      color: var(--gris-texte);
+      background: none;
+      border: none;
+      border-top: 1px solid var(--bordure);
+      padding-top: var(--e2);
+      cursor: pointer;
+
+      --taille-icone: 1.15rem;
+    }
+
     @media (min-width: 1024px) {
       :host {
         grid-template-rows: 1fr;
@@ -693,6 +959,16 @@ const DESTINATIONS: Destination[] = [
 
       .barre,
       .onglets {
+        display: none;
+      }
+
+      /* SUR POSTE DE TRAVAIL, LA FEUILLE N'EXISTE PAS. La barre
+         latérale montre déjà tout ce qu'elle contient ; si un
+         redimensionnement de fenêtre la laissait ouverte, elle
+         masquerait le contenu sans qu'aucun bouton visible ne
+         permette de la refermer — celui qui l'a ouverte est caché. */
+      .voile-menu,
+      .feuille {
         display: none;
       }
     }
@@ -739,6 +1015,17 @@ export class AppComponent {
       visible à chaque arrivée sur la page d'accueil. */
   protected readonly coquille = computed(() => this.publique() === false);
 
+  /**
+   * La feuille « Plus » est-elle ouverte ?
+   *
+   * ELLE NE VIT QUE SUR TÉLÉPHONE. Le CSS la masque au-delà de
+   * 1024 px : sur poste de travail, la barre latérale montre déjà tout
+   * ce qu'elle contient.
+   */
+  protected readonly menuOuvert = signal(false);
+
+  private readonly feuille = viewChild<ElementRef<HTMLElement>>('feuille');
+
   constructor() {
     void this.auth.rafraichirQuota();
 
@@ -750,7 +1037,20 @@ export class AppComponent {
         let route = this.route;
         while (route.firstChild) route = route.firstChild;
         this.publique.set(Boolean(route.snapshot.data['publique']));
+        // La feuille se referme à l'arrivée. Les liens la ferment déjà
+        // eux-mêmes, mais pas le bouton « précédent » du téléphone :
+        // sans cela, un retour en arrière rouvrait la page derrière une
+        // feuille restée ouverte.
+        this.menuOuvert.set(false);
       });
+
+    // LE FOCUS SUIT LA FEUILLE. Sans ce déplacement, la tabulation
+    // reprend au début de la page et la lecture d'écran continue
+    // d'annoncer le contenu masqué : la feuille est visible à l'oeil,
+    // absente pour tout le reste.
+    effect(() => {
+      if (this.menuOuvert()) this.feuille()?.nativeElement.focus();
+    });
     // Le fil se recharge dès que l'utilisateur se connecte, et après
     // chaque échange : une conversation qui vient d'être ouverte doit
     // apparaître sans que l'utilisateur ait à recharger la page.
@@ -808,21 +1108,41 @@ export class AppComponent {
   }
 
   /**
-   * Les mêmes destinations, plafonnées à cinq pour la barre du bas.
+   * Les destinations qui tiennent dans la barre du bas.
    *
-   * CINQ EST UN MAXIMUM, PAS UNE PRÉFÉRENCE. Au-delà, les libellés se
-   * tronquent et les cibles tactiles passent sous le seuil confortable :
-   * la barre cesse d'être utilisable d'une main. Un administrateur
-   * dispose de six destinations ; la sixième reste atteignable depuis la
-   * barre latérale sur poste de travail, et depuis la page Profil sur
-   * téléphone.
+   * QUATRE, ET NON CINQ. Cinq reste le maximum tenable — au-delà, les
+   * libellés se tronquent et les cibles tactiles passent sous le seuil
+   * confortable. Mais la cinquième place revient à « Plus », qui donne
+   * accès à tout le reste : sans elle, un administrateur voyait ses
+   * cinq destinations et RIEN d'autre, pendant que Favoris,
+   * Calculateurs, Conformité, Forfaits, Méthodologie, Mises à jour et
+   * « Votre avis » restaient hors d'atteinte sur téléphone.
    *
-   * On coupe la FIN plutôt que le début : les premières entrées sont les
-   * gestes quotidiens, la dernière est un espace où l'on se rend
-   * exprès.
+   * On coupe la FIN plutôt que le début : les premières entrées sont
+   * les gestes quotidiens.
    */
   protected destinationsOnglets(): Destination[] {
-    return this.destinationsVisibles().slice(0, 5);
+    return this.destinationsVisibles().slice(0, 4);
+  }
+
+  /** Les destinations que la barre n'a pas pu montrer. */
+  protected destinationsMenu(): Destination[] {
+    return this.destinationsVisibles().slice(4);
+  }
+
+  protected basculerMenu(): void {
+    this.menuOuvert.update((ouvert) => !ouvert);
+  }
+
+  protected fermerMenu(): void {
+    this.menuOuvert.set(false);
+  }
+
+  /** Fermer AVANT de partir : la déconnexion redirige vers la page de
+      connexion, et une feuille laissée ouverte s'y afficherait par-dessus. */
+  protected quitter(): void {
+    this.fermerMenu();
+    this.auth.deconnexion();
   }
 
   protected nouvelleConversation(): void {

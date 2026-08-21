@@ -40,7 +40,20 @@ SCHEMA_REPONSE = {
     "properties": {
         "reponse": {
             "type": "string",
-            "description": "Reponse en francais, fondee uniquement sur les articles fournis.",
+            # LA DESCRIPTION DU SCHEMA EST LUE PAR LE MODELE au meme titre
+            # que le prompt systeme. La laisser muette sur la forme
+            # revenait a demander une note structuree d'un cote et une
+            # simple chaine de l'autre : le modele suivait la consigne la
+            # plus proche du champ, donc celle-ci.
+            "description": (
+                "Reponse en francais, fondee uniquement sur les articles "
+                "fournis. Structuree comme une note juridique : reponse "
+                "directe en tete, puis sections introduites par '## ', "
+                "listes numerotees pour les etapes ou conditions "
+                "cumulatives, **gras** sur le terme ou le chiffre qui "
+                "porte la reponse, et reference entre parentheses apres "
+                "chaque affirmation, par exemple (art. 12 AUSCGIE)."
+            ),
         },
         "citations": {
             "type": "array",

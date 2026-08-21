@@ -186,6 +186,26 @@ def rechercher_detaille(
         liste_vect = rechercher_vectoriel(cx, vecteur, sigle) if vecteur else []
         liste_lex = rechercher_lexical(cx, question, sigle)
 
+    # LE MODE SE JUGE SUR LE RESULTAT, PAS SUR LA QUESTION.
+    #
+    # Vectoriser la question ne sert a rien si le CORPUS ne l'est pas.
+    # Ce cas n'a rien d'exotique : c'est l'etat de toute base fraichement
+    # chargee, ou la vectorisation est une etape hors ligne posterieure.
+    #
+    # Sans ce controle, le mode restait "hybride", la moitie vectorielle
+    # ne remontait rien, et `pertinence()` — qui ne lit que le score
+    # vectoriel — valait 0 pour TOUTE question. Sous un seuil de 0,55,
+    # l'assistant refusait alors l'integralite des questions, sans
+    # appeler le modele, alors que la recherche lexicale remontait des
+    # articles parfaitement pertinents.
+    #
+    # Le defaut ne se declarait qu'une fois le fournisseur d'embeddings
+    # configure : tant qu'il manquait, l'appel echouait et le mode
+    # basculait correctement. Autrement dit, renseigner une cle CASSAIT
+    # le produit.
+    if not liste_vect:
+        mode = "lexical_seul"
+
     return fusion_rrf(liste_vect, liste_lex, n=n), mode
 
 
