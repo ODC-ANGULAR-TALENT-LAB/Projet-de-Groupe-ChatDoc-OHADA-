@@ -12,13 +12,23 @@ configure par EMBEDDING_URL, EMBEDDING_MODELE et EMBEDDING_DIMENSIONS.
 from __future__ import annotations
 
 import hashlib
+import logging
 import struct
+import time
 
 import httpx
 
 from app.config import parametres
 
+journal = logging.getLogger(__name__)
+
 DELAI_APPEL = 60
+
+# Reprise sur depassement de cadence. Six essais, d'une attente doublant
+# a chaque fois a partir de 4 s, laissent au plafond par minute le temps
+# de se vider — environ quatre minutes au total dans le pire cas.
+TENTATIVES_DEBIT = 6
+ATTENTE_DEBIT = 4.0
 
 
 def extraire_vecteurs(reponse: dict, attendus: int) -> list[list[float]]:
@@ -81,13 +91,7 @@ def calculer_embeddings(textes: list[str], simuler: bool = False) -> list[list[f
             ".env. Les valeurs d'exemple ne comptent pas."
         )
 
-    reponse = httpx.post(
-        parametres.embedding_url,
-        headers={
-            "authorization": f"Bearer {parametres.cle_embeddings}",
-            "content-type": "application/json",
-        },
-        json={
+    charge = {
             "model": parametres.embedding_modele,
             "input": textes,
             # LA DIMENSION EST DEMANDEE EXPLICITEMENT, jamais laissee au
@@ -100,10 +104,39 @@ def calculer_embeddings(textes: list[str], simuler: bool = False) -> list[list[f
             # Gemini que par OpenAI, dont les modeles v3 acceptent la
             # meme troncature. Il n'y a donc pas de fournisseur pour
             # lequel l'envoyer soit une erreur.
-            "dimensions": parametres.embedding_dimensions,
-        },
-        timeout=DELAI_APPEL,
-    )
+        "dimensions": parametres.embedding_dimensions,
+    }
+
+    # LA CADENCE EST LA CONTRAINTE, PAS LE VOLUME. Vectoriser 5 563
+    # articles ne coute que quelques centimes, mais les offres gratuites
+    # plafonnent le nombre d'appels par minute. Sans cette reprise, la
+    # vectorisation s'arretait au DEUXIEME lot : le script est certes
+    # reprenable, mais il fallait le relancer a la main indefiniment.
+    #
+    # L'attente double a chaque essai. Un plafond par minute se vide de
+    # lui-meme ; il suffit de lui en laisser le temps.
+    reponse = None
+    for tentative in range(TENTATIVES_DEBIT):
+        reponse = httpx.post(
+            parametres.embedding_url,
+            headers={
+                "authorization": f"Bearer {parametres.cle_embeddings}",
+                "content-type": "application/json",
+            },
+            json=charge,
+            timeout=DELAI_APPEL,
+        )
+
+        if reponse.status_code != 429:
+            break
+
+        if tentative < TENTATIVES_DEBIT - 1:
+            attente = ATTENTE_DEBIT * (2**tentative)
+            journal.warning(
+                "Débit trop rapide (HTTP 429), pause de %.0f s avant reprise.",
+                attente,
+            )
+            time.sleep(attente)
 
     if reponse.status_code >= 400:
         raise RuntimeError(_diagnostic(reponse))
@@ -120,8 +153,15 @@ def _diagnostic(reponse: httpx.Response) -> str:
     """
     try:
         erreur = reponse.json().get("error", {})
-        message = erreur.get("message", "")
-        code = erreur.get("code") or erreur.get("type") or ""
+        message = str(erreur.get("message", ""))
+        # LE CODE N'EST PAS TOUJOURS UNE CHAINE. Certains fournisseurs y
+        # mettent le statut HTTP sous forme d'ENTIER — « "code": 429 » —
+        # la ou d'autres ecrivent « "code": "insufficient_quota" ». Sans
+        # cette conversion, le test d'appartenance ci-dessous levait un
+        # TypeError : la fonction chargee d'EXPLIQUER la panne plantait
+        # a son tour, et le message du fournisseur — le seul
+        # renseignement utile — etait perdu.
+        code = str(erreur.get("code") or erreur.get("type") or "")
     except Exception:  # noqa: BLE001 - reponse non JSON
         message, code = reponse.text[:200], ""
 
