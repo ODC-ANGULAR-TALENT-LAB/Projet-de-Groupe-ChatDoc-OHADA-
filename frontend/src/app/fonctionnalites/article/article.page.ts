@@ -5,8 +5,6 @@ import { CorpusService } from '../../core/services/corpus.service';
 import { BoutonFavoriComponent } from '../../partage/composants/bouton-favori.component';
 
 /**
- * 
- * 
  * Lecture d'un article — la cible des citations.
  *
  * Sans cette page, cliquer sur une citation ne mène nulle part et la

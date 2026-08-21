@@ -27,6 +27,7 @@ interroge, jamais les poids du modele. Il n'y a aucun entrainement ici.
 from __future__ import annotations
 
 import datetime
+import json
 import logging
 
 from fastapi import (
@@ -42,11 +43,18 @@ from fastapi import (
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
+from app.config import parametres
 from app.db import get_db
 from app.dependances import administrateur, redacteur_corpus
 from app.models import Article, Depot, Texte, Utilisateur
 from app.schemas import (
+    ForfaitAdmin,
+    ForfaitCreation,
+    ForfaitEntree,
     RepartitionAdmin,
+    SignalementSortie,
+    SuspensionEntree,
+    TraitementSignalement,
     ArticleDepot,
     DepotDetail,
     DepotSortie,
@@ -57,7 +65,12 @@ from app.schemas import (
     UtilisateurSortie,
 )
 from app.services.analyse_depot import resumer_modifications
-from app.services.forfaits import forfait
+from app.services.forfaits import (
+    ForfaitRefuse,
+    forfait,
+    oublier_le_cache,
+    verifier,
+)
 from app.services.controles import BLOQUANT
 from app.services.diff_corpus import a_relire, comparer
 from app.services.ingestion import DepotRefuse, ingerer
@@ -499,20 +512,13 @@ def changer_role(
     if cible is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Utilisateur introuvable")
 
-    # Se retirer soi-meme le dernier role d'administrateur fermerait la
-    # porte a clef de l'interieur.
-    if cible.id == admin.id and corps.role != "admin":
-        restants = db.scalar(
-            select(func.count(Utilisateur.id)).where(
-                Utilisateur.role == "admin", Utilisateur.id != admin.id
-            )
-        )
-        if not restants:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "Vous êtes le dernier administrateur : nommez-en un autre "
-                "avant de renoncer à ce rôle.",
-            )
+    # RETIRER LE DERNIER ROLE D'ADMINISTRATEUR FERME LA PORTE A CLEF DE
+    # L'INTERIEUR — que ce soit le sien ou celui d'un autre. Le controle
+    # ne portait que sur l'auto-retrogradation ; il vaut desormais pour
+    # tout retrait, et s'appuie sur la meme regle que la suspension et
+    # la suppression.
+    if corps.role != "admin":
+        _proteger_le_dernier_administrateur(db, cible, "retrograder")
 
     ancien = cible.role
     cible.role = corps.role
@@ -619,18 +625,31 @@ def tableau_de_bord(
     # administrateur n'achete pas de forfait : les compter parmi les
     # abonnes gonflerait le nombre d'abonnes et le chiffre d'affaires
     # d'une vente qui n'a jamais eu lieu.
-    actifs = db.execute(
+    #
+    # LE GRATUIT EST UN FORFAIT COMME UN AUTRE dans la repartition :
+    # quelqu'un qui n'a rien souscrit EST abonne a Decouverte, ce n'est
+    # pas une absence d'abonnement. L'exclure laissait une colonne vide
+    # la ou se trouve le gros des comptes, et rendait la repartition
+    # illisible.
+    repartition = db.execute(
         text(
             "SELECT plan, count(*) FROM utilisateur "
-            "WHERE plan <> 'gratuit' "
-            "  AND role = 'utilisateur' "
-            "  AND (plan_echeance IS NULL OR plan_echeance >= :jour) "
+            "WHERE role = 'utilisateur' "
+            "  AND (plan = 'gratuit' "
+            "       OR plan_echeance IS NULL OR plan_echeance >= :jour) "
             "GROUP BY plan"
         ),
         {"jour": aujourd_hui},
     ).all()
-    par_forfait = {plan: n for plan, n in actifs}
-    revenu = sum(forfait(plan).prix_fcfa * n for plan, n in actifs)
+    par_forfait = {plan: n for plan, n in repartition}
+
+    # Le revenu, lui, ne compte QUE le payant et le non echu : le
+    # gratuit ne rapporte rien, et un abonnement expire non plus.
+    revenu = sum(
+        forfait(plan).prix_fcfa * n
+        for plan, n in repartition
+        if forfait(plan).prix_fcfa > 0
+    )
 
     notes = db.execute(text("SELECT note FROM avis")).scalars().all()
     corpus = db.execute(
@@ -652,7 +671,10 @@ def tableau_de_bord(
             text("SELECT count(*) FROM utilisateur WHERE google_sub IS NOT NULL")
         ).scalar()
         or 0,
-        abonnes_payants=sum(par_forfait.values()),
+        # « Abonnes payants » garde son sens strict : ceux qui paient.
+        abonnes_payants=sum(
+            n for plan, n in par_forfait.items() if forfait(plan).prix_fcfa > 0
+        ),
         abonnes_par_forfait=par_forfait,
         revenu_mensuel_fcfa=revenu,
         demandes_en_attente=db.execute(
@@ -667,3 +689,431 @@ def tableau_de_bord(
         articles=corpus["articles"],
         articles_vectorises=corpus["vectorises"],
     )
+
+
+# ---------------------------------------------------------------------
+# Catalogue des forfaits
+#
+# LA MARGE SE VERIFIE A L'ECRITURE, et c'est le prix a payer pour avoir
+# sorti le catalogue du code. Tant qu'il y vivait, un test refusait
+# toute grille sous le plancher ; une table modifiable depuis une
+# console ne passe par aucun test. La verification s'appuie donc sur le
+# SEUL chemin qui mene a la table : ces deux routes.
+# ---------------------------------------------------------------------
+
+
+def _forfaits_admin(db: Session) -> list[ForfaitAdmin]:
+    lignes = db.execute(
+        text(
+            "SELECT f.code, f.libelle, f.prix_fcfa, f.credits, f.argumentaire, "
+            "       f.atouts, f.essai, f.actif, f.ordre, "
+            "       (SELECT count(*) FROM utilisateur u WHERE u.plan = f.code "
+            "          AND u.role = 'utilisateur') AS abonnes "
+            "  FROM forfait f ORDER BY f.ordre, f.code"
+        )
+    ).mappings().all()
+
+    sorties = []
+    for ligne in lignes:
+        cout = ligne["credits"] * parametres.cout_question_fcfa
+        marge = (
+            None
+            if ligne["prix_fcfa"] == 0
+            else (ligne["prix_fcfa"] - cout) / ligne["prix_fcfa"]
+        )
+        sorties.append(
+            ForfaitAdmin(
+                code=ligne["code"],
+                libelle=ligne["libelle"],
+                prix_fcfa=ligne["prix_fcfa"],
+                credits=ligne["credits"],
+                argumentaire=ligne["argumentaire"] or "",
+                atouts=list(ligne["atouts"] or []),
+                essai=ligne["essai"],
+                actif=ligne["actif"],
+                ordre=ligne["ordre"],
+                cout_variable_fcfa=round(cout, 2),
+                marge=None if marge is None else round(marge, 4),
+                abonnes=ligne["abonnes"],
+            )
+        )
+    return sorties
+
+
+@routeur.get("/forfaits")
+def catalogue_administration(
+    _: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> list[ForfaitAdmin]:
+    """Le catalogue avec son economie et ses abonnes.
+
+    Les forfaits INACTIFS figurent ici, contrairement au catalogue
+    public : on doit pouvoir en reactiver un, et voir combien de
+    comptes y sont encore rattaches.
+    """
+    return _forfaits_admin(db)
+
+
+@routeur.post("/forfaits", status_code=status.HTTP_201_CREATED)
+def creer_forfait(
+    corps: ForfaitCreation,
+    admin: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> ForfaitAdmin:
+    """Ajoute un forfait au catalogue."""
+    if db.execute(
+        text("SELECT 1 FROM forfait WHERE code = :c"), {"c": corps.code}
+    ).first():
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, f"Le code « {corps.code} » existe déjà."
+        )
+
+    try:
+        verifier(corps.prix_fcfa, corps.credits, corps.essai)
+    except ForfaitRefuse as erreur:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, str(erreur)
+        ) from erreur
+
+    db.execute(
+        text(
+            "INSERT INTO forfait (code, libelle, prix_fcfa, credits, "
+            "  argumentaire, atouts, essai, actif, ordre, modifie_le, modifie_par) "
+            "VALUES (:code, :libelle, :prix, :credits, :arg, "
+            "  CAST(:atouts AS jsonb), :essai, :actif, :ordre, now(), :par)"
+        ),
+        {
+            "code": corps.code,
+            "libelle": corps.libelle.strip(),
+            "prix": corps.prix_fcfa,
+            "credits": corps.credits,
+            "arg": corps.argumentaire.strip(),
+            "atouts": json.dumps([a.strip() for a in corps.atouts if a.strip()]),
+            "essai": corps.essai,
+            "actif": corps.actif,
+            "ordre": corps.ordre,
+            "par": admin.id,
+        },
+    )
+    db.commit()
+    oublier_le_cache()
+    journal.info("Forfait %s cree par le compte %s.", corps.code, admin.id)
+
+    return next(f for f in _forfaits_admin(db) if f.code == corps.code)
+
+
+@routeur.put("/forfaits/{code}")
+def modifier_forfait(
+    code: str,
+    corps: ForfaitEntree,
+    admin: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> ForfaitAdmin:
+    """Modifie un forfait existant.
+
+    LE CODE N'EST PAS MODIFIABLE : il est inscrit sur chaque compte
+    abonne, et le changer les ferait tous retomber sur « forfait
+    inconnu ». Pour renommer, on cree un forfait et on desactive
+    l'ancien.
+
+    DESACTIVER PLUTOT QUE SUPPRIMER, pour la meme raison : la ligne
+    doit survivre aux comptes qui s'y rattachent encore.
+    """
+    if not db.execute(
+        text("SELECT 1 FROM forfait WHERE code = :c"), {"c": code}
+    ).first():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Forfait introuvable.")
+
+    # Le forfait gratuit ne se desactive pas : c'est celui sur lequel
+    # tout compte retombe, a l'inscription comme a l'echeance d'un
+    # abonnement. Sans lui, une inscription n'aurait plus de plan.
+    if code == "gratuit" and not corps.actif:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "Le forfait gratuit ne peut pas être désactivé : c'est celui sur "
+            "lequel tout compte retombe à l'inscription et à l'échéance.",
+        )
+
+    try:
+        verifier(corps.prix_fcfa, corps.credits, corps.essai)
+    except ForfaitRefuse as erreur:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, str(erreur)
+        ) from erreur
+
+    db.execute(
+        text(
+            "UPDATE forfait SET libelle = :libelle, prix_fcfa = :prix, "
+            "  credits = :credits, argumentaire = :arg, "
+            "  atouts = CAST(:atouts AS jsonb), essai = :essai, "
+            "  actif = :actif, ordre = :ordre, modifie_le = now(), "
+            "  modifie_par = :par WHERE code = :code"
+        ),
+        {
+            "code": code,
+            "libelle": corps.libelle.strip(),
+            "prix": corps.prix_fcfa,
+            "credits": corps.credits,
+            "arg": corps.argumentaire.strip(),
+            "atouts": json.dumps([a.strip() for a in corps.atouts if a.strip()]),
+            "essai": corps.essai,
+            "actif": corps.actif,
+            "ordre": corps.ordre,
+            "par": admin.id,
+        },
+    )
+    db.commit()
+    oublier_le_cache()
+    journal.info("Forfait %s modifie par le compte %s.", code, admin.id)
+
+    return next(f for f in _forfaits_admin(db) if f.code == code)
+
+
+# ---------------------------------------------------------------------
+# Registre des signalements
+# ---------------------------------------------------------------------
+
+
+@routeur.get("/signalements")
+def lister_signalements(
+    _: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> list[SignalementSortie]:
+    """Les reponses contestees, les ouvertes d'abord.
+
+    LE REGISTRE EXISTAIT MAIS N'ETAIT PAS LISIBLE : une route permettait
+    d'y ecrire, aucune de le consulter. Un registre qu'on ne lit pas ne
+    protege de rien — et c'est precisement son role (§16 ter).
+
+    La question et la reponse mise en cause accompagnent chaque ligne :
+    trancher une contestation suppose de les relire, et aller les
+    chercher ailleurs decouragerait de le faire.
+    """
+    lignes = db.execute(
+        text(
+            """
+            SELECT s.id, s.message_id, s.motif, s.commentaire, s.statut,
+                   s.correction, s.cree_le, s.traite_le,
+                   u.email,
+                   -- La table message stocke UN TOUR par ligne, pas une
+                   -- paire : le signalement vise la reponse, et la
+                   -- question est le tour utilisateur qui la precede
+                   -- dans la meme conversation.
+                   m.contenu AS reponse,
+                   (SELECT q.contenu
+                      FROM message q
+                     WHERE q.conversation_id = m.conversation_id
+                       AND q.role <> m.role
+                       AND q.id < m.id
+                     ORDER BY q.id DESC
+                     LIMIT 1) AS question
+              FROM signalement s
+              LEFT JOIN utilisateur u ON u.id = s.utilisateur_id
+              LEFT JOIN message m ON m.id = s.message_id
+             ORDER BY s.statut = 'ouvert' DESC, s.cree_le DESC
+             LIMIT 200
+            """
+        )
+    ).mappings().all()
+    return [SignalementSortie(**ligne) for ligne in lignes]
+
+
+@routeur.post("/signalements/{signalement_id}/traiter")
+def traiter_signalement(
+    signalement_id: int,
+    corps: TraitementSignalement,
+    admin_courant: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> SignalementSortie:
+    """Clot un signalement, en disant ce qui a ete fait.
+
+    LA CORRECTION EST OBLIGATOIRE. Clore sans motif viderait le
+    registre de sa valeur probante le jour ou il faudrait s'en servir :
+    « traite » ne dit ni ce qui a ete constate, ni ce qui a ete corrige.
+    """
+    statut_actuel = db.execute(
+        text("SELECT statut FROM signalement WHERE id = :id"), {"id": signalement_id}
+    ).scalar()
+    if statut_actuel is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Signalement introuvable.")
+    if statut_actuel != "ouvert":
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Ce signalement a déjà été traité."
+        )
+
+    db.execute(
+        text(
+            "UPDATE signalement SET statut = :statut, correction = :correction, "
+            "traite_le = now(), traite_par = :par WHERE id = :id"
+        ),
+        {
+            "id": signalement_id,
+            "statut": corps.statut,
+            "correction": corps.correction.strip(),
+            "par": admin_courant.id,
+        },
+    )
+    db.commit()
+    journal.info(
+        "Signalement %s clos en « %s » par le compte %s.",
+        signalement_id,
+        corps.statut,
+        admin_courant.id,
+    )
+    return next(
+        s for s in lister_signalements(admin_courant, db) if s.id == signalement_id
+    )
+
+
+# ---------------------------------------------------------------------
+# Suspendre, reactiver, supprimer un compte
+#
+# DEUX GESTES QUI NE SE VALENT PAS. Suspendre est reversible et ne perd
+# rien : le compte existe, il ne peut plus entrer. Supprimer est
+# definitif. C'est pourquoi la suspension exige un motif et la
+# suppression une confirmation explicite du code du compte.
+# ---------------------------------------------------------------------
+
+
+def _proteger_le_dernier_administrateur(
+    db: Session, cible: Utilisateur, geste: str
+) -> None:
+    """Refuse de retirer le dernier administrateur.
+
+    FERMER LA PORTE A CLEF DE L'INTERIEUR. Sans ce controle, suspendre
+    ou supprimer l'unique compte d'administration rendrait la console
+    definitivement inaccessible : il n'existe aucune route pour en
+    fabriquer un autre — le premier administrateur nait d'un script
+    lance sur le serveur, et ce script suppose qu'on y ait acces.
+
+    La regle porte sur le DERNIER administrateur, pas sur « le compte
+    admin ». Elle continue donc de tenir le jour ou il y en aura
+    plusieurs, sans qu'on ait a la reecrire.
+    """
+    if cible.role != "admin":
+        return
+
+    restants = db.execute(
+        text(
+            "SELECT count(*) FROM utilisateur "
+            "WHERE role = 'admin' AND id <> :id AND suspendu_le IS NULL"
+        ),
+        {"id": cible.id},
+    ).scalar()
+
+    if not restants:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            f"Impossible de {geste} le dernier administrateur : plus "
+            "personne ne pourrait administrer l'application. Nommez un "
+            "autre administrateur d'abord.",
+        )
+
+
+@routeur.post("/utilisateurs/{utilisateur_id}/suspendre")
+def suspendre_compte(
+    utilisateur_id: int,
+    corps: SuspensionEntree,
+    admin: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> UtilisateurSortie:
+    """Ferme l'acces sans rien effacer.
+
+    LE MOTIF EST OBLIGATOIRE. Une suspension sans raison rend toute
+    reactivation arbitraire : celui qui la leve ne sait pas ce qu'il
+    leve, et celui qui la subit ne peut pas la contester.
+    """
+    cible = db.get(Utilisateur, utilisateur_id)
+    if cible is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Compte introuvable.")
+
+    if cible.id == admin.id:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "Vous ne pouvez pas suspendre votre propre compte.",
+        )
+    _proteger_le_dernier_administrateur(db, cible, "suspendre")
+
+    cible.suspendu_le = datetime.datetime.now(datetime.timezone.utc)
+    cible.suspendu_motif = corps.motif.strip()
+    db.commit()
+    journal.info(
+        "Compte %s suspendu par %s : %s", cible.id, admin.id, corps.motif.strip()
+    )
+    return UtilisateurSortie.model_validate(cible)
+
+
+@routeur.post("/utilisateurs/{utilisateur_id}/reactiver")
+def reactiver_compte(
+    utilisateur_id: int,
+    admin: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> UtilisateurSortie:
+    """Rouvre l'acces. Le motif de suspension est efface avec elle."""
+    cible = db.get(Utilisateur, utilisateur_id)
+    if cible is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Compte introuvable.")
+
+    cible.suspendu_le = None
+    cible.suspendu_motif = None
+    db.commit()
+    journal.info("Compte %s reactive par %s.", cible.id, admin.id)
+    return UtilisateurSortie.model_validate(cible)
+
+
+@routeur.delete("/utilisateurs/{utilisateur_id}", status_code=status.HTTP_204_NO_CONTENT)
+def supprimer_compte(
+    utilisateur_id: int,
+    admin: Utilisateur = Depends(administrateur),
+    db: Session = Depends(get_db),
+) -> None:
+    """Supprime definitivement un compte.
+
+    CE QUI PART AVEC LUI : ses conversations, ses messages, ses favoris,
+    ses annotations, son avis et ses demandes d'abonnement. Ce sont ses
+    donnees personnelles, et les conserver apres suppression irait
+    contre l'engagement de confidentialite du produit.
+
+    CE QUI SURVIT : ses signalements, dont l'auteur est simplement
+    anonymise. Le registre des incidents est un dispositif de
+    protection ; un registre qu'un compte supprime peut vider ne prouve
+    rien le jour ou il faudrait s'en servir.
+
+    CE QUI L'EMPECHE : avoir depose ou valide un texte du corpus. Le nom
+    du juriste figure dans la table de provenance publiee — c'est la
+    chaine de responsabilite qui permet de repondre d'une citation
+    contestee. Un tel compte se SUSPEND, il ne se supprime pas. La
+    contrainte est posee en base (ON DELETE RESTRICT) autant qu'ici :
+    le controle applicatif donne un message clair, la contrainte
+    garantit qu'aucune autre voie ne contourne la regle.
+    """
+    cible = db.get(Utilisateur, utilisateur_id)
+    if cible is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Compte introuvable.")
+
+    if cible.id == admin.id:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "Vous ne pouvez pas supprimer votre propre compte.",
+        )
+    _proteger_le_dernier_administrateur(db, cible, "supprimer")
+
+    depots = db.execute(
+        text(
+            "SELECT count(*) FROM depot "
+            "WHERE depose_par = :id OR decide_par = :id"
+        ),
+        {"id": cible.id},
+    ).scalar()
+    if depots:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            f"Ce compte a déposé ou validé {depots} texte(s) du corpus : son "
+            "nom figure dans la table de provenance publiée, et l'effacer "
+            "romprait la chaîne de responsabilité. Suspendez-le plutôt.",
+        )
+
+    courriel = cible.email
+    db.delete(cible)
+    db.commit()
+    journal.info("Compte %s (%s) supprime par %s.", utilisateur_id, courriel, admin.id)

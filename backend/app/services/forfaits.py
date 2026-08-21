@@ -29,7 +29,10 @@ casse donc la suite de tests au lieu de casser le compte en banque.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
+
+from sqlalchemy import text
 
 from app.config import parametres
 
@@ -103,7 +106,7 @@ class Forfait:
 # marge a chaque vente.
 # ---------------------------------------------------------------------
 
-FORFAITS: tuple[Forfait, ...] = (
+FORFAITS_PAR_DEFAUT: tuple[Forfait, ...] = (
     Forfait(
         code="gratuit",
         libelle="Découverte",
@@ -158,7 +161,84 @@ FORFAITS: tuple[Forfait, ...] = (
     ),
 )
 
-PAR_CODE = {forfait.code: forfait for forfait in FORFAITS}
+
+# ---------------------------------------------------------------------
+# Le catalogue vit en base, et se modifie depuis l'administration
+#
+# POURQUOI UN CACHE. `credits_du_plan` est appele a CHAQUE requete
+# authentifiee, pour savoir s'il faut recharger le quota au passage du
+# mois. Une lecture SQL a chaque appel ajouterait un aller-retour a
+# toute l'application pour une table de quatre lignes qui ne bouge
+# qu'a la main.
+#
+# Il est vide a chaque ecriture : c'est la seule voie de modification,
+# et elle passe par ce module.
+# ---------------------------------------------------------------------
+
+_verrou = threading.Lock()
+_cache: dict[str, Forfait] | None = None
+
+
+def _depuis_la_base() -> dict[str, Forfait] | None:
+    """Le catalogue tel qu'il est en base, ou None s'il est inutilisable.
+
+    None couvre deux cas qu'on ne veut PAS distinguer ici : la table
+    n'existe pas encore (depot fraichement clone, migration non
+    jouee), ou elle est vide. Dans les deux cas le repli sur la semence
+    est la bonne reponse — un catalogue vide empecherait toute
+    inscription.
+    """
+    try:
+        from app.db import FabriqueSession
+
+        with FabriqueSession() as session:
+            lignes = session.execute(
+                text(
+                    "SELECT code, libelle, prix_fcfa, credits, argumentaire, "
+                    "       atouts, essai FROM forfait "
+                    " WHERE actif ORDER BY ordre, code"
+                )
+            ).mappings().all()
+    except Exception:  # noqa: BLE001 - table absente, base injoignable
+        return None
+
+    if not lignes:
+        return None
+
+    return {
+        ligne["code"]: Forfait(
+            code=ligne["code"],
+            libelle=ligne["libelle"],
+            prix_fcfa=ligne["prix_fcfa"],
+            credits=ligne["credits"],
+            argumentaire=ligne["argumentaire"] or "",
+            atouts=tuple(ligne["atouts"] or ()),
+            essai=ligne["essai"],
+        )
+        for ligne in lignes
+    }
+
+
+def par_code() -> dict[str, Forfait]:
+    """Tous les forfaits actifs, indexes par code."""
+    global _cache
+    with _verrou:
+        if _cache is None:
+            _cache = _depuis_la_base() or {
+                f.code: f for f in FORFAITS_PAR_DEFAUT
+            }
+        return _cache
+
+
+def oublier_le_cache() -> None:
+    """A appeler apres toute ecriture sur le catalogue."""
+    global _cache
+    with _verrou:
+        _cache = None
+
+
+def forfaits() -> tuple[Forfait, ...]:
+    return tuple(par_code().values())
 
 
 def catalogue_visible() -> tuple[Forfait, ...]:
@@ -167,7 +247,7 @@ def catalogue_visible() -> tuple[Forfait, ...]:
     Le forfait d'essai n'y figure QUE hors production. En production il
     disparait de lui-meme : personne ne peut le souscrire par megarde,
     et il n'y a aucun drapeau a penser a refermer avant la mise en
-    ligne. Il reste connu de PAR_CODE, pour qu'un abonnement souscrit
+    ligne. Il reste connu de par_code(), pour qu'un abonnement souscrit
     pendant les essais continue de s'afficher correctement.
     """
     en_demonstration = parametres.campay_environnement.lower() not in {
@@ -175,22 +255,63 @@ def catalogue_visible() -> tuple[Forfait, ...]:
         "production",
         "live",
     }
-    return tuple(f for f in FORFAITS if not f.essai or en_demonstration)
-
-
-# Conserve pour le code existant, qui lit le quota par plan.
-QUOTA_PAR_PLAN = {forfait.code: forfait.credits for forfait in FORFAITS}
+    return tuple(f for f in forfaits() if not f.essai or en_demonstration)
 
 
 def forfait(code: str) -> Forfait:
     """Le forfait, ou le gratuit si le code est inconnu.
 
     Retomber sur le gratuit plutot que lever : un plan inconnu en base —
-    renommage, migration ratee — ne doit pas empecher quelqu'un de se
-    connecter. Il perd des credits, il ne perd pas son compte.
+    renommage, forfait desactive, migration ratee — ne doit pas
+    empecher quelqu'un de se connecter. Il perd des credits, il ne perd
+    pas son compte.
     """
-    return PAR_CODE.get(code, PAR_CODE["gratuit"])
+    catalogue = par_code()
+    if code in catalogue:
+        return catalogue[code]
+    return catalogue.get("gratuit", FORFAITS_PAR_DEFAUT[0])
 
 
 def credits_du_plan(code: str) -> int:
     return forfait(code).credits
+
+
+# ---------------------------------------------------------------------
+# Ecriture : la marge se verifie ICI
+# ---------------------------------------------------------------------
+
+
+class ForfaitRefuse(ValueError):
+    """Le forfait proposé ne respecte pas les règles du catalogue."""
+
+
+def verifier(prix_fcfa: int, credits: int, essai: bool) -> None:
+    """Refuse un forfait qui ferait perdre de l'argent.
+
+    C'EST LE COEUR DU DEPLACEMENT EN BASE. Tant que le catalogue vivait
+    dans le code, un test refusait toute grille sous le plancher. Une
+    table modifiable depuis une console ne passe par aucun test : la
+    verification doit donc se faire a l'ecriture, cote serveur, sur le
+    seul chemin qui mene a la table.
+
+    Le message dit COMBIEN de credits seraient tenables, plutot que de
+    se contenter d'un refus : sans ce chiffre, l'administrateur essaie
+    des valeurs au hasard jusqu'a ce que ca passe.
+    """
+    if prix_fcfa < 0 or credits < 0:
+        raise ForfaitRefuse("Le prix et les crédits ne peuvent pas être négatifs.")
+
+    # Le gratuit et l'essai n'ont pas de marge a respecter : le premier
+    # est un cout d'acquisition assume, le second un montant symbolique.
+    if prix_fcfa == 0 or essai:
+        return
+
+    cout = credits * parametres.cout_question_fcfa
+    marge = (prix_fcfa - cout) / prix_fcfa
+    if marge < MARGE_MINIMALE:
+        tenables = int(prix_fcfa * (1 - MARGE_MINIMALE) / parametres.cout_question_fcfa)
+        raise ForfaitRefuse(
+            f"Marge de {marge:.0%}, en dessous du plancher de "
+            f"{MARGE_MINIMALE:.0%}. À {prix_fcfa} FCFA, le maximum tenable "
+            f"est de {tenables} crédits — ou montez le prix."
+        )

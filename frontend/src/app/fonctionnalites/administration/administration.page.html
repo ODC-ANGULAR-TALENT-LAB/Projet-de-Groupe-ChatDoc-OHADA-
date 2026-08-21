@@ -45,6 +45,17 @@
         </button>
         <button
           type="button"
+          [class.actif]="onglet() === 'signalements'"
+          [attr.aria-current]="onglet() === 'signalements' ? 'page' : null"
+          (click)="onglet.set('signalements')"
+        >
+          Signalements
+          @if (signalementsOuverts().length) {
+            <span class="pastille">{{ signalementsOuverts().length }}</span>
+          }
+        </button>
+        <button
+          type="button"
           [class.actif]="onglet() === 'comptes'"
           [attr.aria-current]="onglet() === 'comptes' ? 'page' : null"
           (click)="onglet.set('comptes')"
@@ -295,16 +306,26 @@
                   <th scope="col">Crédits</th>
                   <th scope="col">Inscrit le</th>
                   <th scope="col">Rôle</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 @for (c of comptesFiltres(); track c.id) {
-                  <tr>
+                  <tr [class.inactif]="c.suspendu_le">
                     <td>
                       <strong>{{ c.prenom || '—' }}</strong>
                       <span class="courriel">{{ c.email }}</span>
                       @if (c.connexion_google) {
                         <span class="marqueur">Google</span>
+                      }
+                      @if (c.suspendu_le) {
+                        <span class="marqueur suspendu">suspendu</span>
+                      }
+                      @if (verrouille(c)) {
+                        <span class="marqueur">protégé</span>
+                      }
+                      @if (c.suspendu_motif) {
+                        <span class="echeance">{{ c.suspendu_motif }}</span>
                       }
                     </td>
                     <td>
@@ -327,7 +348,7 @@
                       <select
                         [id]="'role-' + c.id"
                         [value]="c.role"
-                        [disabled]="occupe()"
+                        [disabled]="occupe() || verrouille(c)"
                         (change)="changerRole(c, $any($event.target).value)"
                       >
                         @for (r of roles; track r) {
@@ -335,7 +356,147 @@
                         }
                       </select>
                     </td>
+                    <td class="actions-compte">
+                      <!-- LE COMPTE PROTÉGÉ N'A PAS D'ACTIONS. Le dernier
+                           administrateur et le compte de l'appelant ne se
+                           suspendent ni ne se suppriment : plus personne ne
+                           pourrait administrer l'application. Le serveur
+                           refuse de toute façon (409) ; on n'affiche pas
+                           un geste qui échouera. -->
+                      @if (verrouille(c)) {
+                        <span class="aide">
+                          @if (estMoi(c)) {
+                            Votre compte
+                          } @else {
+                            Dernier administrateur
+                          }
+                        </span>
+                      } @else if (c.suspendu_le) {
+                        <button
+                          type="button"
+                          class="lien"
+                          [disabled]="occupe()"
+                          (click)="reactiver(c)"
+                        >
+                          Réactiver
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          class="lien"
+                          [disabled]="occupe()"
+                          (click)="ouvrirSuspension(c)"
+                        >
+                          Suspendre
+                        </button>
+                      }
+                      @if (!verrouille(c)) {
+                        <button
+                          type="button"
+                          class="lien danger"
+                          [disabled]="occupe()"
+                          (click)="ouvrirSuppression(c)"
+                        >
+                          Supprimer
+                        </button>
+                      }
+                    </td>
                   </tr>
+
+                  <!-- SUSPENSION : le motif se saisit sous la ligne du
+                       compte concerné, pas dans une fenêtre : on voit de
+                       qui il s'agit en écrivant. -->
+                  @if (suspension() === c.id) {
+                    <tr class="ligne-action">
+                      <td colspan="6">
+                        <div class="champ">
+                          <label [attr.for]="'susp-' + c.id">
+                            Raison de la suspension de {{ c.email }}
+                          </label>
+                          <input
+                            [id]="'susp-' + c.id"
+                            type="text"
+                            placeholder="Usage abusif, impayé, demande du titulaire…"
+                            [ngModel]="motifSuspension()"
+                            (ngModelChange)="motifSuspension.set($event)"
+                            [name]="'susp-' + c.id"
+                          />
+                          <p class="aide">
+                            Le compte reste intact : il ne peut simplement
+                            plus se connecter, et ses sessions ouvertes se
+                            ferment aussitôt.
+                          </p>
+                        </div>
+                        <div class="actions">
+                          <button
+                            type="button"
+                            class="principal"
+                            [disabled]="occupe()"
+                            (click)="suspendre(c)"
+                          >
+                            Suspendre
+                          </button>
+                          <button
+                            type="button"
+                            class="lien"
+                            (click)="suspension.set(null)"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+
+                  <!-- SUPPRESSION : on demande de retaper l'adresse. Un
+                       « êtes-vous sûr ? » se clique sans lire ; recopier
+                       une adresse oblige à regarder quel compte on
+                       s'apprête à effacer. -->
+                  @if (suppression() === c.id) {
+                    <tr class="ligne-action danger">
+                      <td colspan="6">
+                        <p class="avertissement">
+                          <strong>Suppression définitive.</strong>
+                          Ses conversations, favoris, annotations, avis et
+                          demandes d'abonnement seront effacés. Ses
+                          signalements sont conservés, auteur anonymisé :
+                          le registre des incidents doit survivre aux
+                          comptes. Un compte ayant déposé ou validé un
+                          texte du corpus ne peut pas être supprimé.
+                        </p>
+                        <div class="champ">
+                          <label [attr.for]="'supp-' + c.id">
+                            Recopiez « {{ c.email }} » pour confirmer
+                          </label>
+                          <input
+                            [id]="'supp-' + c.id"
+                            type="text"
+                            autocomplete="off"
+                            [ngModel]="confirmationSuppression()"
+                            (ngModelChange)="confirmationSuppression.set($event)"
+                            [name]="'supp-' + c.id"
+                          />
+                        </div>
+                        <div class="actions">
+                          <button
+                            type="button"
+                            class="destructif"
+                            [disabled]="occupe()"
+                            (click)="supprimer(c)"
+                          >
+                            Supprimer définitivement
+                          </button>
+                          <button
+                            type="button"
+                            class="lien"
+                            (click)="suppression.set(null)"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
@@ -413,9 +574,251 @@
         </section>
       }
 
+      <!-- ================= SIGNALEMENTS ================= -->
+      @if (onglet() === 'signalements') {
+        <section aria-label="Registre des signalements">
+          <p class="confidentialite">
+            Le registre des incidents est un dispositif de protection : il
+            n'a de valeur que s'il est tenu depuis le début. Ouvert le
+            jour du premier litige, il ne prouverait rien.
+          </p>
+
+          @if (!signalements().length) {
+            <p class="vide">Aucune réponse contestée à ce jour.</p>
+          }
+
+          @for (s of signalements(); track s.id) {
+            <article class="demande" [class.clos]="s.statut !== 'ouvert'">
+              <header>
+                <strong>{{ s.motif.replace('_', ' ') }}</strong>
+                <span class="etat" [class.refusee]="s.statut === 'ecarte'">
+                  {{
+                    s.statut === 'ouvert'
+                      ? 'À examiner'
+                      : s.statut === 'traite'
+                        ? 'Corrigé'
+                        : 'Écarté'
+                  }}
+                </span>
+                <time [attr.datetime]="s.cree_le">
+                  {{ s.cree_le | date: 'short' }}
+                </time>
+              </header>
+              <p class="courriel">{{ s.email || 'compte supprimé' }}</p>
+
+              <!-- La question et la réponse mises en cause : trancher
+                   suppose de les relire, et aller les chercher ailleurs
+                   découragerait de le faire. -->
+              <dl class="echange">
+                <dt>Question</dt>
+                <dd>{{ s.question || '—' }}</dd>
+                <dt>Réponse contestée</dt>
+                <dd>{{ s.reponse || '—' }}</dd>
+                @if (s.commentaire) {
+                  <dt>Remarque de l'utilisateur</dt>
+                  <dd>{{ s.commentaire }}</dd>
+                }
+              </dl>
+
+              @if (s.statut === 'ouvert') {
+                <div class="champ">
+                  <label [attr.for]="'corr-' + s.id">
+                    Ce qui a été constaté ou corrigé
+                  </label>
+                  <input
+                    [id]="'corr-' + s.id"
+                    type="text"
+                    placeholder="Article rechargé, signalement infondé…"
+                    [ngModel]="correction(s.id)"
+                    (ngModelChange)="poserCorrection(s.id, $event)"
+                    [name]="'corr-' + s.id"
+                  />
+                  <p class="aide">
+                    Obligatoire : « traité » seul ne dit ni ce qui a été
+                    constaté, ni ce qui a été corrigé.
+                  </p>
+                </div>
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="principal"
+                    [disabled]="occupe()"
+                    (click)="clore(s, 'traite')"
+                  >
+                    Corpus corrigé
+                  </button>
+                  <button
+                    type="button"
+                    class="secondaire"
+                    [disabled]="occupe()"
+                    (click)="clore(s, 'ecarte')"
+                  >
+                    Écarter
+                  </button>
+                </div>
+              } @else {
+                <p class="mention">
+                  {{ s.traite_le | date: 'short' }} — {{ s.correction }}
+                </p>
+              }
+            </article>
+          }
+        </section>
+      }
+
       <!-- ================= FORFAITS ================= -->
       @if (onglet() === 'forfaits') {
         <section aria-label="Catalogue des forfaits">
+          <div class="barre-filtre">
+            <button type="button" class="principal" (click)="ouvrirCreation()">
+              Nouveau forfait
+            </button>
+          </div>
+
+          @if (edition(); as encours) {
+            <article class="demande">
+              <header>
+                <strong>
+                  {{ encours === 'nouveau' ? 'Nouveau forfait' : 'Modifier ' + brouillon().libelle }}
+                </strong>
+              </header>
+
+              <div class="traitement">
+                @if (encours === 'nouveau') {
+                  <div class="champ">
+                    <label for="f-code">Code</label>
+                    <input
+                      id="f-code"
+                      name="f-code"
+                      type="text"
+                      placeholder="cabinet-plus"
+                      [ngModel]="brouillon().code"
+                      (ngModelChange)="champ('code', $event)"
+                    />
+                    <p class="aide">
+                      Minuscules, chiffres et tirets. Il s'inscrit sur chaque
+                      compte abonné et ne pourra plus être changé.
+                    </p>
+                  </div>
+                }
+
+                <div class="champ">
+                  <label for="f-libelle">Nom affiché</label>
+                  <input
+                    id="f-libelle"
+                    name="f-libelle"
+                    type="text"
+                    [ngModel]="brouillon().libelle"
+                    (ngModelChange)="champ('libelle', $event)"
+                  />
+                </div>
+
+                <div class="champ">
+                  <label for="f-prix">Prix mensuel (FCFA)</label>
+                  <input
+                    id="f-prix"
+                    name="f-prix"
+                    type="number"
+                    min="0"
+                    [ngModel]="brouillon().prix_fcfa"
+                    (ngModelChange)="champ('prix_fcfa', $event)"
+                  />
+                </div>
+
+                <div class="champ">
+                  <label for="f-credits">Crédits par mois</label>
+                  <input
+                    id="f-credits"
+                    name="f-credits"
+                    type="number"
+                    min="0"
+                    [ngModel]="brouillon().credits"
+                    (ngModelChange)="champ('credits', $event)"
+                  />
+                  <!-- La marge s'affiche PENDANT la saisie : la voir
+                       chuter en tapant vaut mieux qu'un refus après
+                       coup. Le serveur reste seul juge. -->
+                  @if (margeBrouillon(); as m) {
+                    <p class="aide" [class.marge-basse]="m < 0.5">
+                      Marge estimée : {{ (m * 100).toFixed(0) }} %
+                      @if (m < 0.5) {
+                        — sous le plancher de 50 %, le serveur refusera.
+                      }
+                    </p>
+                  }
+                </div>
+
+                <div class="champ">
+                  <label for="f-arg">Argumentaire</label>
+                  <input
+                    id="f-arg"
+                    name="f-arg"
+                    type="text"
+                    [ngModel]="brouillon().argumentaire"
+                    (ngModelChange)="champ('argumentaire', $event)"
+                  />
+                </div>
+
+                <div class="champ">
+                  <label for="f-ordre">Ordre d'affichage</label>
+                  <input
+                    id="f-ordre"
+                    name="f-ordre"
+                    type="number"
+                    min="0"
+                    [ngModel]="brouillon().ordre"
+                    (ngModelChange)="champ('ordre', $event)"
+                  />
+                </div>
+              </div>
+
+              <div class="champ">
+                <label for="f-atouts">Arguments de vente</label>
+                <textarea
+                  id="f-atouts"
+                  name="f-atouts"
+                  rows="4"
+                  [ngModel]="atoutsTexte()"
+                  (ngModelChange)="atoutsTexte.set($event)"
+                ></textarea>
+                <p class="aide">Un argument par ligne.</p>
+              </div>
+
+              <div class="actions">
+                <label class="bascule-ligne">
+                  <input
+                    type="checkbox"
+                    [checked]="brouillon().actif"
+                    (change)="champ('actif', $any($event.target).checked)"
+                  />
+                  Proposé à la vente
+                </label>
+                <label class="bascule-ligne">
+                  <input
+                    type="checkbox"
+                    [checked]="brouillon().essai"
+                    (change)="champ('essai', $any($event.target).checked)"
+                  />
+                  Forfait d'essai (exempté de marge, masqué en production)
+                </label>
+              </div>
+
+              <div class="actions">
+                <button
+                  type="button"
+                  class="principal"
+                  [disabled]="occupe()"
+                  (click)="enregistrerForfait()"
+                >
+                  Enregistrer
+                </button>
+                <button type="button" class="lien" (click)="fermerEdition()">
+                  Annuler
+                </button>
+              </div>
+            </article>
+          }
+
           <div class="tableau-enveloppe">
             <table>
               <caption class="invisible">Forfaits du catalogue</caption>
@@ -424,15 +827,24 @@
                   <th scope="col">Forfait</th>
                   <th scope="col">Prix</th>
                   <th scope="col">Crédits</th>
+                  <th scope="col">Coût</th>
+                  <th scope="col">Marge</th>
                   <th scope="col">Abonnés</th>
+                  <th scope="col"></th>
                 </tr>
               </thead>
               <tbody>
-                @for (f of forfaits(); track f.code) {
-                  <tr>
+                @for (f of forfaitsAdmin(); track f.code) {
+                  <tr [class.inactif]="!f.actif">
                     <td>
                       <strong>{{ f.libelle }}</strong>
-                      <span class="courriel">{{ f.argumentaire }}</span>
+                      <span class="courriel">{{ f.code }}</span>
+                      @if (f.essai) {
+                        <span class="marqueur">essai</span>
+                      }
+                      @if (!f.actif) {
+                        <span class="marqueur">retiré</span>
+                      }
                     </td>
                     <td class="chiffre">
                       @if (f.prix_fcfa) {
@@ -442,8 +854,26 @@
                       }
                     </td>
                     <td class="chiffre">{{ f.credits }}</td>
+                    <td class="chiffre">{{ f.cout_variable_fcfa | number }} F</td>
                     <td class="chiffre">
-                      {{ bord()?.abonnes_par_forfait?.[f.code] ?? 0 }}
+                      @if (f.marge === null) {
+                        —
+                      } @else {
+                        <span [class.marge-basse]="f.marge < 0.5">
+                          {{ (f.marge * 100).toFixed(0) }} %
+                        </span>
+                      }
+                    </td>
+                    <td class="chiffre">{{ f.abonnes }}</td>
+                    <td>
+                      <button
+                        type="button"
+                        class="lien"
+                        [disabled]="occupe()"
+                        (click)="ouvrirEdition(f)"
+                      >
+                        Modifier
+                      </button>
                     </td>
                   </tr>
                 }
@@ -452,15 +882,15 @@
           </div>
 
           <p class="confidentialite">
-            Le catalogue est défini dans le code, et un test refuse toute
-            grille dont la marge tomberait sous 50 %. C'est ce qui
-            empêche d'ajouter des crédits sans revoir le prix : la
-            contrainte casse la suite de tests plutôt que le compte en
-            banque. Le rendre modifiable ici demanderait de déplacer
-            cette vérification côté serveur — faisable, à décider.
+            La marge est vérifiée par le serveur à l'enregistrement : un
+            forfait dont les crédits coûteraient plus de la moitié du prix
+            est refusé, avec le nombre de crédits qui serait tenable. Un
+            forfait retiré de la vente n'est pas supprimé — des comptes y
+            sont peut-être encore abonnés.
           </p>
         </section>
       }
+
     }
   }
 </section>

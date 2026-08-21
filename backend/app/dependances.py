@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import Utilisateur
-from app.services.forfaits import QUOTA_PAR_PLAN, credits_du_plan
+from app.services.forfaits import credits_du_plan
 from app.services.securite import lire_jeton
 
 journal = logging.getLogger(__name__)
@@ -39,6 +39,23 @@ def utilisateur_courant(
     utilisateur = db.get(Utilisateur, utilisateur_id)
     if utilisateur is None:
         raise refus
+
+    # UN COMPTE SUSPENDU NE PASSE PLUS, MEME AVEC UN JETON VALIDE.
+    # Suspendre sans ce controle ne fermerait que la porte d entree : la
+    # session ouverte avant la suspension continuerait de fonctionner
+    # jusqu a son expiration, soit douze heures.
+    #
+    # 403 et non 401 : le jeton est bon, c est le compte qui est ferme.
+    # Un 401 ferait croire a une session expiree et inviterait a se
+    # reconnecter en boucle.
+    if utilisateur.suspendu_le is not None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                'Ce compte est suspendu.'
+                + (f' Motif : {utilisateur.suspendu_motif}' if utilisateur.suspendu_motif else '')
+            ),
+        )
 
     return reinitialiser_quota_si_besoin(db, utilisateur)
 
@@ -133,10 +150,8 @@ def redacteur_corpus(
     return utilisateur
 
 
-# QUOTA_PAR_PLAN vit desormais dans services/forfaits.py, aux cotes des
-# prix et de la marge : le nombre de credits et ce qu'il coute ne
-# doivent pas pouvoir diverger. Reexporte ici pour le code qui l'importe
-# depuis ce module.
-__all__ = ['QUOTA_PAR_PLAN', 'credits_du_plan', 'utilisateur_courant',
-           'administrateur', 'redacteur_corpus',
-           'reinitialiser_quota_si_besoin', 'get_db']
+# Le catalogue vit desormais en base (services/forfaits.py) : le nombre
+# de credits se lit par credits_du_plan, jamais par un dictionnaire fige
+# a l'import — il changerait sans que le processus le sache.
+__all__ = ['credits_du_plan', 'utilisateur_courant', 'administrateur',
+           'redacteur_corpus', 'reinitialiser_quota_si_besoin', 'get_db']

@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 
 from app.config import parametres
 from app.db import get_db
-from app.dependances import QUOTA_PAR_PLAN, utilisateur_courant
+from app.dependances import utilisateur_courant
+from app.services.forfaits import credits_du_plan
 from app.models import Utilisateur
 from app.schemas import Identifiants, Inscription, Jeton, JetonGoogle, Quota
 from app.services.google import JetonGoogleInvalide, verifier_jeton
@@ -65,7 +66,7 @@ def inscription(corps: Inscription, db: Session = Depends(get_db)) -> Jeton:
         email=corps.email,
         mot_de_passe_hash=hacher(corps.mot_de_passe),
         plan="gratuit",
-        quota_restant=QUOTA_PAR_PLAN["gratuit"],
+        quota_restant=credits_du_plan("gratuit"),
         quota_reinit_le=datetime.date.today(),
         prenom=prenom,
         preferences={},
@@ -76,6 +77,26 @@ def inscription(corps: Inscription, db: Session = Depends(get_db)) -> Jeton:
     db.commit()
     db.refresh(utilisateur)
     return _jeton(utilisateur)
+
+
+def _refuser_si_suspendu(utilisateur: Utilisateur) -> None:
+    """Un compte suspendu n obtient pas de jeton.
+
+    LA GARDE EXISTE AUSSI DANS utilisateur_courant, et ce n est pas un
+    doublon : celle-ci ferme la porte d entree, l autre ferme les
+    sessions deja ouvertes. Sans celle-ci, la connexion reussissait, le
+    jeton etait emis, et chaque appel suivant repondait 403 — ce qui
+    ressemble a une panne plutot qu a une decision.
+
+    403 et non 401 : les identifiants sont bons, c est le compte qui est
+    ferme. Un 401 inviterait a ressaisir un mot de passe correct.
+    """
+    if utilisateur.suspendu_le is None:
+        return
+    detail = "Ce compte est suspendu."
+    if utilisateur.suspendu_motif:
+        detail += f" Motif : {utilisateur.suspendu_motif}"
+    raise HTTPException(status.HTTP_403_FORBIDDEN, detail)
 
 
 @routeur.post("/auth/connexion")
@@ -94,6 +115,7 @@ def connexion(corps: Identifiants, db: Session = Depends(get_db)) -> Jeton:
             status.HTTP_401_UNAUTHORIZED, "Identifiants invalides"
         )
 
+    _refuser_si_suspendu(utilisateur)
     return _jeton(utilisateur)
 
 
@@ -160,7 +182,7 @@ def connexion_google(corps: JetonGoogle, db: Session = Depends(get_db)) -> Jeton
                 mot_de_passe_hash=None,
                 google_sub=identite.sub,
                 plan="gratuit",
-                quota_restant=QUOTA_PAR_PLAN["gratuit"],
+                quota_restant=credits_du_plan("gratuit"),
                 quota_reinit_le=datetime.date.today(),
                 # Le prénom vient de Google, mais il passe par la MEME
                 # validation que celui saisi à la main : un claim est
@@ -193,6 +215,9 @@ def connexion_google(corps: JetonGoogle, db: Session = Depends(get_db)) -> Jeton
     db.commit()
     db.refresh(utilisateur)
 
+    # Un compte suspendu n entre pas davantage par Google : la
+    # suspension porte sur le COMPTE, pas sur un moyen de connexion.
+    _refuser_si_suspendu(utilisateur)
     return _jeton(utilisateur)
 
 

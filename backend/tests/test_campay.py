@@ -25,7 +25,7 @@ from app.config import parametres
 from app.db import FabriqueSession
 from app.main import app
 from app.services import campay
-from app.services.forfaits import PAR_CODE, credits_du_plan
+from app.services.forfaits import credits_du_plan, par_code
 from app.services.securite import creer_jeton
 
 CLE_WEBHOOK = "cle-de-test-du-webhook"
@@ -129,7 +129,7 @@ def test_le_montant_est_lu_dans_le_catalogue(client, abonne, collecte_simulee):
         headers=entete,
     )
 
-    assert collecte_simulee["montant"] == PAR_CODE["cabinet"].prix_fcfa == 8000
+    assert collecte_simulee["montant"] == par_code()["cabinet"].prix_fcfa == 8000
 
 
 def test_un_forfait_gratuit_ne_se_paie_pas(client, abonne, collecte_simulee):

@@ -23,7 +23,9 @@ from app.config import parametres
 from app.db import FabriqueSession
 from app.main import app
 from app.services.forfaits import (
-    FORFAITS,
+    FORFAITS_PAR_DEFAUT,
+    oublier_le_cache,
+    par_code,
     MARGE_MINIMALE,
     credits_du_plan,
     forfait,
@@ -79,7 +81,7 @@ def patron():
 
 @pytest.mark.parametrize(
     "f",
-    [f for f in FORFAITS if f.prix_fcfa > 0 and not f.essai],
+    [f for f in FORFAITS_PAR_DEFAUT if f.prix_fcfa > 0 and not f.essai],
     ids=lambda f: f.code,
 )
 def test_chaque_forfait_payant_degage_la_marge_minimale(f):
@@ -108,7 +110,7 @@ def test_la_marge_reste_dans_la_fourchette_visee():
     devient cher pour ce qu'il donne, et un catalogue qu'on n'achete
     pas ne rapporte rien non plus.
     """
-    for f in FORFAITS:
+    for f in FORFAITS_PAR_DEFAUT:
         # Le forfait d'essai est un montant symbolique : l'y soumettre
         # obligerait a truquer le cout pour faire passer le test.
         if f.prix_fcfa == 0 or f.essai:
@@ -133,7 +135,7 @@ def test_un_cout_double_ferait_echouer_le_plancher(monkeypatch):
     """
     monkeypatch.setattr(parametres, "cout_question_fcfa", parametres.cout_question_fcfa * 2)
 
-    payants = [f for f in FORFAITS if f.prix_fcfa > 0 and not f.essai]
+    payants = [f for f in FORFAITS_PAR_DEFAUT if f.prix_fcfa > 0 and not f.essai]
     assert any(f.marge < MARGE_MINIMALE for f in payants)
 
 
@@ -444,3 +446,149 @@ def test_le_personnel_ne_compte_pas_dans_les_abonnes(client, patron):
         assert bord["abonnes_par_forfait"].get("cabinet", 0) == 0
     finally:
         _effacer(email)
+
+
+# ---------------------------------------------------------------------
+# Le catalogue est modifiable, et la marge le protege toujours
+#
+# LE CATALOGUE A QUITTE LE CODE POUR LA BASE. Tant qu'il y vivait, un
+# test refusait toute grille sous le plancher. Une table modifiable
+# depuis une console ne passe par AUCUN test : la verification a du
+# migrer vers l'ecriture. Ces tests verifient qu'elle y est bien, et
+# qu'elle mord.
+# ---------------------------------------------------------------------
+
+
+def test_creer_un_forfait_a_perte_est_refuse(client, patron):
+    """LE TEST QUI REMPLACE L'ANCIEN GARDE-FOU.
+
+    Sans lui, sortir le catalogue du code aurait echange une garantie
+    mecanique contre une bonne intention : rien n'empecherait plus
+    d'ouvrir 100 credits a 200 F depuis l'interface.
+    """
+    reponse = client.post(
+        "/admin/forfaits",
+        json={
+            "code": "essai-perdant",
+            "libelle": "Perdant",
+            "prix_fcfa": 200,
+            "credits": 100,
+        },
+        headers=patron,
+    )
+
+    assert reponse.status_code == 422
+    # Le message doit dire COMBIEN serait tenable : sans ce chiffre,
+    # l'administrateur essaie des valeurs au hasard.
+    assert "crédits" in reponse.json()["detail"]
+
+
+def test_creer_un_forfait_soutenable_est_accepte(client, patron):
+    try:
+        reponse = client.post(
+            "/admin/forfaits",
+            json={
+                "code": "essai-tenable",
+                "libelle": "Tenable",
+                "prix_fcfa": 3000,
+                "credits": 50,
+                "argumentaire": "Créé par un test.",
+                "atouts": ["50 questions"],
+            },
+            headers=patron,
+        )
+        assert reponse.status_code == 201
+        assert reponse.json()["marge"] >= 0.5
+    finally:
+        with FabriqueSession() as session:
+            session.execute(
+                text("DELETE FROM forfait WHERE code = 'essai-tenable'")
+            )
+            session.commit()
+        oublier_le_cache()
+
+
+def test_modifier_un_forfait_repasse_par_la_verification(client, patron):
+    """Modifier est aussi dangereux que creer : gonfler les credits d'un
+    forfait existant le rendrait perdant sans qu'aucune creation n'ait
+    eu lieu."""
+    reponse = client.put(
+        "/admin/forfaits/essentiel",
+        json={
+            "libelle": "Essentiel",
+            "prix_fcfa": 5000,
+            "credits": 500,
+            "atouts": [],
+        },
+        headers=patron,
+    )
+
+    assert reponse.status_code == 422
+
+
+def test_le_forfait_gratuit_ne_se_desactive_pas(client, patron):
+    """C'est celui sur lequel tout compte retombe, a l'inscription comme
+    a l'echeance d'un abonnement. Sans lui, une inscription n'aurait
+    plus de plan."""
+    reponse = client.put(
+        "/admin/forfaits/gratuit",
+        json={
+            "libelle": "Découverte",
+            "prix_fcfa": 0,
+            "credits": 10,
+            "atouts": [],
+            "actif": False,
+        },
+        headers=patron,
+    )
+
+    assert reponse.status_code == 409
+
+
+def test_un_utilisateur_ordinaire_ne_touche_pas_au_catalogue(client, abonne):
+    _, entete = abonne
+
+    assert client.get("/admin/forfaits", headers=entete).status_code == 403
+    assert (
+        client.post(
+            "/admin/forfaits",
+            json={"code": "pirate", "libelle": "Pirate", "prix_fcfa": 1, "credits": 999},
+            headers=entete,
+        ).status_code
+        == 403
+    )
+
+
+# ---------------------------------------------------------------------
+# Les comptes sans souscription sont des abonnes Decouverte
+# ---------------------------------------------------------------------
+
+
+def test_les_comptes_sans_souscription_comptent_comme_decouverte(client, abonne, patron):
+    """QUELQU'UN QUI N'A RIEN SOUSCRIT EST ABONNE A DECOUVERTE, ce n'est
+    pas une absence d'abonnement.
+
+    La repartition les excluait : elle laissait une colonne vide la ou
+    se trouve le gros des comptes, et devenait illisible.
+    """
+    bord = client.get("/admin/tableau-de-bord", headers=patron).json()
+
+    assert bord["abonnes_par_forfait"].get("gratuit", 0) >= 1
+    # Le revenu, lui, ne compte que le payant.
+    assert bord["revenu_mensuel_fcfa"] == sum(
+        par_code()[code].prix_fcfa * n
+        for code, n in bord["abonnes_par_forfait"].items()
+        if code in par_code() and par_code()[code].prix_fcfa > 0
+    )
+
+
+def test_les_abonnes_payants_excluent_le_gratuit(client, patron):
+    """« Abonnes payants » garde son sens strict : ceux qui paient."""
+    bord = client.get("/admin/tableau-de-bord", headers=patron).json()
+
+    assert bord["abonnes_payants"] <= sum(bord["abonnes_par_forfait"].values())
+    assert bord["abonnes_payants"] == sum(
+        n
+        for code, n in bord["abonnes_par_forfait"].items()
+        if code in par_code() and par_code()[code].prix_fcfa > 0
+    )

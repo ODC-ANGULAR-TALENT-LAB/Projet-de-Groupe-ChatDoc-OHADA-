@@ -5,7 +5,10 @@ import { RouterLink } from '@angular/router';
 import {
   AdministrationService,
   CompteAdmin,
+  ForfaitAdmin,
+  ForfaitEcriture,
   Role,
+  Signalement,
   TableauDeBord,
 } from '../../core/services/administration.service';
 import { AvisService, SyntheseAvis } from '../../core/services/avis.service';
@@ -17,7 +20,13 @@ import {
 import { ProfilService } from '../../core/services/profil.service';
 import { IconeComponent } from '../../partage/composants/icone.component';
 
-type Onglet = 'apercu' | 'abonnements' | 'comptes' | 'avis' | 'forfaits';
+type Onglet =
+  | 'apercu'
+  | 'abonnements'
+  | 'signalements'
+  | 'comptes'
+  | 'avis'
+  | 'forfaits';
 
 /**
  * Console d'administration du service.
@@ -69,6 +78,8 @@ export class AdministrationPage {
   protected readonly demandes = signal<DemandeAbonnement[]>([]);
   protected readonly avis = signal<SyntheseAvis | null>(null);
   protected readonly forfaits = signal<Forfait[]>([]);
+  protected readonly forfaitsAdmin = signal<ForfaitAdmin[]>([]);
+  protected readonly signalements = signal<Signalement[]>([]);
 
   /** Filtre du tableau des comptes : e-mail, prénom ou rôle. */
   protected readonly filtre = signal('');
@@ -98,6 +109,10 @@ export class AdministrationPage {
 
   protected readonly roles: Role[] = ['utilisateur', 'juriste', 'admin'];
 
+  protected readonly signalementsOuverts = computed(() =>
+    this.signalements().filter((s) => s.statut === 'ouvert'),
+  );
+
   constructor() {
     void this.charger();
   }
@@ -121,18 +136,23 @@ export class AdministrationPage {
     try {
       // En parallèle : quatre appels indépendants, et les enchaîner
       // ferait attendre le plus lent après le plus rapide.
-      const [bord, comptes, demandes, avis, forfaits] = await Promise.all([
-        this.administration.tableauDeBord(),
-        this.administration.comptes(),
-        this.forfaitsService.demandes(),
-        this.avisService.synthese(),
-        this.forfaitsService.catalogue(),
-      ]);
+      const [bord, comptes, demandes, avis, forfaits, catalogue, signalements] =
+        await Promise.all([
+          this.administration.tableauDeBord(),
+          this.administration.comptes(),
+          this.forfaitsService.demandes(),
+          this.avisService.synthese(),
+          this.forfaitsService.catalogue(),
+          this.administration.forfaits(),
+          this.administration.signalements(),
+        ]);
       this.bord.set(bord);
       this.comptes.set(comptes);
       this.demandes.set(demandes);
       this.avis.set(avis);
       this.forfaits.set(forfaits);
+      this.forfaitsAdmin.set(catalogue);
+      this.signalements.set(signalements);
     } catch (erreur) {
       this.erreur.set(this.administration.message(erreur));
     } finally {
@@ -190,6 +210,96 @@ export class AdministrationPage {
     });
   }
 
+  /**
+   * Ce compte est-il le dernier administrateur actif ?
+   *
+   * LA RÈGLE EST CELLE DU SERVEUR, reproduite ici pour GRISER les
+   * actions plutôt que de les laisser échouer en 409. Le serveur reste
+   * seul juge : cette copie n'autorise rien, elle évite seulement de
+   * proposer un geste impossible.
+   */
+  protected estDernierAdmin(compte: CompteAdmin): boolean {
+    if (compte.role !== 'admin') return false;
+    return (
+      this.comptes().filter((c) => c.role === 'admin' && !c.suspendu_le)
+        .length <= 1
+    );
+  }
+
+  /** Le compte de l'administrateur connecté. */
+  protected estMoi(compte: CompteAdmin): boolean {
+    return compte.email === this.profils.profil()?.email;
+  }
+
+  protected verrouille(compte: CompteAdmin): boolean {
+    return this.estMoi(compte) || this.estDernierAdmin(compte);
+  }
+
+  protected readonly suspension = signal<number | null>(null);
+  protected readonly motifSuspension = signal('');
+
+  protected ouvrirSuspension(compte: CompteAdmin): void {
+    this.erreur.set(null);
+    this.confirmation.set(null);
+    this.suspension.set(compte.id);
+    this.motifSuspension.set('');
+  }
+
+  protected async suspendre(compte: CompteAdmin): Promise<void> {
+    const motif = this.motifSuspension().trim();
+    if (motif.length < 3) {
+      this.erreur.set(
+        'Indiquez la raison : sans elle, celui qui lèvera la suspension ne saura pas ce qu’il lève.',
+      );
+      return;
+    }
+    await this.agir(async () => {
+      await this.administration.suspendre(compte.id, motif);
+      this.suspension.set(null);
+      this.confirmation.set(`${compte.email} est suspendu.`);
+    });
+  }
+
+  protected async reactiver(compte: CompteAdmin): Promise<void> {
+    await this.agir(async () => {
+      await this.administration.reactiver(compte.id);
+      this.confirmation.set(`${compte.email} peut de nouveau se connecter.`);
+    });
+  }
+
+  /**
+   * Suppression définitive.
+   *
+   * LA CONFIRMATION EST EXIGÉE, et elle demande de retaper l'adresse :
+   * un simple « êtes-vous sûr ? » se clique sans lire, alors que
+   * recopier une adresse oblige à regarder de quel compte il s'agit.
+   */
+  protected readonly suppression = signal<number | null>(null);
+  protected readonly confirmationSuppression = signal('');
+
+  protected ouvrirSuppression(compte: CompteAdmin): void {
+    this.erreur.set(null);
+    this.confirmation.set(null);
+    this.suppression.set(compte.id);
+    this.confirmationSuppression.set('');
+  }
+
+  protected async supprimer(compte: CompteAdmin): Promise<void> {
+    if (this.confirmationSuppression().trim() !== compte.email) {
+      this.erreur.set(
+        "Recopiez l'adresse exacte du compte pour confirmer la suppression.",
+      );
+      return;
+    }
+    await this.agir(async () => {
+      await this.administration.supprimer(compte.id);
+      this.suppression.set(null);
+      this.confirmation.set(
+        `${compte.email} et ses données personnelles ont été supprimés.`,
+      );
+    });
+  }
+
   protected async changerRole(compte: CompteAdmin, role: Role): Promise<void> {
     if (role === compte.role) return;
     await this.agir(async () => {
@@ -229,4 +339,169 @@ export class AdministrationPage {
       this.occupe.set(false);
     }
   }
+
+  // --- Catalogue -------------------------------------------------------
+
+  /**
+   * Forfait en cours d'édition, ou `'nouveau'` pour une création.
+   *
+   * UN SEUL À LA FOIS. Ouvrir plusieurs formulaires laisserait croire
+   * qu'ils s'enregistrent ensemble, alors que chaque forfait part dans
+   * sa propre requête et peut être refusé séparément.
+   */
+  protected readonly edition = signal<string | null>(null);
+  protected readonly brouillon = signal<ForfaitEcriture & { code: string }>({
+    code: '',
+    libelle: '',
+    prix_fcfa: 0,
+    credits: 0,
+    argumentaire: '',
+    atouts: [],
+    essai: false,
+    actif: true,
+    ordre: 100,
+  });
+  /** Les atouts se saisissent une ligne par argument. */
+  protected readonly atoutsTexte = signal('');
+
+  protected ouvrirEdition(f: ForfaitAdmin): void {
+    this.erreur.set(null);
+    this.confirmation.set(null);
+    this.edition.set(f.code);
+    this.brouillon.set({
+      code: f.code,
+      libelle: f.libelle,
+      prix_fcfa: f.prix_fcfa,
+      credits: f.credits,
+      argumentaire: f.argumentaire,
+      atouts: f.atouts,
+      essai: f.essai,
+      actif: f.actif,
+      ordre: f.ordre,
+    });
+    this.atoutsTexte.set(f.atouts.join('\n'));
+  }
+
+  protected ouvrirCreation(): void {
+    this.erreur.set(null);
+    this.confirmation.set(null);
+    this.edition.set('nouveau');
+    this.brouillon.set({
+      code: '',
+      libelle: '',
+      prix_fcfa: 0,
+      credits: 0,
+      argumentaire: '',
+      atouts: [],
+      essai: false,
+      actif: true,
+      ordre: 100,
+    });
+    this.atoutsTexte.set('');
+  }
+
+  protected fermerEdition(): void {
+    this.edition.set(null);
+  }
+
+  protected champ(cle: keyof (ForfaitEcriture & { code: string }), valeur: unknown): void {
+    this.brouillon.update((b) => ({ ...b, [cle]: valeur }));
+  }
+
+  /**
+   * Ce que coûterait le forfait en cours de saisie.
+   *
+   * AFFICHÉ PENDANT LA SAISIE, pas seulement au refus : voir la marge
+   * chuter en tapant vaut mieux que se faire refuser après coup. Le
+   * serveur reste seul juge — ce calcul ne fait qu'annoncer sa réponse.
+   */
+  protected margeBrouillon(): number | null {
+    const b = this.brouillon();
+    if (b.prix_fcfa <= 0) return null;
+    const cout = b.credits * this.coutQuestion();
+    return (b.prix_fcfa - cout) / b.prix_fcfa;
+  }
+
+  /**
+   * Coût d'une question, déduit d'un forfait payant existant.
+   *
+   * Le serveur ne l'expose pas directement ; on le retrouve à partir
+   * d'un forfait dont on connaît prix, crédits et marge. À défaut, on
+   * n'affiche pas d'estimation plutôt que d'en inventer une.
+   */
+  protected coutQuestion(): number {
+    const reference = this.forfaitsAdmin().find(
+      (f) => f.credits > 0 && f.cout_variable_fcfa > 0,
+    );
+    return reference ? reference.cout_variable_fcfa / reference.credits : 0;
+  }
+
+  protected async enregistrerForfait(): Promise<void> {
+    const b = this.brouillon();
+    const atouts = this.atoutsTexte()
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const corps: ForfaitEcriture = {
+      libelle: b.libelle.trim(),
+      prix_fcfa: Number(b.prix_fcfa) || 0,
+      credits: Number(b.credits) || 0,
+      argumentaire: b.argumentaire.trim(),
+      atouts,
+      essai: b.essai,
+      actif: b.actif,
+      ordre: Number(b.ordre) || 100,
+    };
+
+    await this.agir(async () => {
+      if (this.edition() === 'nouveau') {
+        await this.administration.creerForfait(b.code.trim(), corps);
+        this.confirmation.set(`Forfait « ${corps.libelle} » créé.`);
+      } else {
+        await this.administration.modifierForfait(b.code, corps);
+        this.confirmation.set(`Forfait « ${corps.libelle} » mis à jour.`);
+      }
+      this.edition.set(null);
+      this.forfaitsAdmin.set(await this.administration.forfaits());
+    });
+  }
+
+  // --- Signalements ----------------------------------------------------
+
+  protected readonly corrections = signal<Record<number, string>>({});
+
+  protected correction(id: number): string {
+    return this.corrections()[id] ?? '';
+  }
+
+  protected poserCorrection(id: number, valeur: string): void {
+    this.corrections.update((c) => ({ ...c, [id]: valeur }));
+  }
+
+  protected async clore(
+    signalement: Signalement,
+    statut: 'traite' | 'ecarte',
+  ): Promise<void> {
+    const correction = this.correction(signalement.id).trim();
+    if (correction.length < 3) {
+      this.erreur.set(
+        'Dites ce qui a été constaté ou corrigé : sans cela, le registre ne prouve rien le jour où il faudrait s’en servir.',
+      );
+      return;
+    }
+    await this.agir(async () => {
+      await this.administration.traiterSignalement(
+        signalement.id,
+        statut,
+        correction,
+      );
+      this.confirmation.set(
+        statut === 'traite'
+          ? 'Signalement clos : correction consignée.'
+          : 'Signalement écarté, motif consigné.',
+      );
+      this.signalements.set(await this.administration.signalements());
+    });
+  }
+
 }

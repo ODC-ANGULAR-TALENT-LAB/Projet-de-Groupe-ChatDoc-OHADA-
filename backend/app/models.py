@@ -96,6 +96,12 @@ class Utilisateur(Base):
     # Dernier jour de validite du forfait paye. NULL sur le gratuit.
     # Depassee, le compte retombe sur le gratuit (voir dependances.py).
     plan_echeance: Mapped[datetime.date | None] = mapped_column(Date)
+    # Suspension : NULL = compte actif. Renseignee, la connexion est
+    # refusee et les jetons deja emis cessent d etre acceptes.
+    suspendu_le: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+    suspendu_motif: Mapped[str | None] = mapped_column(Text)
 
     # ACCEPTATION DES CONDITIONS D'UTILISATION.
     #

@@ -183,6 +183,21 @@ class UtilisateurSortie(BaseModel):
     # APPROXIMATION DE LA DATE D'INSCRIPTION : la table ne porte pas de
     # `cree_le`. A ne pas presenter comme autre chose qu'elle est.
     cgu_acceptees_le: datetime.datetime | None = None
+    # Suspension : l interface doit distinguer un compte ferme d un
+    # compte actif, et dire pourquoi il l est.
+    suspendu_le: datetime.datetime | None = None
+    suspendu_motif: str | None = None
+
+
+class SuspensionEntree(BaseModel):
+    """Fermeture d un acces.
+
+    LE MOTIF EST OBLIGATOIRE. Une suspension sans raison rend toute
+    reactivation arbitraire : celui qui la leve ne sait pas ce qu il
+    leve, et celui qui la subit ne peut pas la contester.
+    """
+
+    motif: str = Field(min_length=3, max_length=500)
 
 
 class RepartitionAdmin(BaseModel):
@@ -784,3 +799,92 @@ class PaiementSortie(BaseModel):
     # Renseigne des que le paiement aboutit, pour que l'interface
     # affiche le nouveau forfait sans second appel.
     abonnement: AbonnementSortie | None = None
+
+
+class ForfaitAdmin(ForfaitSortie):
+    """Un forfait vu par l'administration : avec son economie.
+
+    LA MARGE N'APPARAIT QUE DE CE COTE. Elle dit ce que le service
+    gagne sur chaque vente ; la publier au catalogue l'afficherait au
+    client.
+    """
+
+    essai: bool = False
+    actif: bool = True
+    ordre: int = 100
+    cout_variable_fcfa: float = 0.0
+    marge: float | None = None
+    # Nombre de comptes actuellement sur ce forfait. Modifier un
+    # forfait auquel personne n'est abonne n'a pas les memes
+    # consequences que toucher a celui de deux cents clients.
+    abonnes: int = 0
+
+
+class ForfaitEntree(BaseModel):
+    """Creation ou modification d'un forfait.
+
+    Le CODE n'est pas modifiable apres creation : il est inscrit sur
+    chaque compte abonne, et le changer les ferait tous retomber sur
+    « forfait inconnu ».
+    """
+
+    libelle: str = Field(min_length=2, max_length=60)
+    prix_fcfa: int = Field(ge=0, le=1_000_000)
+    credits: int = Field(ge=0, le=100_000)
+    argumentaire: str = Field(default="", max_length=300)
+    atouts: list[str] = Field(default_factory=list, max_length=8)
+    essai: bool = False
+    actif: bool = True
+    ordre: int = Field(default=100, ge=0, le=999)
+
+
+class ForfaitCreation(ForfaitEntree):
+    # Minuscules, chiffres et tirets : le code voyage dans les URL et
+    # s'inscrit en base sur chaque compte.
+    code: str = Field(min_length=2, max_length=30, pattern=r"^[a-z0-9-]+$")
+
+
+class SignalementSortie(BaseModel):
+    """Une reponse contestee, vue par l'administration.
+
+    LE REGISTRE DES INCIDENTS EST UN DISPOSITIF DE PROTECTION (§16 ter).
+    Il n'a de valeur que s'il est TENU : ouvert le jour du premier
+    litige, il ne prouve rien. Encore faut-il pouvoir le lire — ce que
+    rien ne permettait jusqu'ici.
+    """
+
+    id: int
+    message_id: int
+    motif: str
+    commentaire: str | None = None
+    statut: str
+    correction: str | None = None
+    cree_le: datetime.datetime
+    traite_le: datetime.datetime | None = None
+    # Qui a signale, et sur quoi. Repondre a une contestation suppose de
+    # relire la question et la reponse mises en cause.
+    email: str | None = None
+    question: str | None = None
+    reponse: str | None = None
+
+
+class TraitementSignalement(BaseModel):
+    """Cloture d'un signalement.
+
+    LA CORRECTION EST EXIGEE. Clore sans dire ce qui a ete fait —
+    corpus corrige, signalement infonde, doublon — viderait le registre
+    de sa valeur probante le jour ou il faudrait s'en servir.
+    """
+
+    # LES DEUX SEULS STATUTS QUE LA BASE ACCEPTE. La contrainte
+    # signalement_statut_connu (migration 06) les fixe : « traite »
+    # quand quelque chose a ete corrige, « ecarte » quand le
+    # signalement etait infonde. Les inventer ici ferait echouer
+    # l ecriture en 500, la contrainte SQL etant la seule source de
+    # verite.
+    #
+    # La NUANCE de ce qui a ete fait vit dans , qui est
+    # obligatoire : deux statuts et un texte disent plus qu une liste
+    # de codes qu il faudrait maintenir des deux cotes.
+    statut: Literal["traite", "ecarte"]
+    correction: str = Field(min_length=3, max_length=2000)

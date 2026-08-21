@@ -448,3 +448,125 @@ tbody tr:last-child td {
     color: var(--bleu-nuit);
   }
 }
+
+/* --- Signalements et catalogue -------------------------------------- */
+
+/* Une marge sous le plancher se signale par la couleur ET par le texte
+   qui l'accompagne : la couleur seule ne porte pas d'information. */
+.marge-basse {
+  color: #8c2f2f;
+  font-weight: 600;
+}
+
+.demande.clos {
+  border-color: var(--bordure);
+  background: var(--surface-basse);
+}
+
+/* L'échange contesté : question et réponse côte à côte, pour trancher
+   sans aller les chercher ailleurs. */
+.echange {
+  margin: var(--e3) 0;
+  padding: var(--e3);
+  background: var(--fond);
+  border-radius: var(--rayon);
+
+  dt {
+    font-size: var(--t-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gris-texte);
+  }
+
+  dd {
+    margin: 0.15rem 0 var(--e3);
+    font-size: var(--t-md);
+    line-height: 1.6;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.bascule-ligne {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  font-size: var(--t-md);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--bleu-nuit);
+  }
+}
+
+/* Un forfait retiré de la vente reste lisible : il n'est pas supprimé,
+   des comptes y sont peut-être encore abonnés. */
+tr.inactif {
+  opacity: 0.6;
+}
+
+.champ textarea {
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+  font-size: var(--t-lg);
+  line-height: 1.6;
+  background: var(--surface);
+  border: 1px solid var(--gris-bordure);
+  border-radius: var(--rayon);
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--or);
+    box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
+  }
+}
+
+/* --- Actions sur un compte ------------------------------------------ */
+
+.actions-compte {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2);
+  white-space: nowrap;
+}
+
+/* Une action destructrice se distingue par la couleur ET par son
+   intitulé : « Supprimer » ne se confond pas avec « Suspendre ». */
+.lien.danger {
+  color: #8c2f2f;
+
+  &:hover:not(:disabled) {
+    color: #6d2424;
+  }
+}
+
+.ligne-action td {
+  background: var(--surface-basse);
+}
+
+.ligne-action.danger td {
+  background: #fbf4f2;
+}
+
+.avertissement {
+  margin: 0 0 var(--e3);
+  max-width: 46rem;
+  font-size: var(--t-md);
+  line-height: 1.6;
+  color: #8c2f2f;
+}
+
+.marqueur.suspendu {
+  color: #fff;
+  background: #8c2f2f;
+}
+
+tr.inactif td {
+  opacity: 0.7;
+}

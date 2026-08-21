@@ -50,10 +50,10 @@ from app.schemas import (
 )
 from app.services import campay
 from app.services.forfaits import (
-    PAR_CODE,
     catalogue_visible,
     credits_du_plan,
     forfait,
+    par_code,
 )
 
 journal = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ def demander_un_forfait(
     """
     _refuser_si_personnel(utilisateur)
 
-    vise = PAR_CODE.get(corps.forfait)
+    vise = par_code().get(corps.forfait)
     if vise is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, "Ce forfait n'existe pas."
@@ -258,7 +258,7 @@ def _activer(db: Session, demande_id: int, reference_operateur: str | None) -> b
     if ligne is None or ligne["statut"] != "en_attente":
         return False
 
-    vise = PAR_CODE.get(ligne["forfait_code"])
+    vise = par_code().get(ligne["forfait_code"])
     compte = db.get(Utilisateur, ligne["utilisateur_id"])
     if vise is None or compte is None:
         return False
@@ -309,7 +309,7 @@ def payer_par_mobile(
     """
     _refuser_si_personnel(utilisateur)
 
-    vise = PAR_CODE.get(corps.forfait)
+    vise = par_code().get(corps.forfait)
     if vise is None or vise.prix_fcfa == 0:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, "Ce forfait payant n'existe pas."
@@ -559,7 +559,7 @@ def valider_une_demande(
             status.HTTP_409_CONFLICT, "Cette demande a déjà été traitée."
         )
 
-    vise = PAR_CODE.get(demande["forfait_code"])
+    vise = par_code().get(demande["forfait_code"])
     if vise is None:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
