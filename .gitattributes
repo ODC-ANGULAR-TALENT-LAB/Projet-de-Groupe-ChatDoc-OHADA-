@@ -1,0 +1,28 @@
+# Fins de ligne.
+#
+# Le depot est developpe sous Windows et deploye sous Linux. Git peut
+# convertir les fins de ligne au passage (core.autocrlf), ce qui est
+# sans consequence pour du code source — mais fatal pour un script
+# shell : un `#!/bin/sh\r` fait chercher un interpreteur nomme « sh\r »,
+# et l'erreur affichee est « no such file or directory » alors que le
+# fichier existe. Deux heures perdues garanties.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# RIEN POUR LES .ps1. La convention Windows voudrait CRLF, mais
+# demarrer_api.ps1 est deja stocke en LF et PowerShell s'en accommode
+# parfaitement. Imposer CRLF ici reecrirait le fichier au prochain
+# `checkout` de chaque membre du groupe : un diff integral, pour rien.
+
+# Fichiers binaires : aucune conversion, jamais.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.apk binary
+*.keystore binary
+*.jar binary

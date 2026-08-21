@@ -109,7 +109,32 @@ class Parametres(BaseSettings):
 
     @property
     def liste_origines(self) -> list[str]:
-        return [origine.strip() for origine in self.origines_autorisees.split(",")]
+        """Les origines CORS, normalisees.
+
+        POURQUOI NORMALISER. Sur Render, cette variable n'est pas
+        saisie a la main : elle est injectee par `fromService` depuis
+        le service du frontend, et cette reference livre un NOM D'HOTE
+        NU — `chatdocs-web.onrender.com`, sans schema.
+
+        Or CORS compare des ORIGINES au sens strict : `Origin:
+        https://chatdocs-web.onrender.com` ne correspond pas a
+        `chatdocs-web.onrender.com`. Sans ce prefixage, le navigateur
+        bloquerait chaque requete, et le diagnostic serait penible :
+        la configuration semble juste, l'API repond en direct, et
+        seule l'application echoue.
+
+        Une barre finale produit le meme faux negatif, pour la meme
+        raison. Les entrees vides — virgule en trop — sont ecartees.
+        """
+        origines = []
+        for brute in self.origines_autorisees.split(","):
+            origine = brute.strip().rstrip("/")
+            if not origine:
+                continue
+            if "://" not in origine:
+                origine = f"https://{origine}"
+            origines.append(origine)
+        return origines
 
     # Authentification (phase G)
     jwt_secret: str = "a_changer_imperativement"

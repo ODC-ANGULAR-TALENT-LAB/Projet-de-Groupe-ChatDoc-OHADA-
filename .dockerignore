@@ -1,0 +1,48 @@
+# Ce qui n'entre PAS dans le contexte de build de l'image de l'API.
+#
+# Le contexte est la racine du depot (voir backend/Dockerfile), donc
+# tout le projet est candidat : le frontend, ses dependances, le
+# corpus, la documentation. Sans ce fichier, Docker transfere
+# l'ensemble au demon avant meme de commencer — des centaines de
+# mega-octets, a chaque build, pour une image qui n'en utilise rien.
+
+.git/
+.github/
+
+# Frontend : l'API n'en a aucun besoin, et node_modules est de loin le
+# plus gros dossier du depot.
+frontend/
+mobile/
+stitch_professional_web_application_prototyper/
+
+# Corpus, documentation, evaluation : hors ligne, jamais servis.
+sources/
+Docs/
+evaluation/
+logo/
+
+# Environnements Python locaux : ils contiennent des binaires compiles
+# pour Windows, inutilisables dans une image Linux.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Les tests ne sont pas embarques dans l'image de production.
+backend/tests/
+backend/ingestion/sortie/
+backend/journal-api*.log
+
+# Secrets : la configuration vient des variables de l'hebergeur. Un
+# .env recopie dans l'image y resterait lisible par quiconque la tire.
+.env
+.env.*
+!.env.example
+
+# Donnees et artefacts locaux
+pgdata/
+*.md
+.vscode/
+.idea/

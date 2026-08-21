@@ -82,9 +82,12 @@ backend/            API FastAPI
       llm.py        interface unique vers le fournisseur LLM
       rag.py        orchestration + validation des citations
       securite.py   bcrypt, JWT
+  scripts/
+    appliquer_migrations.py  schéma initial + migrations, idempotent
+    demarrer_conteneur.sh    migrations puis uvicorn (point d'entrée Docker)
   tests/
   requirements.txt
-  Dockerfile        image de production (Railway / Render)
+  Dockerfile        image de production (contexte de build : la RACINE)
 sources/            PDF officiels (ignorés par Git, sauf les provenances)
 frontend/           Angular 18 (standalone, signals)
   src/app/
@@ -101,8 +104,14 @@ frontend/           Angular 18 (standalone, signals)
 db/
   init/01_schema.sql       schéma, joué par Docker au premier démarrage
   02_index_vectoriel.sql   index HNSW, à jouer en fin de phase B
+  11_*.sql … 15_*.sql   migrations, jouées au démarrage du conteneur
 evaluation/         jeu des 50 questions (phase D)
-frontend/           projet Angular 18 (phase F)
+mobile/             coquille Android (WebView) vers le site déployé
+.github/workflows/
+  apk.yml           construit et publie l'APK en release
+  reveil.yml        maintient l'API éveillée aux heures ouvrables
+render.yaml         TOUT le déploiement : base, API, site
+.dockerignore       le contexte étant la racine, il évite d'y verser le frontend
 docker-compose.yml
 .env.example
 ```
@@ -617,89 +626,97 @@ de développeur.
 
 ## Déploiement
 
-Trois briques, trois hébergeurs. **Ne pas chercher à tout mettre sur
-Vercel** : ses fonctions serverless coupent à 10 s en offre Hobby, et
-`/chat/question/flux` diffuse des réponses qui mettent couramment 8 à
-12 s — on serait pile sur la limite, avec des coupures aléatoires
-impossibles à diagnostiquer.
+Tout est décrit dans **`render.yaml`**, à la racine. Render lit ce
+fichier et crée les trois briques lui-même — base PostgreSQL comprise —
+puis redéploie à chaque poussée sur `main`.
 
-| Brique | Où | Pourquoi |
+| Brique | Ce que Render crée | Offre |
 |---|---|---|
-| Frontend Angular | **Vercel** | `frontend/vercel.json` est prêt |
-| API FastAPI | **Railway** ou **Render** | `backend/Dockerfile` utilisable tel quel |
-| PostgreSQL | **Neon** | pgvector requis, et disponible |
+| PostgreSQL 16 + pgvector | `chatdocs-db` | gratuite, **expire à 30 jours** |
+| API FastAPI (Docker) | `chatdocs-api` | gratuite, s'endort à 15 min |
+| Site Angular (statique) | `chatdocs-web` | gratuite, jamais en veille |
 
-### 1. La base, chez Neon
+**Ne pas mettre l'API sur Vercel** : ses fonctions serverless coupent à
+10 s en offre Hobby, et `/chat/question/flux` diffuse des réponses qui
+mettent couramment 8 à 12 s — on serait pile sur la limite, avec des
+coupures aléatoires impossibles à diagnostiquer.
 
-Créer le projet, activer l'extension vectorielle, puis appliquer le
-schéma **depuis votre poste** :
+### 1. Appliquer le blueprint
 
-```bash
-cd backend
-DATABASE_URL="postgresql://...@ep-xxx.neon.tech/neondb?sslmode=require" \
-  python scripts/appliquer_migrations.py
-```
+Render → **New** → **Blueprint** → choisir ce dépôt → **Apply**.
 
-Le script détecte une base vierge et applique le schéma initial avant
-les migrations. Une seule commande suffit, et elle est rejouable.
+Render demande alors les valeurs marquées `sync: false` : la clé du
+fournisseur, le nom du modèle, les identifiants Google et CamPay. Elles
+**ne sont pas dans le dépôt** et n'y entreront jamais ; Render les
+conserve chiffrées. `JWT_SECRET` est généré par Render, et personne n'a
+besoin de le connaître.
 
-> **La veille de Neon est gérée.** La base se suspend après inactivité,
-> ce qui tue les connexions en cache. `pool_pre_ping` les vérifie avant
-> usage et `pool_recycle` les jette au bout de cinq minutes — sans quoi
-> la première requête après une veille échouerait sur une base
-> parfaitement saine.
+**Laisser vide ce qui n'est pas encore prêt** : les variables
+`EMBEDDING_*`, Google et CamPay peuvent rester blanches. L'application
+le détecte et se dégrade proprement — pas d'embeddings, pas de bouton
+Google, pas d'encaissement — au lieu d'échouer. Elles se renseignent
+plus tard dans le tableau de bord, sans retoucher le dépôt.
 
-### 2. L'API, chez Railway ou Render
+C'est tout. Le schéma s'applique au démarrage du conteneur
+(`backend/scripts/demarrer_conteneur.sh`), et il n'y a **aucune URL à
+recopier** : `fromService` substitue les adresses réelles.
 
-Racine `backend/`, le `Dockerfile` fait le reste. Variables à définir :
+> **Aucune adresse n'est écrite nulle part.** Le site a besoin de
+> l'API, l'API a besoin de l'origine du site pour CORS : chacun dépend
+> de l'autre, et aucune des deux adresses n'existe avant la création
+> des services. `fromService` résout ce cycle. Attention, il livre un
+> **nom d'hôte nu**, sans `https://` — les deux côtés le complètent
+> (`config.py:liste_origines`, `frontend/scripts/environnement.mjs`).
 
-```
-DATABASE_URL           l'URL Neon, avec sslmode=require
-LLM_API_KEY            la clé du fournisseur
-LLM_MODELE             le nom exact du modèle
-JWT_SECRET             une chaîne aléatoire longue, différente du dev
-ORIGINES_AUTORISEES    l'URL Vercel du frontend
-GOOGLE_CLIENT_ID       le même que côté frontend
-PRODUCTION             true
-CAMPAY_*               si l'encaissement est ouvert
-```
+### 2. Ce qui reste manuel, et pourquoi
 
-### 3. Le frontend, chez Vercel
+**L'origine du site doit être déclarée dans la console Google**, sans
+quoi le bouton de connexion Google ne s'affiche pas du tout. Google ne
+peut pas la deviner.
 
-**Le `Root Directory` du projet Vercel DOIT valoir `frontend`.** C'est le
-reglage qui decide de tout le reste : sans lui, Vercel ne lit pas
-`frontend/vercel.json`, detecte Angular tout seul et lance `ng build`
-directement — commande qui echoue en `127 : ng command not found`,
-parce que `ng` n'est sur le PATH que dans un script npm.
+**L'URL de rappel CamPay** doit pointer vers l'API, pas vers le site :
+`https://chatdocs-api.onrender.com/paiements/campay`.
 
-Le message d'erreur ne dit rien de la vraie cause : il parle d'un
-binaire manquant la ou le probleme est un dossier racine mal
-positionne. **L'URL de l'API n'est plus dans le code** : elle se
-définit en variable de projet, et `scripts/environnement.mjs` écrit la
-configuration au build.
+**La variable de dépôt `URL_API`** (GitHub → Settings → Secrets and
+variables → Actions → Variables) alimente le réveil périodique. Sans
+elle, le workflow s'arrête proprement au lieu d'échouer.
 
-```
-URL_API            https://votre-api.up.railway.app
-GOOGLE_CLIENT_ID   (facultatif, sinon celui du dépôt)
-```
+### 3. Ce que l'offre gratuite impose
 
-Le script refuse une URL en `http://` : un site servi en HTTPS ne peut
-pas appeler une API en clair, et le navigateur bloquerait sans message
-explicite.
+**La base expire 30 jours après sa création**, puis quatorze jours de
+sursis avant suppression définitive des données. Ce n'est pas une mise
+en veille : aucun réveil périodique n'y change quoi que ce soit.
+**Notez la date de création.** Passer la base en offre payante avant
+l'échéance conserve les données ; la recréer les perd.
 
-### Les trois oublis qui bloquent tout sans message clair
+**L'API s'endort après 15 minutes sans requête** et met environ une
+minute à se réveiller — soit exactement ce que verra le premier
+visiteur du matin. `.github/workflows/reveil.yml` l'appelle toutes les
+dix minutes entre 6 h et minuit (heure de Douala).
 
-**`ORIGINES_AUTORISEES` doit contenir le domaine Vercel exact**, protocole
-compris. Sinon le navigateur refuse la requête après la réponse
-préliminaire : l'appel n'atteint jamais l'API, et **rien n'apparaît dans
-ses journaux**. C'est le défaut le plus difficile à diagnostiquer de
-toute cette pile.
+**750 heures d'instance par mois** pour l'espace de travail entier. Un
+service éveillé en permanence en consomme 720 : le quota tiendrait
+juste, sans marge, et le dépassement suspend le service jusqu'au mois
+suivant. D'où la plage horaire restreinte du réveil — environ 540
+heures, plus de 200 heures de réserve.
 
-**L'origine Vercel doit être déclarée dans la console Google**, sans quoi
-le bouton de connexion Google ne s'affiche pas du tout.
+> Deux limites du réveil, à connaître. GitHub **désactive les workflows
+> planifiés après 60 jours sans activité** sur le dépôt : une poussée
+> suffit à les relancer. Et les horaires ne sont pas garantis à la
+> minute — c'est sans importance ici, l'endormissement demande quinze
+> minutes de silence.
 
-**L'URL de rappel CamPay** doit pointer vers l'API déployée, pas vers le
-frontend : `https://votre-api.../paiements/campay`.
+Avant une démonstration, `workflow_dispatch` réveille l'API à la
+demande sans attendre le prochain passage.
+
+### Le défaut le plus difficile à diagnostiquer
+
+Si `ORIGINES_AUTORISEES` ne correspond pas **exactement** à l'origine du
+site, protocole compris, le navigateur refuse la requête après la
+réponse préliminaire : l'appel n'atteint jamais l'API, et **rien
+n'apparaît dans ses journaux**. Le blueprint le règle tout seul ; c'est
+la première chose à vérifier si une requête échoue sans laisser de
+trace côté serveur.
 
 ## Application Android
 
@@ -993,49 +1010,33 @@ oubli : toute la logique qui peut produire une réponse fausse — validation de
 citations, seuil de refus, barèmes, contrôles du corpus — vit côté serveur et
 y est testée. Le frontend affiche ce que le serveur a déjà validé.
 
-## Déploiement
+## Mise en service : ce qui reste à faire à la main
 
 **Ne pas garder cette étape pour la veille de la démonstration.** Une panne
 découverte le jour J ne laisse aucun temps pour réagir.
 
-L'ordre compte : la base d'abord, l'API ensuite, le frontend en dernier —
-chaque étage a besoin que le précédent réponde.
+La création de l'infrastructure est décrite plus haut, dans
+[Déploiement](#déploiement) : `render.yaml` s'en charge entièrement, schéma de
+base compris. Ce qui suit ne concerne que ce qu'un blueprint ne peut pas faire.
 
-### 1. Base de données
+### 1. Charger le corpus
 
-Créer une instance PostgreSQL managée, y activer `pgvector`, puis restaurer un
-export de la base locale :
+Le schéma est appliqué automatiquement, **mais il arrive vide**. Les articles
+viennent d'un export de la base locale :
 
 ```bash
 docker compose exec db pg_dump -U chatdocs chatdocs > corpus.sql
-psql "<URL de la base managée>" -f corpus.sql
+psql "<URL externe de la base Render>" -f corpus.sql
 ```
 
-### 2. API
+### 2. Vérifier l'API
 
-`backend/Dockerfile` est utilisable tel quel sur Railway ou Render (racine du
-service : `backend/`). Variables à renseigner :
+`https://<api>/docs` répond, et surtout `https://<api>/sante` — ce dernier
+indique le nombre d'articles **vectorisés**. S'il vaut 0, la recherche se
+dégrade silencieusement en simple plein texte : elle répond, mais moins bien,
+et rien ne le signale à l'utilisateur.
 
-| Variable | Valeur |
-|---|---|
-| `DATABASE_URL` | l'URL interne de la base managée |
-| `LLM_API_KEY`, `EMBEDDING_API_KEY` | les clés du fournisseur |
-| `JWT_SECRET` | **une chaîne aléatoire longue, différente du local** |
-| `ORIGINES_AUTORISEES` | le seul domaine du frontend, en HTTPS |
-| `PRODUCTION` | `true` |
-
-Vérifier ensuite `https://<api>/docs` et `https://<api>/sante` — ce dernier
-indique le nombre d'articles **vectorisés** : s'il vaut 0, la recherche se
-dégradera silencieusement en simple plein texte.
-
-### 3. Frontend
-
-Renseigner l'URL de l'API dans `frontend/src/environnements/environnement.production.ts`,
-puis déployer sur Vercel (racine : `frontend/`). `vercel.json` fournit déjà les
-réécritures SPA — sans elles, recharger `/article/123` renverrait un 404 — et
-les en-têtes de sécurité.
-
-### 4. Vérifications finales
+### 3. Vérifications finales
 
 - CORS restreint au seul domaine du frontend (`ORIGINES_AUTORISEES`)
 - Parcours complet refait **depuis un téléphone, sur réseau mobile**
@@ -1044,13 +1045,17 @@ les en-têtes de sécurité.
 
 ### Plan B pour la démonstration
 
-L'hébergement gratuit met parfois plusieurs dizaines de secondes à se réveiller
-après une période d'inactivité — exactement le scénario du jour J.
+Le réveil périodique traite le cas courant, mais il ne couvre ni une panne de
+GitHub Actions, ni l'expiration de la base à 30 jours.
 
-1. **Réveiller l'application 15 minutes avant** de passer, depuis un téléphone.
-2. **Garder l'instance Docker Compose locale prête et testée** : elle tourne
+1. **Lancer `Reveil de l'API` à la main** (onglet Actions → Run workflow) une
+   quinzaine de minutes avant de passer. C'est à cela que sert
+   `workflow_dispatch`.
+2. **Vérifier la date de création de la base** : passé 30 jours, elle est
+   expirée, et aucun réveil n'y peut rien.
+3. **Garder l'instance Docker Compose locale prête et testée** : elle tourne
    sans internet, à l'exception de l'appel au fournisseur.
-3. **Intégrer des captures aux diapositives** — réponse sourcée, citation
+4. **Intégrer des captures aux diapositives** — réponse sourcée, citation
    ouverte, refus. Elles couvrent même une panne totale.
 
 ## Corpus et gouvernance

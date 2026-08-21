@@ -4,6 +4,25 @@
 # d'ingestion ne sont PAS lances ici : l'ingestion du corpus est un
 # processus hors ligne, declenche manuellement, jamais pendant qu'un
 # utilisateur attend une reponse.
+#
+# -----------------------------------------------------------------
+# LE CONTEXTE DE BUILD EST LA RACINE DU DEPOT, PAS backend/
+# -----------------------------------------------------------------
+# C'est pourquoi chaque COPY est prefixe par `backend/`. La raison est
+# `db/` : les migrations vivent a la racine, hors de backend/, et
+# doivent entrer dans l'image pour etre jouees au demarrage. Un
+# contexte limite a backend/ ne peut pas les atteindre — Docker refuse
+# tout COPY qui remonte au-dessus du contexte.
+#
+# render.yaml declare donc `dockerContext: .`. En local :
+#
+#   docker build -f backend/Dockerfile -t chatdocs-api .
+#
+# L'ARBORESCENCE DU DEPOT EST REPRODUITE dans l'image (/app/backend et
+# /app/db) et non aplatie. `config.py` et `appliquer_migrations.py`
+# localisent la racine par `parents[2]` a partir de leur propre
+# fichier : aplatir les dossiers ferait pointer cette racine sur `/`,
+# et le script chercherait les migrations dans /db.
 
 FROM python:3.12-slim
 
@@ -20,11 +39,13 @@ WORKDIR /app
 
 # Les dependances d'abord : cette couche ne se reconstruit que si
 # requirements.txt change.
-COPY requirements.txt .
+COPY backend/requirements.txt ./backend/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r backend/requirements.txt
 
-COPY app ./app
+COPY backend/app ./backend/app
+COPY backend/scripts ./backend/scripts
+COPY db ./db
 
 # Un utilisateur non privilegie : le conteneur n'a aucune raison de
 # tourner en root.
@@ -33,5 +54,8 @@ USER chatdocs
 
 EXPOSE 8000
 
-# $PORT est impose par Railway et Render ; 8000 sert de repli en local.
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Invoque par `sh` plutot qu'en executable direct : le bit +x d'un
+# fichier ne survit pas toujours a un depot clone depuis Windows, et
+# l'echec serait un « permission denied » au demarrage, sans rapport
+# apparent avec le systeme de fichiers.
+CMD ["sh", "/app/backend/scripts/demarrer_conteneur.sh"]

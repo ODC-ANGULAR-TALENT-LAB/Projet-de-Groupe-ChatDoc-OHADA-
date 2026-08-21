@@ -42,7 +42,14 @@ if (!urlApi) {
 // Une URL avec une barre oblique finale produirait `https://api//chat` :
 // deux barres, que certains hébergeurs refusent et que d'autres
 // redirigent — ce qui casse silencieusement le preflight CORS.
-const url = urlApi.replace(/\/+$/, '');
+const nu = urlApi.trim().replace(/\/+$/, '');
+
+// SUR RENDER, CETTE VALEUR EST UN NOM D'HÔTE NU. Elle vient de
+// `fromService: { property: host }`, qui livre `chatdocs-api.onrender.com`
+// sans schéma — c'est ce qui permet de ne jamais écrire l'URL de l'API
+// à la main. Sans ce prefixage, le contrôle HTTPS ci-dessous rejetterait
+// une valeur pourtant correcte, et le déploiement échouerait au build.
+const url = nu.includes('://') ? nu : `https://${nu}`;
 
 if (!url.startsWith('https://')) {
   console.error(

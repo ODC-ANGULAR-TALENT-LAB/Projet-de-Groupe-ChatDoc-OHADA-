@@ -1,0 +1,196 @@
+# ChatDocs OHADA — infrastructure declaree (Render Blueprint).
+#
+# Ce fichier decrit LA TOTALITE du deploiement : la base PostgreSQL,
+# l'API et le site. Render le lit a chaque poussee sur `main` et
+# reconstruit ce qui a change. Il n'y a rien a cliquer ensuite, hormis
+# les secrets — voir plus bas.
+#
+# MISE EN PLACE, UNE SEULE FOIS
+#   Render > New > Blueprint > choisir ce depot > Apply.
+#
+# -----------------------------------------------------------------
+# POURQUOI LES URL NE SONT ECRITES NULLE PART
+# -----------------------------------------------------------------
+# Le site a besoin de l'adresse de l'API ; l'API a besoin de l'origine
+# du site pour autoriser CORS. Chacun depend de l'autre, et aucune des
+# deux adresses n'existe avant la creation des services : les ecrire a
+# la main demande un premier deploiement rate, deux copier-coller, puis
+# un second deploiement.
+#
+# `fromService` supprime ce cycle : Render substitue les hotes reels au
+# moment du deploiement. Attention, cette reference livre un NOM D'HOTE
+# NU, sans `https://` — les deux cotes le completent (voir
+# config.py:liste_origines et frontend/scripts/environnement.mjs).
+#
+# -----------------------------------------------------------------
+# CE QUI N'EST PAS ICI : LES SECRETS
+# -----------------------------------------------------------------
+# Les variables marquees `sync: false` ne sont PAS stockees dans le
+# depot. Render les demande une fois, dans son tableau de bord, et les
+# conserve chiffrees. C'est ce qui permet de declarer l'infrastructure
+# publiquement sans y exposer la cle du fournisseur ni les acces CamPay.
+#
+# -----------------------------------------------------------------
+# CE QUE L'OFFRE GRATUITE IMPOSE, ET QU'AUCUN REGLAGE NE CONTOURNE
+# -----------------------------------------------------------------
+# 1. LA BASE EXPIRE 30 JOURS APRES SA CREATION. Quatorze jours de
+#    sursis, puis les donnees sont supprimees. C'est une echeance, pas
+#    une mise en veille : la maintenir eveillee n'y change rien. Notez
+#    la date de creation ; passer la base en offre payante avant terme
+#    conserve les donnees, la recreer les perd.
+#
+# 2. L'API S'ENDORT apres 15 minutes sans requete, et met environ une
+#    minute a se reveiller. .github/workflows/reveil.yml l'appelle
+#    toutes les dix minutes aux heures ouvrables pour l'eviter.
+#
+# 3. 750 HEURES D'INSTANCE PAR MOIS pour l'espace de travail entier.
+#    Le site statique n'en consomme aucune — il est servi par le CDN.
+#    Seule l'API compte, d'ou la plage horaire restreinte du reveil.
+
+databases:
+  - name: chatdocs-db
+    databaseName: chatdocs
+    user: chatdocs
+    plan: free
+    # pgvector est requis : db/init/01_schema.sql fait
+    # `CREATE EXTENSION vector`. Il est fourni par les images
+    # PostgreSQL 16 de Render.
+    postgresMajorVersion: "16"
+    region: frankfurt
+
+services:
+  # ---------------------------------------------------------------
+  # API — FastAPI, image Docker
+  # ---------------------------------------------------------------
+  - type: web
+    name: chatdocs-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    # Le contexte est la RACINE et non backend/ : les migrations de
+    # db/ doivent entrer dans l'image. Voir l'en-tete du Dockerfile.
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    # Render attend une reponse 2xx ici avant de basculer le trafic sur
+    # la nouvelle version. Un demarrage qui echoue laisse donc
+    # l'ancienne en ligne au lieu de couper le service.
+    healthCheckPath: /sante
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chatdocs-db
+          property: connectionString
+
+      # SEUL POINT A SURVEILLER AU PREMIER « APPLY ». Les deux services
+      # se referencent mutuellement — le site veut l'hote de l'API, l'API
+      # veut celui du site — et la documentation de Render ne dit pas
+      # explicitement qu'elle accepte ce cycle. Si elle le refuse, le
+      # message apparait immediatement, avant toute construction, et le
+      # remede tient en une ligne : retirer ces quatre lignes, puis
+      # saisir ORIGINES_AUTORISEES a la main dans le tableau de bord une
+      # fois le site cree. Rien d'autre n'est a reprendre.
+      - key: ORIGINES_AUTORISEES
+        fromService:
+          type: web
+          name: chatdocs-web
+          property: host
+
+      # Active HSTS et masque le diagnostic detaille de /sante.
+      - key: PRODUCTION
+        value: "true"
+
+      # Genere par Render, jamais vu par personne. Consequence a
+      # connaitre : le regenerer invalide toutes les sessions en cours.
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: JWT_EXPIRATION_MINUTES
+        value: "720"
+
+      # --- Secrets : saisis dans le tableau de bord ---------------
+      - key: LLM_API_KEY
+        sync: false
+      # Le nom du modele est tenu hors du depot au meme titre qu'une
+      # cle : c'est lui qui designe le fournisseur.
+      - key: LLM_MODELE
+        sync: false
+      - key: EMBEDDING_URL
+        sync: false
+      - key: EMBEDDING_MODELE
+        sync: false
+      - key: EMBEDDING_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CAMPAY_USERNAME
+        sync: false
+      - key: CAMPAY_PASSWORD
+        sync: false
+      - key: CAMPAY_WEBHOOK_CLE
+        sync: false
+
+      # `demo` tant que le compte n'est pas valide en production : les
+      # identifiants actuels sont refuses par l'environnement reel, et
+      # aucun paiement ne peut aboutir.
+      - key: CAMPAY_ENVIRONNEMENT
+        value: demo
+
+  # ---------------------------------------------------------------
+  # Site — Angular, fichiers statiques
+  # ---------------------------------------------------------------
+  - type: web
+    name: chatdocs-web
+    runtime: static
+    # Un site statique n'est pas un serveur : il est servi par le CDN
+    # et NE SE MET PAS EN VEILLE, contrairement a l'API en offre
+    # gratuite. La page d'accueil reste donc instantanee.
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist/frontend/browser
+    autoDeploy: true
+    envVars:
+      # VERSION DE NODE FIGEE. Sans cela, Render resout la plage de
+      # package.json vers la derniere version publiee — celle du jour du
+      # deploiement, pas celle sur laquelle le build a ete verifie. Une
+      # majeure de Node sortie entre deux poussees casserait alors une
+      # construction que personne n'a touchee.
+      #
+      # 24.16.0 est la version sur laquelle ce build est valide. La
+      # variable d'environnement prime sur .node-version et sur
+      # package.json ; les trois disent la meme chose.
+      - key: NODE_VERSION
+        value: "24.16.0"
+
+      - key: URL_API
+        fromService:
+          type: web
+          name: chatdocs-api
+          property: host
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
+    # PAS D'EN-TETES DE CACHE PERSONNALISES ICI. La tentation est de
+    # marquer les fichiers `immutable` puisqu'ils portent une empreinte
+    # dans leur nom (`outputHashing: all`). Mais Render applique un
+    # en-tete a un CHEMIN, et le seul motif sur qui couvre tout le site
+    # couvrirait aussi index.html — qui, lui, ne porte pas d'empreinte.
+    # Les visiteurs resteraient bloques un an sur l'ancienne version.
+    #
+    # Les valeurs par defaut du CDN de Render sont correctes. Ce reglage
+    # n'apporterait qu'un gain marginal contre un risque certain.
+
+    routes:
+      # RECHARGER /bibliotheque NE DOIT PAS RENVOYER 404. Angular gere
+      # les routes cote navigateur ; le serveur, lui, cherche un
+      # fichier de ce nom et ne le trouve pas. Cette reecriture lui
+      # fait servir index.html, qui laisse Angular reprendre la main.
+      #
+      # C'est une REECRITURE et non une redirection : l'URL affichee
+      # doit rester celle demandee, sinon un lien partage vers un
+      # article ramene tout le monde a l'accueil.
+      - type: rewrite
+        source: /*
+        destination: /index.html

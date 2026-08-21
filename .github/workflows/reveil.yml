@@ -1,0 +1,69 @@
+# Maintient l'API eveillee aux heures ouvrables.
+#
+# POURQUOI. Un service web de l'offre gratuite de Render s'endort apres
+# 15 minutes sans requete, et le reveil prend environ une minute. Le
+# visiteur qui arrive le premier attend donc devant une page qui semble
+# figee — et c'est exactement ce qui se produit devant un jury, puisque
+# personne n'a utilise l'application depuis la veille.
+#
+# Un appel toutes les dix minutes suffit a l'empecher de s'endormir.
+#
+# POURQUOI PAS 24 HEURES SUR 24. Render offre 750 heures d'instance par
+# mois et par espace de travail. Un service eveille en permanence en
+# consomme 720 : le quota tient, mais il ne reste rien pour quoi que ce
+# soit d'autre, et le depassement suspend le service jusqu'au mois
+# suivant — une panne totale, au pire moment possible.
+#
+# La plage ci-dessous (05h-23h UTC, soit 06h-minuit a Douala) represente
+# environ 540 heures et laisse plus de 200 heures de marge pour le
+# trafic reel des heures creuses.
+#
+# CE QUE CE FICHIER NE PEUT PAS FAIRE. Une base PostgreSQL gratuite
+# EXPIRE 30 JOURS APRES SA CREATION, avec 14 jours de sursis avant
+# suppression definitive des donnees. Aucun appel periodique n'y change
+# rien : c'est une echeance, pas une mise en veille. Voir le README.
+
+name: Reveil de l'API
+
+on:
+  schedule:
+    # Toutes les 10 minutes, de 05h00 a 22h50 UTC.
+    - cron: "*/10 5-22 * * *"
+  # Permet de reveiller l'API a la demande, juste avant une
+  # demonstration, sans attendre le prochain passage.
+  workflow_dispatch:
+
+jobs:
+  appeler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Appeler /sante
+        env:
+          # Variable du depot : Settings > Secrets and variables >
+          # Actions > Variables. Exemple :
+          #   URL_API = https://chatdocs-api.onrender.com
+          URL_API: ${{ vars.URL_API }}
+        run: |
+          if [ -z "$URL_API" ]; then
+            echo "La variable de depot URL_API n'est pas definie : rien a appeler."
+            echo "Renseignez-la une fois le service cree sur Render."
+            exit 0
+          fi
+
+          # --max-time 90 : un service endormi met environ une minute a
+          # repondre. Un delai plus court ferait echouer precisement
+          # l'appel qui remplit son office.
+          #
+          # --retry 3 : une erreur passagere ne doit pas declencher
+          # d'alerte. En revanche, trois echecs consecutifs signalent
+          # une vraie panne, et l'echec du job est alors utile.
+          code=$(curl --silent --show-error --location \
+                      --max-time 90 --retry 3 --retry-delay 10 \
+                      --output /dev/null --write-out "%{http_code}" \
+                      "${URL_API%/}/sante")
+
+          echo "GET ${URL_API%/}/sante -> $code"
+          case "$code" in
+            2*) echo "API eveillee." ;;
+            *)  echo "::error::L'API ne repond pas correctement (code $code)."; exit 1 ;;
+          esac

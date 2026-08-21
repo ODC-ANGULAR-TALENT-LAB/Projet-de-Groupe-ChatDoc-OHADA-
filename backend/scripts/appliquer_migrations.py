@@ -87,6 +87,11 @@ def appliquer_schema_initial() -> bool:
     return True
 
 
+# Identifiant arbitraire mais STABLE du verrou : deux processus ne se
+# coordonnent que s'ils demandent la meme cle. Ne pas la changer.
+CLE_VERROU = 8_140_2026
+
+
 def main() -> int:
     fichiers = migrations()
     if not fichiers:
@@ -96,6 +101,29 @@ def main() -> int:
     print()
     print(f"  Base : {parametres.database_url.split('@')[-1]}")
 
+    # UN SEUL PROCESSUS A LA FOIS. Depuis que ce script tourne au
+    # demarrage du conteneur, plusieurs instances peuvent l'executer en
+    # meme temps : un redeploiement recouvre l'ancienne instance, et
+    # l'hebergeur peut relancer un conteneur tombe pendant que l'autre
+    # migre encore. Deux `CREATE INDEX` concurrents sur la meme table
+    # se bloquent mutuellement jusqu'au deadlock, et la panne est
+    # intermittente — donc penible a reproduire.
+    #
+    # Le verrou est pris sur une connexion DEDIEE, gardee ouverte : un
+    # verrou de session disparait avec sa connexion, et le rendre sur
+    # une connexion du pool le libererait au premier recyclage.
+    with moteur.connect() as verrou:
+        verrou.execute(text("SELECT pg_advisory_lock(:cle)"), {"cle": CLE_VERROU})
+        try:
+            return _appliquer(fichiers)
+        finally:
+            verrou.execute(
+                text("SELECT pg_advisory_unlock(:cle)"), {"cle": CLE_VERROU}
+            )
+
+
+def _appliquer(fichiers: list[Path]) -> int:
+    """Le travail lui-meme, une fois le verrou obtenu."""
     # Base vierge — typiquement une base hebergee fraichement creee.
     # Sans cette etape, les quatorze migrations echoueraient toutes en
     # cascade sur des tables inexistantes, et le diagnostic serait noye
