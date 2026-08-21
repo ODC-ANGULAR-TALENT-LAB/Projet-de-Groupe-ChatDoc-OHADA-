@@ -34,3 +34,6 @@ pgdata/
 .idea/
 Thumbs.db
 Desktop.ini
+
+# Journaux du serveur de developpement (voir backend/scripts/demarrer_api.ps1)
+backend/journal-api*.log
