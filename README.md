@@ -164,6 +164,26 @@ docker compose up -d
 Le schéma et les extensions `vector` / `citext` sont créés automatiquement au
 premier démarrage.
 
+**Puis appliquer les migrations — cette étape n'est pas facultative :**
+
+```bash
+cd backend
+python scripts/appliquer_migrations.py
+```
+
+`docker-compose` ne monte que `db/init/`, et les scripts qui s'y trouvent ne
+sont joués **qu'une fois**, à la création du volume. Les migrations
+`db/NN_*.sql` ne le sont donc jamais automatiquement : sans cette commande, la
+base n'a que le schéma initial, et l'application perd la connexion Google, les
+dépôts, les signalements, les favoris, les conditions d'utilisation, le profil,
+les avis, les forfaits et la suspension des comptes.
+
+Le symptôme est déroutant : l'API démarre normalement, puis échoue au premier
+appel sur une colonne inconnue.
+
+Le script est **idempotent** — les migrations sont écrites en `IF NOT EXISTS` /
+`ON CONFLICT DO NOTHING`. On peut le relancer sans se demander où l'on en est.
+
 > **Port 5435, pas 5432.** Sur la machine de développement, 5432 est occupé
 > par un PostgreSQL 17 installé en service Windows, et 5433/5434 par les
 > conteneurs d'autres projets. La base de ChatDocs est donc publiée sur 5435.
