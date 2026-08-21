@@ -42,13 +42,49 @@ from app.db import moteur  # noqa: E402
 def migrations() -> list[Path]:
     """Les fichiers de db/, dans l'ordre de leur numero.
 
-    `db/init/` est exclu : docker-compose s'en charge a la creation du
-    volume, et le rejouer ici echouerait sur des tables existantes.
+    `db/init/` n'y figure pas : il est traite a part, car il n'est PAS
+    idempotent (voir `schema_initial_manquant`).
     """
     return sorted(
         (chemin for chemin in (RACINE / "db").glob("*.sql")),
         key=lambda p: p.name,
     )
+
+
+def schema_initial_manquant() -> bool:
+    """La base est-elle vierge ?
+
+    POURQUOI CETTE DETECTION. `db/init/01_schema.sql` n'est joue que par
+    docker-compose, a la creation du volume. Sur une base hebergee —
+    Neon, Supabase, le Postgres d'un PaaS — personne ne le joue, et les
+    migrations echouent toutes en cascade sur des tables inexistantes.
+
+    Ce fichier n'est PAS idempotent : ses `CREATE TABLE` n'ont pas de
+    garde `IF NOT EXISTS`, et le rejouer sur une base peuplee echouerait.
+    On ne l'applique donc que si la table `texte` est absente, ce qui ne
+    peut signifier qu'une chose : la base n'a jamais ete initialisee.
+    """
+    with moteur.connect() as connexion:
+        return (
+            connexion.execute(
+                text("SELECT to_regclass('public.texte')")
+            ).scalar()
+            is None
+        )
+
+
+def appliquer_schema_initial() -> bool:
+    fichiers = sorted((RACINE / "db" / "init").glob("*.sql"), key=lambda p: p.name)
+    for chemin in fichiers:
+        try:
+            with moteur.begin() as connexion:
+                connexion.execute(text(chemin.read_text(encoding="utf-8")))
+            print(f"    ok       init/{chemin.name}")
+        except Exception as erreur:  # noqa: BLE001
+            print(f"    ECHEC    init/{chemin.name}")
+            print(f"             {str(erreur).strip().splitlines()[0][:150]}")
+            return False
+    return True
 
 
 def main() -> int:
@@ -59,6 +95,18 @@ def main() -> int:
 
     print()
     print(f"  Base : {parametres.database_url.split('@')[-1]}")
+
+    # Base vierge — typiquement une base hebergee fraichement creee.
+    # Sans cette etape, les quatorze migrations echoueraient toutes en
+    # cascade sur des tables inexistantes, et le diagnostic serait noye
+    # dans quatorze messages identiques.
+    if schema_initial_manquant():
+        print("  Base vierge : application du schéma initial.\n")
+        if not appliquer_schema_initial():
+            print("\n  Le schéma initial a échoué : on s'arrête là.")
+            return 1
+        print()
+
     print(f"  {len(fichiers)} migration(s) à appliquer\n")
 
     echecs = 0

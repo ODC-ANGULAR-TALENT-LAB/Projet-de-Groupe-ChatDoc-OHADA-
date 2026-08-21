@@ -11,9 +11,23 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import parametres
 
-# pool_pre_ping : la base tourne dans Docker et peut etre redemarree
-# pendant une session de developpement ; on evite les connexions mortes.
-moteur = create_engine(parametres.database_url, pool_pre_ping=True)
+# POOL_PRE_PING : on verifie qu'une connexion du pool est encore vivante
+# avant de s'en servir. Indispensable en developpement, ou la base
+# tourne dans Docker et peut redemarrer — et plus encore avec un
+# hebergeur serverless comme Neon, qui SUSPEND la base apres une periode
+# d'inactivite. Sans ce controle, la premiere requete apres une veille
+# echoue sur une connexion morte, et l'utilisateur voit une erreur pour
+# une base parfaitement saine.
+#
+# POOL_RECYCLE : une connexion inactive au-dela de cinq minutes est
+# jetee plutot que reutilisee. Neon et les intermediaires reseau ferment
+# les connexions oisives de leur cote ; les recycler avant eux evite de
+# decouvrir la coupure au moment d'une requete.
+moteur = create_engine(
+    parametres.database_url,
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
 
 FabriqueSession = sessionmaker(bind=moteur, autoflush=False, autocommit=False)
 

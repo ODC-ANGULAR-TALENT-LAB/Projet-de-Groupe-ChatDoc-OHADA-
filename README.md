@@ -615,6 +615,84 @@ de développeur.
 
 ---
 
+## Déploiement
+
+Trois briques, trois hébergeurs. **Ne pas chercher à tout mettre sur
+Vercel** : ses fonctions serverless coupent à 10 s en offre Hobby, et
+`/chat/question/flux` diffuse des réponses qui mettent couramment 8 à
+12 s — on serait pile sur la limite, avec des coupures aléatoires
+impossibles à diagnostiquer.
+
+| Brique | Où | Pourquoi |
+|---|---|---|
+| Frontend Angular | **Vercel** | `frontend/vercel.json` est prêt |
+| API FastAPI | **Railway** ou **Render** | `backend/Dockerfile` utilisable tel quel |
+| PostgreSQL | **Neon** | pgvector requis, et disponible |
+
+### 1. La base, chez Neon
+
+Créer le projet, activer l'extension vectorielle, puis appliquer le
+schéma **depuis votre poste** :
+
+```bash
+cd backend
+DATABASE_URL="postgresql://...@ep-xxx.neon.tech/neondb?sslmode=require" \
+  python scripts/appliquer_migrations.py
+```
+
+Le script détecte une base vierge et applique le schéma initial avant
+les migrations. Une seule commande suffit, et elle est rejouable.
+
+> **La veille de Neon est gérée.** La base se suspend après inactivité,
+> ce qui tue les connexions en cache. `pool_pre_ping` les vérifie avant
+> usage et `pool_recycle` les jette au bout de cinq minutes — sans quoi
+> la première requête après une veille échouerait sur une base
+> parfaitement saine.
+
+### 2. L'API, chez Railway ou Render
+
+Racine `backend/`, le `Dockerfile` fait le reste. Variables à définir :
+
+```
+DATABASE_URL           l'URL Neon, avec sslmode=require
+LLM_API_KEY            la clé du fournisseur
+LLM_MODELE             le nom exact du modèle
+JWT_SECRET             une chaîne aléatoire longue, différente du dev
+ORIGINES_AUTORISEES    l'URL Vercel du frontend
+GOOGLE_CLIENT_ID       le même que côté frontend
+PRODUCTION             true
+CAMPAY_*               si l'encaissement est ouvert
+```
+
+### 3. Le frontend, chez Vercel
+
+Racine `frontend/`. **L'URL de l'API n'est plus dans le code** : elle se
+définit en variable de projet, et `scripts/environnement.mjs` écrit la
+configuration au build.
+
+```
+URL_API            https://votre-api.up.railway.app
+GOOGLE_CLIENT_ID   (facultatif, sinon celui du dépôt)
+```
+
+Le script refuse une URL en `http://` : un site servi en HTTPS ne peut
+pas appeler une API en clair, et le navigateur bloquerait sans message
+explicite.
+
+### Les trois oublis qui bloquent tout sans message clair
+
+**`ORIGINES_AUTORISEES` doit contenir le domaine Vercel exact**, protocole
+compris. Sinon le navigateur refuse la requête après la réponse
+préliminaire : l'appel n'atteint jamais l'API, et **rien n'apparaît dans
+ses journaux**. C'est le défaut le plus difficile à diagnostiquer de
+toute cette pile.
+
+**L'origine Vercel doit être déclarée dans la console Google**, sans quoi
+le bouton de connexion Google ne s'affiche pas du tout.
+
+**L'URL de rappel CamPay** doit pointer vers l'API déployée, pas vers le
+frontend : `https://votre-api.../paiements/campay`.
+
 ## Application Android
 
 `mobile/` — une coquille Android qui ouvre le site déployé, publiée en
