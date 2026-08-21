@@ -15,6 +15,24 @@ interface Chiffre {
   valeur: string;
 }
 
+/** Où le choix de masquer le bandeau est retenu. */
+const CLE_BANDEAU = 'chatdocs.bandeau-mobile-masque';
+
+/**
+ * Lien de téléchargement de l'APK.
+ *
+ * `releases/latest/download` SUIT LES PUBLICATIONS : ce lien n'a jamais
+ * à être modifié, quelle que soit la version en ligne. Le pointer sur
+ * une version précise obligerait à retoucher le site à chaque APK.
+ *
+ * Il vise une RELEASE et non un artifact d'Actions : les artifacts ne
+ * se téléchargent qu'en étant connecté à GitHub, ce qui enverrait les
+ * visiteurs sur une page de connexion.
+ */
+const LIEN_APK =
+  'https://github.com/ODC-ANGULAR-TALENT-LAB/Projet-de-Groupe-ChatDoc-OHADA-' +
+  '/releases/latest/download/chatdocs-ohada.apk';
+
 /**
  * Page d'accueil publique.
  *
@@ -41,6 +59,25 @@ export class LandingPage {
   private readonly auth = inject(AuthService);
   private readonly corpus = inject(CorpusService);
   private readonly router = inject(Router);
+
+  protected readonly lienApk = LIEN_APK;
+
+  /**
+   * Le bandeau est-il visible ?
+   *
+   * MASQUÉ UNE FOIS, MASQUÉ POUR DE BON. On lit le choix au démarrage
+   * plutôt que de le vérifier à chaque affichage : un bandeau qui
+   * réapparaît après avoir été fermé donne le sentiment de n'avoir
+   * aucune prise sur la page.
+   */
+  protected readonly bandeauMobile = signal(
+    localStorage.getItem(CLE_BANDEAU) !== '1',
+  );
+
+  protected masquerBandeau(): void {
+    localStorage.setItem(CLE_BANDEAU, '1');
+    this.bandeauMobile.set(false);
+  }
 
   protected readonly profils: Profil[] = [
     {

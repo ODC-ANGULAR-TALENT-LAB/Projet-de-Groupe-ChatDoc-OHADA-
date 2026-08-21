@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nom_application">ChatDocs OHADA</string>
+    <string name="hors_ligne_titre">Pas de connexion</string>
+    <string name="hors_ligne_detail">ChatDocs OHADA a besoin d\'Internet pour charger. Vérifiez votre connexion, puis rouvrez l\'application.</string>
+</resources>

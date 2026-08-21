@@ -1,4 +1,39 @@
 <!-- ================================================================ -->
+<!-- BANDEAU APPLICATION MOBILE                                        -->
+<!--                                                                   -->
+<!-- REFERMABLE, ET LE CHOIX EST RETENU. Un bandeau qui revient à       -->
+<!-- chaque visite se fait d'abord ignorer, puis détester — et finit    -->
+<!-- par décrédibiliser ce qu'il annonce.                              -->
+<!--                                                                   -->
+<!-- Le lien pointe vers `releases/latest/download` : il suit les       -->
+<!-- publications sans jamais avoir à être modifié. Pas d'attribut      -->
+<!-- `download` : il est sans effet vers un domaine tiers, et le        -->
+<!-- laisser laisserait croire à un comportement qui n'aura pas lieu.   -->
+<!-- ================================================================ -->
+@if (bandeauMobile()) {
+  <aside class="bandeau-mobile">
+    <div class="bandeau-contenu">
+      <app-icone nom="telecharger" />
+      <p>
+        <strong>ChatDocs OHADA sur Android.</strong>
+        Le corpus dans votre poche, consultable même hors connexion.
+      </p>
+      <a class="bandeau-action" [href]="lienApk" rel="noopener">
+        Télécharger l'application
+      </a>
+    </div>
+    <button
+      type="button"
+      class="bandeau-fermer"
+      aria-label="Masquer cette proposition"
+      (click)="masquerBandeau()"
+    >
+      <app-icone nom="fermer" />
+    </button>
+  </aside>
+}
+
+<!-- ================================================================ -->
 <!-- BARRE PUBLIQUE                                                    -->
 <!-- ================================================================ -->
 <header class="entete">

@@ -656,3 +656,73 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* --- Bandeau application mobile --------------------------------------
+   Fond doré : il coiffe le hero bleu nuit, où un bandeau bleu se serait
+   fondu dans l'image et serait passé inaperçu. */
+
+.bandeau-mobile {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  padding: var(--e3) var(--e4);
+  background: var(--or);
+  color: var(--bleu-encre);
+}
+
+.bandeau-contenu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e3);
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+
+  p {
+    margin: 0;
+    font-size: var(--t-md);
+    line-height: 1.5;
+  }
+
+  app-icone {
+    flex-shrink: 0;
+  }
+}
+
+.bandeau-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  font-size: var(--t-md);
+  font-weight: 600;
+  color: var(--or);
+  background: var(--bleu-encre);
+  border-radius: var(--rayon);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* 44 px bien que l'icône en fasse 16 : fermer ne doit pas demander de
+   viser. L'anneau de mise au point vient du global. */
+.bandeau-fermer {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Sur téléphone, le bouton prend toute la largeur : c'est là que le
+   bandeau sert le plus. */
+@media (max-width: 600px) {
+  .bandeau-action {
+    width: 100%;
+    justify-content: center;
+  }
+}

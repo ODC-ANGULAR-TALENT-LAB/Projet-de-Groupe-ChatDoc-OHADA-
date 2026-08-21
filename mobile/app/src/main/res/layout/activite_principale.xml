@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <WebView
+        android:id="@+id/vue_web"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Message hors ligne, masqué tant que rien n'a échoué. Il remplace
+         la page d'erreur de Chrome, qui parle de « ERR_INTERNET_DISCONNECTED »
+         et laisse croire à une panne de l'application. -->
+    <LinearLayout
+        android:id="@+id/message_hors_ligne"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hors_ligne_titre"
+            android:textColor="#1B2A4A"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.4"
+            android:text="@string/hors_ligne_detail"
+            android:textColor="#5F5F5F"
+            android:textSize="15sp" />
+    </LinearLayout>
+</FrameLayout>

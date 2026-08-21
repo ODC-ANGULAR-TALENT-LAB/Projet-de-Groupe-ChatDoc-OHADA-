@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Le seul droit demandé, et il est indispensable : l'application
+         n'affiche rien d'autre qu'un site distant. Ne rien demander de
+         plus est ce qui permet à quelqu'un d'installer sans hésiter un
+         APK reçu hors magasin. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/nom_application"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ChatDocs"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".ActivitePrincipale"
+            android:exported="true"
+            android:label="@string/nom_application"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

@@ -615,6 +615,64 @@ de développeur.
 
 ---
 
+## Application Android
+
+`mobile/` — une coquille Android qui ouvre le site déployé, publiée en
+release GitHub par `.github/workflows/apk.yml`.
+
+**Elle ne réimplémente rien.** Le corpus, la recherche et l'assistant
+restent côté web : une correction du site profite immédiatement à
+l'application, sans republier d'APK.
+
+### L'URL n'est pas dans le code
+
+Elle vient de la variable de dépôt **`URL_APPLICATION`**
+(*Settings → Secrets and variables → Actions → Variables*). Changer de
+domaine ne demande donc pas de toucher au code — seulement de relancer
+la construction :
+
+```bash
+gh workflow run apk.yml
+gh workflow run apk.yml -f url_application=https://mon-domaine.app
+```
+
+Le workflow affiche l'URL retenue dans son résumé : un APK qui ouvre le
+mauvais site est sinon indiscernable d'un APK correct.
+
+### Où l'APK est hébergé, et pourquoi
+
+Sur les **releases**, jamais sur les artifacts. Un artifact d'Actions ne
+se télécharge qu'en étant connecté à GitHub : le bandeau public
+enverrait les visiteurs sur une page de connexion. Le dépôt étant
+public, l'adresse suivante fonctionne sans compte et ne change jamais :
+
+```
+https://github.com/ODC-ANGULAR-TALENT-LAB/Projet-de-Groupe-ChatDoc-OHADA-/releases/latest/download/chatdocs-ohada.apk
+```
+
+C'est elle que porte le bandeau de la page d'accueil.
+
+### Signature
+
+Un APK non signé ne s'installe pas. Sans secrets configurés, le
+workflow signe avec la **clé de débogage** — installable, mais ce n'est
+pas une version de production, et le résumé le dit. Pour signer en
+release, définir `ANDROID_KEYSTORE_BASE64`,
+`ANDROID_KEYSTORE_MOT_DE_PASSE` et `ANDROID_CLE_ALIAS`.
+
+À l'installation, Android affichera un avertissement « source
+inconnue » : c'est le comportement normal hors Play Store.
+
+### Pourquoi un WebView et non une Trusted Web Activity
+
+Une TWA supprimerait la barre d'adresse, mais elle exige un fichier
+`assetlinks.json` servi par le domaine **et** une empreinte de clé
+stable. Tant que le domaine n'est pas figé, la TWA afficherait
+justement cette barre. Comme le WebView gère les *service workers*, la
+bibliothèque reste consultable hors ligne — l'avantage principal de la
+TWA disparaît. Le passage en TWA reste possible une fois le domaine
+arrêté.
+
 ## Conditions d'utilisation
 
 `db/08_migration_cgu.sql`, `app/routers/auth.py`, page `/cgu`

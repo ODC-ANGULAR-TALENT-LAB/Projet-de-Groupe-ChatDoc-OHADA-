@@ -1,0 +1,113 @@
+# Construit l'APK Android et le publie en release.
+#
+# POURQUOI UNE RELEASE ET NON UN ARTIFACT. Les artifacts d'Actions ne
+# sont telechargeables qu'en etant connecte a GitHub : un bandeau public
+# pointant dessus enverrait les visiteurs sur une page de connexion. Les
+# assets de release, sur un depot public, se telechargent sans compte et
+# ne disparaissent pas au bout de 90 jours.
+#
+# L'URL du bandeau ne change jamais :
+#   .../releases/latest/download/chatdocs-ohada.apk
+
+name: APK Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      url_application:
+        description: "URL du site a ouvrir (vide = variable URL_APPLICATION)"
+        required: false
+        type: string
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # necessaire pour creer la release
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: SDK Android
+        uses: android-actions/setup-android@v3
+
+      # L'URL vient, par ordre de priorite : de la saisie manuelle, de la
+      # variable de depot, puis d'un defaut. On la resout ICI plutot que
+      # dans Gradle : le journal doit dire sur quelle URL l'APK a ete
+      # construit, sinon un APK qui ouvre le mauvais site est
+      # indiscernable d'un APK correct.
+      - name: Determiner l'URL
+        id: url
+        run: |
+          URL="${{ inputs.url_application }}"
+          if [ -z "$URL" ]; then URL="${{ vars.URL_APPLICATION }}"; fi
+          if [ -z "$URL" ]; then URL="https://chatdocs-ohada.vercel.app"; fi
+          echo "valeur=$URL" >> "$GITHUB_OUTPUT"
+          echo "### APK construit pour $URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Construire
+        working-directory: mobile
+        run: gradle assembleRelease -PurlApplication="${{ steps.url.outputs.valeur }}" --no-daemon
+
+      # UN APK NON SIGNE NE S'INSTALLE PAS. Deux cas, et le resume dit
+      # lequel s'est produit : un APK de debogage distribue en croyant
+      # tenir une version de production serait une mauvaise surprise.
+      - name: Signer
+        id: signature
+        run: |
+          NON_SIGNE=$(find mobile/app/build/outputs/apk/release -name "*.apk" | head -1)
+          if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "signe=non" >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**APK signe avec la cle de debogage.**" >> "$GITHUB_STEP_SUMMARY"
+            echo "Installable, mais ce n'est pas une version de production." >> "$GITHUB_STEP_SUMMARY"
+            echo "Pour signer en release : definissez les secrets ANDROID_KEYSTORE_BASE64," >> "$GITHUB_STEP_SUMMARY"
+            echo "ANDROID_KEYSTORE_MOT_DE_PASSE et ANDROID_CLE_ALIAS." >> "$GITHUB_STEP_SUMMARY"
+            cd mobile && gradle assembleDebug -PurlApplication="${{ steps.url.outputs.valeur }}" --no-daemon
+            cp app/build/outputs/apk/debug/app-debug.apk ../chatdocs-ohada.apk
+          else
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > cle.jks
+            "$ANDROID_HOME/build-tools/34.0.0/apksigner" sign \
+              --ks cle.jks \
+              --ks-pass "pass:${{ secrets.ANDROID_KEYSTORE_MOT_DE_PASSE }}" \
+              --ks-key-alias "${{ secrets.ANDROID_CLE_ALIAS }}" \
+              --out chatdocs-ohada.apk \
+              "$NON_SIGNE"
+            rm -f cle.jks
+            echo "signe=oui" >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**APK signe en release.**" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publier
+        uses: softprops/action-gh-release@v2
+        with:
+          # Un tag date pour les declenchements manuels : deux
+          # constructions le meme jour ne doivent pas se recouvrir.
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('apk-{0}', github.run_number) }}
+          name: ChatDocs OHADA — application Android
+          body: |
+            Application Android de ChatDocs OHADA.
+
+            Elle ouvre **${{ steps.url.outputs.valeur }}**. Une correction
+            du site profite immediatement a l'application, sans republier
+            d'APK.
+
+            **Installation.** Android affichera un avertissement
+            « source inconnue » : c'est normal pour un APK distribue hors
+            du Play Store. Autorisez l'installation depuis votre
+            navigateur, puis ouvrez le fichier telecharge.
+
+            Signature : ${{ steps.signature.outputs.signe == 'oui' && 'release' || 'debogage (essais uniquement)' }}
+          files: chatdocs-ohada.apk
+          make_latest: true

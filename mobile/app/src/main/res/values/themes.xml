@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Identité « Lex-Sovereign » : bleu nuit et fond papier, les mêmes
+         que le site. Une teinte différente ferait paraître l'application
+         étrangère au service qu'elle ouvre. -->
+    <style name="Theme.ChatDocs" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">#1B2A4A</item>
+        <item name="android:windowBackground">#F4F2EC</item>
+    </style>
+</resources>
