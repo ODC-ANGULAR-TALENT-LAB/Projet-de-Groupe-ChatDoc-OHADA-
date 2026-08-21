@@ -666,7 +666,15 @@ CAMPAY_*               si l'encaissement est ouvert
 
 ### 3. Le frontend, chez Vercel
 
-Racine `frontend/`. **L'URL de l'API n'est plus dans le code** : elle se
+**Le `Root Directory` du projet Vercel DOIT valoir `frontend`.** C'est le
+reglage qui decide de tout le reste : sans lui, Vercel ne lit pas
+`frontend/vercel.json`, detecte Angular tout seul et lance `ng build`
+directement — commande qui echoue en `127 : ng command not found`,
+parce que `ng` n'est sur le PATH que dans un script npm.
+
+Le message d'erreur ne dit rien de la vraie cause : il parle d'un
+binaire manquant la ou le probleme est un dossier racine mal
+positionne. **L'URL de l'API n'est plus dans le code** : elle se
 définit en variable de projet, et `scripts/environnement.mjs` écrit la
 configuration au build.
 
