@@ -9,4 +9,12 @@
          fichier atterrit dans un dossier qu\'il ne regarde pas. -->
     <string name="telechargement_en_cours">Téléchargement en cours…</string>
     <string name="telechargement_termine">Enregistré dans Téléchargements : %1$s</string>
+
+    <string name="reessayer">Réessayer</string>
+
+    <!-- Un certificat refusé et une absence de réseau donnaient le même
+         écran. Les distinguer évite d'envoyer quelqu'un vérifier sa
+         connexion alors que le problème est ailleurs. -->
+    <string name="echec_certificat">La sécurité de la connexion n'a pas pu être vérifiée. Si vous êtes sur un réseau public ou d'entreprise, essayez une autre connexion.</string>
+    <string name="echec_service">Le service ne répond pas correctement. Réessayez dans un instant.</string>
 </resources>

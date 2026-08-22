@@ -11,6 +11,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
@@ -44,7 +45,23 @@ import androidx.activity.OnBackPressedCallback
 class ActivitePrincipale : ComponentActivity() {
 
     private lateinit var vue: WebView
-    private lateinit var messageHorsLigne: TextView
+
+    /**
+     * VIEW, ET NON TEXTVIEW — l'application plantait au lancement.
+     *
+     * `message_hors_ligne` est un LinearLayout : titre, détail, bouton.
+     * Le déclarer TextView faisait insérer par Kotlin un transtypage
+     * vérifié, et `findViewById` levait ClassCastException dans
+     * `onCreate`. L'application se fermait donc immédiatement, avant
+     * d'avoir affiché quoi que ce soit.
+     *
+     * RIEN NE POUVAIT LE SIGNALER AVANT L'EXÉCUTION : le code compile
+     * sans avertissement, `findViewById` étant générique et la
+     * correspondance avec le XML n'étant vérifiée qu'au moment de
+     * l'inflation. Seul le type déclaré ici décide, et il ne servait
+     * qu'à lire `.visibility`, disponible sur toute View.
+     */
+    private lateinit var messageHorsLigne: View
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(etatSauvegarde: Bundle?) {
@@ -71,6 +88,15 @@ class ActivitePrincipale : ComponentActivity() {
         if (etatSauvegarde != null) {
             vue.restoreState(etatSauvegarde)
         } else {
+            vue.loadUrl(BuildConfig.URL_APPLICATION)
+        }
+
+        // RECHARGER PLUTOT QUE RELANCER. Une coupure passagere rendait
+        // l'application inutilisable jusqu'a ce qu'on la ferme depuis le
+        // gestionnaire de taches — ce que peu de gens font.
+        findViewById<Button>(R.id.reessayer).setOnClickListener {
+            messageHorsLigne.visibility = View.GONE
+            vue.visibility = View.VISIBLE
             vue.loadUrl(BuildConfig.URL_APPLICATION)
         }
 
@@ -145,6 +171,53 @@ class ActivitePrincipale : ComponentActivity() {
         }
 
         /**
+         * Un certificat refusé ne doit pas donner un écran blanc.
+         *
+         * SANS CETTE SURCHARGE, LE COMPORTEMENT PAR DÉFAUT EST
+         * D'ANNULER LE CHARGEMENT EN SILENCE : ni `onReceivedError`, ni
+         * message, ni trace. L'application s'ouvre sur du vide, et rien
+         * ne permet de distinguer ce cas d'une panne de l'application
+         * elle-même. C'est le pire scénario pour diagnostiquer à
+         * distance.
+         *
+         * ON N'APPELLE JAMAIS `proceed()`. Passer outre un certificat
+         * invalide reviendrait à accepter n'importe quel interlocuteur
+         * se faisant passer pour le service — sur une application qui
+         * transporte un jeton de session, ce serait indéfendable, quel
+         * que soit le confort gagné.
+         */
+        override fun onReceivedSslError(
+            vueAppelante: WebView,
+            gestionnaire: android.webkit.SslErrorHandler,
+            erreur: android.net.http.SslError,
+        ) {
+            gestionnaire.cancel()
+            afficherEchec(
+                getString(R.string.echec_certificat),
+                "SSL ${erreur.primaryError} — ${erreur.url}",
+            )
+        }
+
+        /**
+         * Le serveur a répondu, mais par une erreur.
+         *
+         * Distinct d'une absence de réseau : ici la connexion aboutit.
+         * Les confondre enverrait l'utilisateur vérifier sa connexion
+         * alors que le service est en cause.
+         */
+        override fun onReceivedHttpError(
+            vueAppelante: WebView,
+            requete: WebResourceRequest,
+            reponse: android.webkit.WebResourceResponse,
+        ) {
+            if (!requete.isForMainFrame) return
+            afficherEchec(
+                getString(R.string.echec_service),
+                "HTTP ${reponse.statusCode} — ${requete.url}",
+            )
+        }
+
+        /**
          * Hors ligne : un message lisible, pas la page d'erreur de Chrome.
          *
          * On ne masque l'application que si RIEN n'a pu être chargé. Une
@@ -157,11 +230,31 @@ class ActivitePrincipale : ComponentActivity() {
             erreur: android.webkit.WebResourceError,
         ) {
             if (!requete.isForMainFrame) return
-            vue.visibility = View.GONE
-            messageHorsLigne.visibility = View.VISIBLE
+            afficherEchec(
+                getString(R.string.hors_ligne_detail),
+                "${erreur.errorCode} ${erreur.description} — ${requete.url}",
+            )
         }
     }
 
     private fun hoteDeLApplication(): String =
         Uri.parse(BuildConfig.URL_APPLICATION).host ?: ""
+
+    /**
+     * Affiche l'écran d'échec, avec de quoi le diagnostiquer.
+     *
+     * LE DÉTAIL TECHNIQUE EST AFFICHÉ, PAS SEULEMENT JOURNALISÉ. Un
+     * utilisateur qui signale « ça ne s'ouvre pas » ne peut pas lire un
+     * logcat ; une ligne sélectionnable à l'écran, qu'il recopie, dit en
+     * un instant s'il s'agit du réseau, du certificat ou du service.
+     */
+    private fun afficherEchec(detail: String, technique: String) {
+        vue.visibility = View.GONE
+        messageHorsLigne.visibility = View.VISIBLE
+        findViewById<TextView>(R.id.detail_erreur).text = detail
+        findViewById<TextView>(R.id.code_erreur).apply {
+            text = technique
+            visibility = View.VISIBLE
+        }
+    }
 }

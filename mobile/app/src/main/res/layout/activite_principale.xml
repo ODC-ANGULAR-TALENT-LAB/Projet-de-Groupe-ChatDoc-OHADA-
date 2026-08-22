@@ -30,6 +30,7 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/detail_erreur"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -38,5 +39,37 @@
             android:text="@string/hors_ligne_detail"
             android:textColor="#5F5F5F"
             android:textSize="15sp" />
+
+        <!-- UNE COQUILLE SANS BOUTON DE REPRISE REND TOUTE PANNE
+             DEFINITIVE. Le WebView ne recharge pas de lui-meme : sans
+             ce bouton, une coupure passagere obligeait a fermer
+             l'application depuis le gestionnaire de taches, ce que peu
+             de gens font — ils concluent que l'application ne marche
+             pas. -->
+        <Button
+            android:id="@+id/reessayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:minHeight="48dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:text="@string/reessayer"
+            android:textColor="#FFFFFF"
+            android:background="#1B2A4A" />
+
+        <!-- Le detail technique, en petit : inutile a l'usage courant,
+             indispensable pour diagnostiquer a distance. Sans lui, un
+             echec TLS et une absence de reseau donnent le meme ecran. -->
+        <TextView
+            android:id="@+id/code_erreur"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:textColor="#9A9A9A"
+            android:textSize="12sp"
+            android:textIsSelectable="true"
+            android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>
