@@ -45,6 +45,12 @@ journal = logging.getLogger(__name__)
 # reessayant, et insister ne ferait qu'allonger l'attente.
 CODES_REESSAYABLES = {429, 503}
 
+# Niveaux de reflexion que l'API reconnait. LLM_EFFORT peut porter des
+# valeurs heritees d'un autre fournisseur ("xhigh", "max") : les
+# transmettre ferait echouer la requete en 400. On n'envoie donc le
+# reglage que s'il est compris, et on laisse le defaut sinon.
+NIVEAUX_REFLEXION = {"low", "medium", "high"}
+
 # Trois tentatives au plus, espacees d'une attente croissante. Au-dela,
 # on rend la main : l'utilisateur attend devant sa question, et le
 # produit sait refuser proprement.
@@ -192,14 +198,30 @@ def _corps(systeme: str, utilisateur: str, schema: dict) -> dict:
     question qui contiendrait « ignore les instructions precedentes »
     n'a aucun moyen d'atteindre les regles.
     """
+    reglages: dict = {
+        "responseMimeType": "application/json",
+        "responseSchema": convertir_schema(schema),
+        "maxOutputTokens": parametres.llm_max_tokens,
+    }
+
+    # LE NIVEAU DE REFLEXION DECIDE DU TEMPS DE REPONSE, ET DE TRES LOIN.
+    #
+    # Laisse a son defaut, ce modele raisonne longuement : une question
+    # accompagnee de huit articles depassait CENT VINGT SECONDES, donc le
+    # delai d'attente, et l'utilisateur ne recevait jamais rien. En
+    # « low », la meme requete revient en quelques secondes.
+    #
+    # Le champ se niche dans `thinkingConfig` ; place directement dans
+    # `generationConfig`, il est rejete en 400 avec « Unknown name
+    # thinkingLevel » — ce qui donne l'impression que le modele ne sait
+    # pas le faire.
+    if parametres.llm_effort in NIVEAUX_REFLEXION:
+        reglages["thinkingConfig"] = {"thinkingLevel": parametres.llm_effort}
+
     return {
         "systemInstruction": {"parts": [{"text": systeme}]},
         "contents": [{"role": "user", "parts": [{"text": utilisateur}]}],
-        "generationConfig": {
-            "responseMimeType": "application/json",
-            "responseSchema": convertir_schema(schema),
-            "maxOutputTokens": parametres.llm_max_tokens,
-        },
+        "generationConfig": reglages,
     }
 
 

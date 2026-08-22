@@ -17,6 +17,7 @@ import logging
 import httpx
 
 from app.config import parametres
+from app.services.civilites import reponse_de_civilite
 from app.services.llm import appeler_llm, appeler_llm_flux
 from app.services.recherche import pertinence, rechercher_detaille
 from app.services.reformulation import rendre_autonome
@@ -302,6 +303,23 @@ def repondre_en_flux(
     se diffusent pas non plus : un refus est immediat et n'a rien a
     faire defiler.
     """
+    # Meme traitement des civilites que dans repondre(). Le couple final
+    # suffit : une phrase de deux lignes n'a rien a faire defiler, et la
+    # diffuser mot a mot ferait paraitre lente une reponse instantanee.
+    civilite = reponse_de_civilite(question)
+    if civilite:
+        yield (
+            "fin",
+            {
+                "reponse": civilite,
+                "citations": [],
+                "confiance": "elevee",
+                "mise_en_garde": "",
+                "refus": False,
+            },
+        )
+        return
+
     question_cherchee = rendre_autonome(question, historique)
 
     try:
@@ -394,6 +412,29 @@ def repondre(
     jamais fonder la reponse : celle-ci ne s'appuie que sur les articles
     retrouves, et la validation des citations reste inchangee.
     """
+
+    # 0 bis. Une civilite n'est pas une question de droit.
+    #
+    # « Bonjour » ne ressemble a aucun article : la recherche ne
+    # remontait rien et l'assistant repondait qu'il ne disposait pas des
+    # textes — une phrase juste sur le fond, absurde en reponse a un
+    # salut, et qui donne le sentiment de parler a un mur.
+    #
+    # AVANT la reformulation, volontairement : rendre « bonjour »
+    # autonome au regard du fil produirait une question artificielle,
+    # qu'on chercherait ensuite pour rien.
+    civilite = reponse_de_civilite(question)
+    if civilite:
+        return {
+            "reponse": civilite,
+            "citations": [],
+            "confiance": "elevee",
+            "mise_en_garde": "",
+            # PAS UN REFUS : le frontend affiche les refus autrement, et
+            # presenter un bonjour comme un echec serait pire que le
+            # silence qu'on corrige ici.
+            "refus": False,
+        }
 
     # 0. Une question de suivi ne se cherche pas telle quelle.
     question_cherchee = rendre_autonome(question, historique)

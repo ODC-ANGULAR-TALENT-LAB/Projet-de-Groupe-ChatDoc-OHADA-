@@ -22,7 +22,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
 from app.config import parametres
-from app.services.embeddings import calculer_embeddings, formater_vecteur
+from app.services.embeddings import (
+    TENTATIVES_DEBIT,
+    calculer_embeddings,
+    formater_vecteur,
+)
 
 journal = logging.getLogger(__name__)
 
@@ -156,7 +160,13 @@ def vectoriser(
         textes = [texte_a_vectoriser(article) for article in lot]
 
         try:
-            vecteurs = calculer_embeddings(textes, simuler=simuler)
+            # LA REPRISE EST DEMANDEE ICI, ET NULLE PART AILLEURS. Une
+            # vectorisation en masse a tout le temps devant elle et des
+            # appels deja payes a ne pas perdre ; la recherche, qui
+            # partage cette fonction, sert un utilisateur qui attend.
+            vecteurs = calculer_embeddings(
+                textes, simuler=simuler, tentatives=TENTATIVES_DEBIT
+            )
         except (RuntimeError, httpx.HTTPError) as erreur:
             raise VectorisationImpossible(
                 f"{erreur}\n{traites} article(s) deja enregistres : relancer "

@@ -87,8 +87,28 @@ def vecteur_simule(contenu: str, dimensions: int | None = None) -> list[float]:
     return [valeur / norme for valeur in valeurs]
 
 
-def calculer_embeddings(textes: list[str], simuler: bool = False) -> list[list[float]]:
-    """Vectorise une liste de textes."""
+def calculer_embeddings(
+    textes: list[str],
+    simuler: bool = False,
+    tentatives: int = 1,
+) -> list[list[float]]:
+    """Vectorise une liste de textes.
+
+    `tentatives` VAUT UN PAR DEFAUT, ET CE DEFAUT EST LE POINT.
+
+    Cette fonction sert deux appelants aux exigences opposees. La
+    vectorisation en masse peut patienter des minutes : elle a tout le
+    temps, et abandonner lui coute des appels deja payes. La recherche,
+    elle, traite la question d'un utilisateur qui attend devant son
+    ecran ; mieux vaut basculer aussitot en recherche lexicale que le
+    faire patienter.
+
+    Avoir mis la reprise ici sans la rendre optionnelle a fait attendre
+    jusqu'a seize minutes une simple question — le serveur ne repondait
+    tout simplement jamais. Le defaut prudent est donc de ne PAS
+    reessayer ; c'est a l'appelant qui peut se le permettre de le
+    demander.
+    """
     if simuler:
         return [vecteur_simule(texte) for texte in textes]
 
@@ -124,7 +144,7 @@ def calculer_embeddings(textes: list[str], simuler: bool = False) -> list[list[f
     # L'attente double a chaque essai. Un plafond par minute se vide de
     # lui-meme ; il suffit de lui en laisser le temps.
     reponse = None
-    for tentative in range(TENTATIVES_DEBIT):
+    for tentative in range(max(1, tentatives)):
         reponse = httpx.post(
             parametres.embedding_url,
             headers={
@@ -138,7 +158,10 @@ def calculer_embeddings(textes: list[str], simuler: bool = False) -> list[list[f
         if reponse.status_code != 429:
             break
 
-        if tentative < TENTATIVES_DEBIT - 1:
+        # `tentatives`, PAS la constante : avec un seul essai demande,
+        # comparer au maximum global ferait patienter quatre secondes
+        # avant un abandon deja decide.
+        if tentative < tentatives - 1:
             attente = ATTENTE_DEBIT * (2**tentative)
             journal.warning(
                 "Débit trop rapide (HTTP 429), pause de %.0f s avant reprise.",
