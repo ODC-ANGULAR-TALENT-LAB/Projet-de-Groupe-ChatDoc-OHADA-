@@ -156,6 +156,22 @@ def sante() -> dict:
     le systeme se degrade silencieusement en recherche plein texte.
     """
     etat: dict = {"api": "ok"}
+
+    # L'ETAT DES FOURNISSEURS EST LA PREMIERE CHOSE A REGARDER.
+    #
+    # Sans cle de redaction, le produit ne tombe pas : il rend les
+    # articles bruts, avec un message expliquant que la synthese est
+    # indisponible. C'est le bon comportement — mais il est INDISCERNABLE
+    # d'un modele qui repondrait mal, et la panne se decouvre alors par
+    # une mauvaise reponse plutot que par un indicateur.
+    #
+    # Ces deux lignes disent en une requete ce qu'il fallait auparavant
+    # deduire du contenu d'une reponse.
+    etat["redaction"] = "ok" if parametres.llm_configure else "non configuree"
+    etat["embeddings"] = (
+        "ok" if parametres.embeddings_configures else "non configures"
+    )
+
     try:
         with moteur.connect() as cx:
             extensions = (
