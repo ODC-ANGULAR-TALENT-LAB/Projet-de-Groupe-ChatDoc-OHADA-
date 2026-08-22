@@ -18,9 +18,30 @@
         <strong>ChatDocs OHADA sur Android.</strong>
         Le corpus dans votre poche, consultable même hors connexion.
       </p>
-      <a class="bandeau-action" [href]="lienApk" rel="noopener">
+      <!-- OUVERT DANS UN ONGLET SEPARE. Sans `target`, le clic fait
+           NAVIGUER l'application vers l'URL de téléchargement : le
+           navigateur lance bien le fichier, mais la page à l'écran est
+           quittée, et certains navigateurs mobiles laissent alors une
+           page blanche derrière eux. L'utilisateur voit son
+           téléchargement s'arrêter sur un écran vide et conclut, à
+           raison, que quelque chose s'est bloqué. -->
+      <a
+        class="bandeau-action"
+        [href]="lienApk"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         Télécharger l'application
       </a>
+      <!-- DIRE CE QUI VA SE PASSER, AVANT QUE CELA ARRIVE. Android
+           demande une autorisation explicite pour installer hors
+           magasin, et le téléchargement paraît figé à 100 % tant qu'on
+           ne l'a pas accordée. Prévenir ici évite de prendre une
+           protection du système pour une panne. -->
+      <p class="bandeau-note">
+        Android demandera d'autoriser l'installation depuis votre
+        navigateur : c'est normal hors Play Store.
+      </p>
     </div>
     <button
       type="button"

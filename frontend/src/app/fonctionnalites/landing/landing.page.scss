@@ -689,6 +689,16 @@
   app-icone {
     flex-shrink: 0;
   }
+
+  /* La note passe APRES le bouton dans le flux, mais sur sa propre
+     ligne : elle explique ce qui va se produire sans disputer
+     l'attention à l'action elle-même. */
+  .bandeau-note {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: var(--t-xs);
+    opacity: 0.85;
+  }
 }
 
 .bandeau-action {

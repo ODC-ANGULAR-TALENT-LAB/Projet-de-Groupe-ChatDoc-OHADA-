@@ -7,6 +7,16 @@
          APK reçu hors magasin. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Uniquement pour Android 9 et anterieur, et uniquement pour
+         deposer un export PDF dans le dossier Telechargements. A partir
+         d'Android 10 le stockage cloisonne rend ce droit inutile : on
+         passe par MediaStore, qui n'en demande aucun. Le plafonner ici
+         evite qu'un telephone recent affiche une demande de permission
+         que l'application n'utiliserait jamais. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

@@ -48,6 +48,13 @@ class ActivitePrincipale : AppCompatActivity() {
         configurer(vue.settings)
         vue.webViewClient = ClientWeb()
 
+        // SANS CECI, AUCUN TELECHARGEMENT NE FONCTIONNE. Un WebView
+        // ignore purement et simplement les liens de telechargement tant
+        // qu'on ne lui pose pas de DownloadListener : l'export PDF d'une
+        // reponse ne produisait donc aucun effet dans l'application, et
+        // rien ne le signalait — ni erreur, ni message.
+        Telechargements.installer(vue, this)
+
         // Restaurer l'état évite de recharger la page à chaque rotation :
         // sans cela, une rotation renverrait l'utilisateur à l'accueil et
         // lui ferait perdre sa question en cours.

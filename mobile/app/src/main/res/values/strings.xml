@@ -3,4 +3,10 @@
     <string name="nom_application">ChatDocs OHADA</string>
     <string name="hors_ligne_titre">Pas de connexion</string>
     <string name="hors_ligne_detail">ChatDocs OHADA a besoin d\'Internet pour charger. Vérifiez votre connexion, puis rouvrez l\'application.</string>
+
+    <!-- Un téléchargement sans retour visible passe pour une panne :
+         l\'utilisateur touche le bouton, rien ne bouge à l\'écran, et le
+         fichier atterrit dans un dossier qu\'il ne regarde pas. -->
+    <string name="telechargement_en_cours">Téléchargement en cours…</string>
+    <string name="telechargement_termine">Enregistré dans Téléchargements : %1$s</string>
 </resources>
