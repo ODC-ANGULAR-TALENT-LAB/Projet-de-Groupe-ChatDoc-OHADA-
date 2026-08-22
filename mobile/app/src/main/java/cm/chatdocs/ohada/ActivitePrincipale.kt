@@ -12,8 +12,8 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 
 /**
  * ChatDocs OHADA — coquille Android.
@@ -31,7 +31,17 @@ import androidx.appcompat.app.AppCompatActivity
  * Comme le WebView gère les service workers, la bibliothèque reste
  * consultable hors ligne — l'avantage principal de la TWA disparaît.
  */
-class ActivitePrincipale : AppCompatActivity() {
+/*
+ * COMPONENTACTIVITY ET NON APPCOMPATACTIVITY. AppCompat retro-porte des
+ * composants d'interface — barres d'action, boutons, menus — dont une
+ * coquille WebView n'utilise pas un seul. Elle pesait pourtant l'essentiel
+ * de l'APK, et un fichier plus lourd se telecharge plus longtemps, donc
+ * casse plus souvent sur un reseau mobile.
+ *
+ * `onBackPressedDispatcher`, la seule chose dont on avait besoin, vient
+ * d'androidx.activity — pas d'AppCompat.
+ */
+class ActivitePrincipale : ComponentActivity() {
 
     private lateinit var vue: WebView
     private lateinit var messageHorsLigne: TextView
