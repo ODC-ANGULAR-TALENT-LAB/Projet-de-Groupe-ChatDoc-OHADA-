@@ -169,6 +169,7 @@ def rechercher_detaille(
     n: int | None = None,
     sigle: str | None = None,
     simuler: bool = False,
+    termes_lexicaux: str | None = None,
 ) -> tuple[list[tuple[dict, float]], str]:
     """Comme rechercher(), mais dit AUSSI par quel mode la reponse est venue.
 
@@ -197,9 +198,18 @@ def rechercher_detaille(
                         erreur)
         mode = "lexical_seul"
 
+    # DEUX FORMULATIONS POUR DEUX MOITIES, ET CE N'EST PAS UN DETAIL.
+    #
+    # La moitie lexicale compare des CHAINES : elle a besoin des mots du
+    # legislateur — « societe a responsabilite limitee » la ou la
+    # question dit « SARL ». La moitie vectorielle compare des SENS :
+    # elle travaille mieux sur la question telle qu'elle a ete posee,
+    # qu'un elargissement en mots-cles appauvrirait.
+    #
+    # Leur donner la meme chaine revenait a en desservir une des deux.
     with moteur.connect() as cx:
         liste_vect = rechercher_vectoriel(cx, vecteur, sigle) if vecteur else []
-        liste_lex = rechercher_lexical(cx, question, sigle)
+        liste_lex = rechercher_lexical(cx, termes_lexicaux or question, sigle)
 
     # UNE VECTORISATION PARTIELLE EST PIRE QU'AUCUNE.
     #

@@ -20,7 +20,7 @@ from app.config import parametres
 from app.services.civilites import reponse_de_civilite
 from app.services.llm import appeler_llm, appeler_llm_flux
 from app.services.recherche import pertinence, rechercher_detaille
-from app.services.reformulation import rendre_autonome
+from app.services.reformulation import rendre_autonome, termes_de_recherche
 
 # Nombre d'articles montres quand la redaction est indisponible. Huit
 # extraits a lire, c'est deja beaucoup pour un ecran de telephone.
@@ -322,9 +322,15 @@ def repondre_en_flux(
 
     question_cherchee = rendre_autonome(question, historique)
 
+    # Les mots du legislateur, pour la moitie lexicale de la recherche.
+    # Voir reformulation.termes_de_recherche : c'est ce qui permet a
+    # « SARL » de rencontrer « societe a responsabilite limitee ».
+    termes = termes_de_recherche(question_cherchee)
+
     try:
         resultats, mode = rechercher_detaille(
             question_cherchee,
+            termes_lexicaux=termes,
             n=parametres.nb_articles_contexte,
             sigle=sigle,
         )
@@ -439,6 +445,9 @@ def repondre(
     # 0. Une question de suivi ne se cherche pas telle quelle.
     question_cherchee = rendre_autonome(question, historique)
 
+    # Les mots du legislateur, pour la moitie lexicale de la recherche.
+    termes = termes_de_recherche(question_cherchee)
+
     # 1. Recherche hybride
     #
     # httpx.HTTPError couvre les pannes reseau du fournisseur
@@ -448,6 +457,7 @@ def repondre(
     try:
         resultats, mode = rechercher_detaille(
             question_cherchee,
+            termes_lexicaux=termes,
             n=parametres.nb_articles_contexte,
             sigle=sigle,
             simuler=simuler,

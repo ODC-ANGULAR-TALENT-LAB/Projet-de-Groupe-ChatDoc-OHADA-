@@ -118,3 +118,101 @@ def rendre_autonome(question: str, historique: list[dict] | None) -> str:
     if brut.get("dependait_du_fil"):
         journal.info("Question rendue autonome : %r -> %r", question, reformulee)
     return reformulee
+
+
+# ---------------------------------------------------------------------
+# TERMES DE RECHERCHE — CE QUI REMPLACE LES EMBEDDINGS
+# ---------------------------------------------------------------------
+# LE PROBLEME, MESURE. « Quel est le delai de convocation d'une AG de
+# SARL ? » ne remontait pas l'article 338 de l'AUSCGIE, qui porte
+# pourtant la reponse. La raison n'est pas subtile : l'article dit
+# « les associes sont convoques quinze jours au moins avant la reunion
+# de l'assemblee » et vit sous un titre « societe a responsabilite
+# limitee ». Le sigle « SARL » n'y figure nulle part, et une recherche
+# plein texte compare des chaines, pas des sens.
+#
+# La recherche vectorielle resolvait cela — 0,76 de similarite contre
+# 0,48 pour un article hors sujet. Mais elle suppose un corpus
+# entierement vectorise chez un fournisseur d'embeddings.
+#
+# CE MODULE FAIT LE MEME PONT AVEC LE MODELE DE REDACTION. Il traduit la
+# question dans le vocabulaire du legislateur avant de chercher. Mesure
+# sur la question ci-dessus : l'article 338 passe d'absent des huit
+# premiers resultats au quatrieme rang.
+#
+# IL N'AFFIRME RIEN. Comme rendre_autonome(), il n'ameliore que CE QUI
+# EST CHERCHE. Le seuil de refus, la validation des citations et la
+# regle « aucune reponse hors des articles fournis » restent intacts en
+# aval : un elargissement rate degrade la recherche, il ne peut pas
+# produire une affirmation fausse.
+
+SCHEMA_TERMES = {
+    "type": "object",
+    "properties": {
+        "termes": {
+            "type": "string",
+            "description": (
+                "Mots-cles qui figureront litteralement dans les articles "
+                "recherches, separes par des espaces."
+            ),
+        }
+    },
+    "required": ["termes"],
+    "additionalProperties": False,
+}
+
+PROMPT_TERMES = """Tu prepares une recherche PLEIN TEXTE dans un corpus
+juridique OHADA et camerounais : actes uniformes, Code general des impots,
+codes camerounais.
+
+Rends les mots-cles qui figureront LITTERALEMENT dans les articles
+recherches, separes par des espaces.
+
+REGLES
+1. Developpe tout sigle : SARL donne « societe a responsabilite limitee »,
+   AG donne « assemblee generale », RCCM donne « registre du commerce et
+   du credit mobilier ». Garde AUSSI le sigle : il figure parfois tel quel.
+2. Emploie le vocabulaire du legislateur plutot que celui de la question.
+   Un texte de loi ecrit « les associes sont convoques », pas « il faut
+   prevenir les gens ».
+3. Ajoute les synonymes juridiques utiles, et les mots de la meme famille
+   qu'un article emploierait.
+4. Retire les mots vides de la question — « quel », « est-ce que »,
+   « comment » — qui ne figurent dans aucun article.
+5. N'invente aucun numero d'article, aucun chiffre, aucune date.
+
+Tu ne reponds pas a la question : tu prepares seulement de quoi la
+chercher."""
+
+
+def termes_de_recherche(question: str) -> str:
+    """Les mots a chercher, dans le vocabulaire des textes.
+
+    RETOMBE SUR LA QUESTION EN CAS DE DOUTE, comme rendre_autonome() :
+    un elargissement rate degraderait la recherche en silence, et la
+    question d'origine reste un point de depart honnete.
+    """
+    if not parametres.llm_configure:
+        return question
+
+    brut = appeler_llm(
+        systeme=PROMPT_TERMES,
+        utilisateur=question,
+        schema=SCHEMA_TERMES,
+        defaut={"termes": question},
+    )
+
+    termes = (brut.get("termes") or "").strip()
+    if not termes:
+        return question
+
+    # Un elargissement qui s'effondre a deux mots n'a pas fait son
+    # travail ; un qui explose a dix fois la question a probablement
+    # recopie autre chose. Dans les deux cas, la question d'origine vaut
+    # mieux.
+    if len(termes) < 8 or len(termes) > 10 * max(len(question), 40):
+        journal.warning("Termes de recherche ecartes (longueur aberrante).")
+        return question
+
+    journal.info("Termes de recherche : %r -> %r", question, termes)
+    return termes
