@@ -25,6 +25,29 @@ interface FenetreGoogle extends Window {
 const URL_SCRIPT = 'https://accounts.google.com/gsi/client';
 
 /**
+ * La page s'affiche-t-elle dans un WebView embarqué ?
+ *
+ * POURQUOI CETTE DÉTECTION EXISTE. Google refuse de s'authentifier
+ * depuis un WebView, et c'est délibéré : sans cette règle, n'importe
+ * quelle application pourrait afficher une page de connexion Google et
+ * lire au passage le mot de passe de ses utilisateurs. Le bouton ne
+ * s'affiche donc jamais dans notre coquille Android.
+ *
+ * Sans distinguer ce cas, le message d'erreur accusait l'origine non
+ * déclarée — ce qui enverrait chercher pendant des heures, dans la
+ * console Google Cloud, une cause qui n'existe pas.
+ *
+ * COMMENT ON RECONNAÎT UN WEBVIEW ANDROID. Son agent utilisateur porte
+ * `; wv)` ; celui d'un vrai Chrome ne le porte pas. On exige aussi
+ * `Android`, pour ne pas prendre un navigateur de bureau exotique pour
+ * une application embarquée.
+ */
+function estWebViewEmbarque(): boolean {
+  const agent = navigator.userAgent;
+  return /Android/.test(agent) && /;\s*wv\)/.test(agent);
+}
+
+/**
  * Bouton « Se connecter avec Google ».
  *
  * Le navigateur obtient un jeton d'identité signé par Google, que
@@ -107,7 +130,17 @@ export class GoogleService {
       text: 'continue_with',
       shape: 'rectangular',
       locale: 'fr',
-      width: 280,
+      // LARGEUR MESURÉE, PAS DEVINÉE. Une valeur figée déborde du
+      // conteneur sur les écrans les plus étroits — 320 px de large
+      // n'en laissent que 288 une fois le rembourrage retiré — et le
+      // bouton se retrouve coupé, voire invisible si un parent masque
+      // le débordement.
+      //
+      // Google n'accepte qu'entre 200 et 400 : hors de cet intervalle
+      // le paramètre est ignoré et la largeur redevient arbitraire.
+      // D'où le calage explicite plutôt qu'une confiance dans le
+      // conteneur.
+      width: Math.max(200, Math.min(400, hote.clientWidth || 280)),
     });
 
     this.verifierAffichage(hote);
@@ -130,11 +163,29 @@ export class GoogleService {
   private verifierAffichage(hote: HTMLElement): void {
     setTimeout(() => {
       if (hote.childElementCount > 0) return;
+
+      // DEUX CAUSES POSSIBLES, ET DEUX CONDUITES A TENIR OPPOSEES.
+      //
+      // Dans l'application Android, le bouton ne s'affichera JAMAIS :
+      // Google refuse par principe de s'authentifier depuis un WebView
+      // embarqué, pour empêcher qu'une application intercepte les
+      // identifiants de ses utilisateurs. Aucun réglage de notre côté
+      // n'y changera rien — envoyer quelqu'un fouiller la console
+      // Google Cloud le ferait chercher pendant des heures une cause
+      // qui n'existe pas.
+      //
+      // Sur le web, l'explication habituelle est au contraire l'origine
+      // non déclarée, et elle se corrige en deux minutes.
       this.erreur.set(
-        "Le bouton Google ne s'est pas affiché. L'origine " +
-          `${window.location.origin} doit être déclarée dans « Origines ` +
-          'JavaScript autorisées » de la console Google Cloud, pour ce ' +
-          "client. En attendant, l'inscription par e-mail fonctionne.",
+        estWebViewEmbarque()
+          ? "La connexion Google n'est pas disponible dans l'application " +
+              'Android : Google la refuse depuis une application tierce, ' +
+              "par sécurité. Connectez-vous par e-mail et mot de passe, ou " +
+              'ouvrez le site dans votre navigateur.'
+          : "Le bouton Google ne s'est pas affiché. L'origine " +
+              `${window.location.origin} doit être déclarée dans « Origines ` +
+              'JavaScript autorisées » de la console Google Cloud, pour ce ' +
+              "client. En attendant, l'inscription par e-mail fonctionne.",
       );
     }, 2000);
   }
