@@ -1,11 +1,10 @@
 [
   {
-    "_commentaire": "FICHIER REECRIT AUTOMATIQUEMENT. L'empreinte reelle est extraite de l'APK signe par .github/workflows/apk.yml, puis commitee ici. Ne pas la saisir a la main : une valeur recopiee se desynchronise au premier changement de cle, et le symptome — la barre d'adresse de Chrome qui reapparait dans l'application — ne designe pas sa cause.",
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
       "package_name": "cm.chatdocs.ohada",
-      "sha256_cert_fingerprints": []
+      "sha256_cert_fingerprints": ["C0:8D:C3:1B:21:70:44:36:7D:63:58:90:97:2D:D1:D9:39:AC:4F:4A:52:00:AE:4C:83:C6:28:E6:5A:F4:3F:09"]
     }
   }
 ]
