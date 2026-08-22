@@ -126,11 +126,31 @@ def _enregistrer(
     db.add(message)
     db.flush()
 
+    # UN MEME ARTICLE PEUT ETRE CITE DEUX FOIS DANS UNE REPONSE, et c'est
+    # legitime : un article qui fixe a la fois un delai et une sanction
+    # fonde deux affirmations distinctes, que le modele appuie
+    # separement.
+    #
+    # La cle primaire de `citation` est (message_id, article_id) : le
+    # second enregistrement violait donc la contrainte, la transaction
+    # entiere echouait, et l'utilisateur recevait 500 sur une reponse
+    # pourtant correctement redigee et validee. Le cas se produisait
+    # surtout sur les questions vagues, ou peu d'articles portent
+    # plusieurs points a la fois.
+    #
+    # ON GARDE LA PREMIERE OCCURRENCE : c'est celle que le modele a
+    # jugee la plus directe, et son extrait est le plus proche de la
+    # reponse principale.
+    deja_citees: set[int] = set()
     for citation in resultat["citations"]:
+        identifiant = citation["article_id"]
+        if identifiant in deja_citees:
+            continue
+        deja_citees.add(identifiant)
         db.add(
             Citation(
                 message_id=message.id,
-                article_id=citation["article_id"],
+                article_id=identifiant,
                 extrait=citation["extrait"],
             )
         )
