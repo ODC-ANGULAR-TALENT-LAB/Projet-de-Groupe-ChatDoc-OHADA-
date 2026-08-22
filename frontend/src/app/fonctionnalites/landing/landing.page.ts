@@ -19,19 +19,26 @@ interface Chiffre {
 const CLE_BANDEAU = 'chatdocs.bandeau-mobile-masque';
 
 /**
- * Lien de téléchargement de l'APK.
+ * Lien de téléchargement de l'APK — SERVI PAR CE SITE, pas par un tiers.
  *
- * `releases/latest/download` SUIT LES PUBLICATIONS : ce lien n'a jamais
- * à être modifié, quelle que soit la version en ligne. Le pointer sur
- * une version précise obligerait à retoucher le site à chaque APK.
+ * POURQUOI PLUS DE LIEN VERS LA FORGE. Le lien pointait auparavant sur
+ * `releases/latest/download`, qui traverse DEUX redirections vers un
+ * autre domaine et aboutit à une URL signée expirant au bout d'une
+ * heure. Chaque maillon est un point de rupture, et sur un réseau
+ * mobile le téléchargement s'arrêtait à 100 % sans jamais se terminer.
  *
- * Il vise une RELEASE et non un artifact d'Actions : les artifacts ne
- * se téléchargent qu'en étant connecté à GitHub, ce qui enverrait les
- * visiteurs sur une page de connexion.
+ * Le fichier vit maintenant dans `public/` : même origine, aucune
+ * redirection, aucune signature à expirer, aucune dépendance à la
+ * joignabilité d'un domaine tiers depuis le réseau du visiteur.
+ *
+ * CE N'EST DEVENU RAISONNABLE QU'APRÈS L'AVOIR ALLÉGÉ. À 3,2 Mo, mettre
+ * un binaire dans le dépôt aurait été discutable ; à 297 ko, le coût
+ * est négligeable devant un téléchargement qui n'aboutit pas.
+ *
+ * Le workflow apk.yml met ce fichier à jour à chaque construction : la
+ * publication en release demeure, pour qui préfère la forge.
  */
-const LIEN_APK =
-  'https://github.com/ODC-ANGULAR-TALENT-LAB/Projet-de-Groupe-ChatDoc-OHADA-' +
-  '/releases/latest/download/chatdocs-ohada.apk';
+const LIEN_APK = '/chatdocs-ohada.apk';
 
 /**
  * Page d'accueil publique.

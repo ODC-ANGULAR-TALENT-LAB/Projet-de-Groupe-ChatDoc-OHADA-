@@ -89,6 +89,31 @@ jobs:
             echo "**APK signe en release.**" >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      # LE SITE SERT L'APK LUI-MEME, et ce fichier doit donc suivre
+      # chaque construction. Le lien du bandeau pointait auparavant vers
+      # la release : deux redirections vers un domaine tiers et une URL
+      # signee expirant en une heure, ce qui faisait echouer le
+      # telechargement sur reseau mobile.
+      #
+      # La release reste publiee ci-dessous — elle sert de miroir et de
+      # trace de version — mais elle n'est plus le chemin que suivent
+      # les visiteurs.
+      - name: Deposer l'APK dans le site
+        run: |
+          cp chatdocs-ohada.apk frontend/public/chatdocs-ohada.apk
+          if git diff --quiet -- frontend/public/chatdocs-ohada.apk; then
+            echo "APK identique a celui deja publie : rien a commiter."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/chatdocs-ohada.apk
+          # Le workflow ne se declenche que manuellement ou sur un tag :
+          # ce commit ne peut donc pas le relancer en boucle. Il declenche
+          # en revanche le redeploiement du site, ce qui est le but.
+          git commit -m "APK : mettre a jour le fichier servi par le site"
+          git push
+
       - name: Publier
         uses: softprops/action-gh-release@v2
         with:

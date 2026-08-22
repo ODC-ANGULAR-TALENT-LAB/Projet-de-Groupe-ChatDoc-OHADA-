@@ -189,6 +189,23 @@ services:
     # Les valeurs par defaut du CDN de Render sont correctes. Ce reglage
     # n'apporterait qu'un gain marginal contre un risque certain.
 
+    headers:
+      # TYPE MIME DE L'APK, DECLARE EXPLICITEMENT.
+      #
+      # Servi en `application/octet-stream` ou pire en `text/html`,
+      # Android ne reconnait pas le fichier comme installable : le
+      # telechargement aboutit, puis rien ne se passe. Le declarer ici
+      # ne depend d'aucune table de types cote hebergeur.
+      - path: /chatdocs-ohada.apk
+        name: Content-Type
+        value: application/vnd.android.package-archive
+
+      # Sans cet en-tete, certains navigateurs mobiles tentent
+      # d'AFFICHER le fichier au lieu de l'enregistrer.
+      - path: /chatdocs-ohada.apk
+        name: Content-Disposition
+        value: attachment; filename="chatdocs-ohada.apk"
+
     routes:
       # RECHARGER /bibliotheque NE DOIT PAS RENVOYER 404. Angular gere
       # les routes cote navigateur ; le serveur, lui, cherche un
