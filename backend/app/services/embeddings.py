@@ -201,16 +201,36 @@ def _diagnostic(reponse: httpx.Response) -> str:
             "Cle d'API refusee par le fournisseur d'embeddings. Verifie "
             "EMBEDDING_API_KEY dans .env."
         )
-    if "quota" in code or "credit" in code or "billing" in message.lower():
-        return (
-            "Le compte du fournisseur d'embeddings n'a plus de credit. "
-            "Approvisionne-le, puis relance la vectorisation. "
-            f"(message du fournisseur : {message[:120]})"
-        )
+
+    # UN 429 EST UNE LIMITE DE CADENCE, PAS UN COMPTE VIDE — meme quand
+    # le fournisseur ecrit « quota » et « billing » dans son message.
+    #
+    # Ce diagnostic disait auparavant « le compte n'a plus de credit,
+    # approvisionne-le ». Il reprenait le vocabulaire du fournisseur, et
+    # il etait faux : le compte etait bon, la requete etait seulement
+    # trop grosse. Deux jours ont ete perdus a chercher un probleme de
+    # paiement qui n'existait pas.
+    #
+    # Le message oriente donc desormais vers ce qui se verifie en une
+    # minute : reduire TAILLE_LOT. Un compte reellement vide se
+    # reconnait a un 402 ou a un 403, traites plus bas.
     if reponse.status_code == 429:
         return (
-            "Debit trop rapide vers le fournisseur d'embeddings. Relance "
-            "la vectorisation : elle reprend ou elle s'est arretee."
+            "Le fournisseur d'embeddings limite la cadence ou la taille "
+            "des requetes (HTTP 429). Ce n'est PAS un compte sans credit, "
+            "meme si son message parle de quota ou de facturation.\n"
+            "  - la vectorisation reprend ou elle s'est arretee : "
+            "relance-la ;\n"
+            "  - si elle bloque des le premier lot, reduis TAILLE_LOT "
+            f"dans services/vectorisation.py.\n"
+            f"  (message du fournisseur : {message[:120]})"
+        )
+
+    if reponse.status_code in (402, 403) or "billing" in code.lower():
+        return (
+            "Le compte du fournisseur d'embeddings est refuse "
+            f"(HTTP {reponse.status_code}). Verifie son etat de "
+            f"facturation. (message du fournisseur : {message[:120]})"
         )
     return (
         f"Le fournisseur d'embeddings a refuse l'appel "
