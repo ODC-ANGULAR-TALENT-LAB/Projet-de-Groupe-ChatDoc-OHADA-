@@ -67,6 +67,19 @@ class Parametres(BaseSettings):
     llm_effort: str = "low"
     url_fournisseur: str = ""
 
+    # DIALECTE PARLE PAR LE FOURNISSEUR DE REDACTION.
+    #
+    # Deux familles d'API se partagent le marche et ne se ressemblent
+    # en rien : ni la forme du corps, ni le nom des champs, ni le
+    # format du flux. Le projet en a change une fois faute de credit,
+    # et rien ne dit que cela n'arrivera plus.
+    #
+    # Le protocole est donc une VARIABLE, au meme titre que la cle :
+    # basculer d'un fournisseur a l'autre se fait dans l'environnement
+    # de l'hebergeur, sans toucher au code ni reveler dans le depot
+    # quel fournisseur est en service.
+    llm_protocole: str = "anthropic"
+
     # Origines autorisees par CORS (phase F puis H : restreindre au seul
     # domaine du frontend en production).
     origines_autorisees: str = "http://localhost:4200"

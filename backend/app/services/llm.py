@@ -60,7 +60,12 @@ ATTENTE_INITIALE = 1.5
 # Racine de l'API. Configurable par URL_FOURNISSEUR : c'est ce qui
 # permet de basculer vers un mandataire ou une autre region sans
 # retoucher le code.
-URL_DEFAUT = "https://generativelanguage.googleapis.com/v1beta"
+URL_ANTHROPIC = "https://api.anthropic.com/v1"
+URL_GEMINI = "https://generativelanguage.googleapis.com/v1beta"
+
+# Version d'API demandee. Figee volontairement : une API qui evolue ne
+# doit pas changer le comportement du produit sans qu'on l'ait decide.
+VERSION_ANTHROPIC = "2023-06-01"
 
 # Un appel de redaction depasse couramment dix secondes ; le delai doit
 # laisser la place au raisonnement du modele sans pour autant retenir un
@@ -140,6 +145,11 @@ REFUS_TECHNIQUE = {
 # seul cas nominal ; tout le reste laisse un JSON tronque ou vide.
 ARRETS_FAUTIFS = {"MAX_TOKENS", "SAFETY", "RECITATION", "BLOCKLIST", "OTHER"}
 
+# Les equivalents chez l'autre fournisseur. « end_turn » est le seul cas
+# nominal ; « max_tokens » laisse un JSON tronque et « refusal » ne rend
+# rien d'exploitable.
+ARRETS_FAUTIFS_ANTHROPIC = {"max_tokens", "refusal"}
+
 # Correspondance des types entre le JSON Schema du projet et le dialecte
 # du fournisseur, qui les veut en capitales.
 TYPES = {
@@ -189,15 +199,46 @@ def convertir_schema(schema: dict) -> dict:
     return converti
 
 
-def _corps(systeme: str, utilisateur: str, schema: dict) -> dict:
-    """Le corps de la requete, identique en flux et hors flux.
+def _corps(systeme: str, utilisateur: str, schema: dict, flux: bool = False) -> dict:
+    """Le corps de la requete, dans le dialecte du fournisseur en service.
 
-    LES REGLES ET LA DONNEE RESTENT SEPAREES. `systeme` part dans
-    `systemInstruction`, `utilisateur` dans `contents`. C'est la meme
-    frontiere que precedemment, et elle porte la meme garantie : une
-    question qui contiendrait « ignore les instructions precedentes »
-    n'a aucun moyen d'atteindre les regles.
+    LES REGLES ET LA DONNEE RESTENT SEPAREES, quel que soit le
+    protocole : `systeme` va dans le champ des instructions,
+    `utilisateur` dans celui du message. C'est cette frontiere qui
+    garantit qu'une question contenant « ignore les instructions
+    precedentes » n'atteint jamais les regles.
     """
+    if _anthropic():
+        return _corps_anthropic(systeme, utilisateur, schema, flux)
+    return _corps_gemini(systeme, utilisateur, schema)
+
+
+def _anthropic() -> bool:
+    return parametres.llm_protocole.strip().lower() == "anthropic"
+
+
+def _corps_anthropic(
+    systeme: str, utilisateur: str, schema: dict, flux: bool
+) -> dict:
+    """Le schema part TEL QUEL : ce dialecte lit le JSON Schema standard.
+
+    Aucune traduction n'est donc necessaire ici — contrairement a
+    l'autre protocole, qui veut ses types en capitales et refuse
+    `additionalProperties`.
+    """
+    corps: dict = {
+        "model": parametres.llm_modele,
+        "max_tokens": parametres.llm_max_tokens,
+        "system": systeme,
+        "messages": [{"role": "user", "content": utilisateur}],
+        "output_config": {"format": {"type": "json_schema", "schema": schema}},
+    }
+    if flux:
+        corps["stream"] = True
+    return corps
+
+
+def _corps_gemini(systeme: str, utilisateur: str, schema: dict) -> dict:
     reglages: dict = {
         "responseMimeType": "application/json",
         "responseSchema": convertir_schema(schema),
@@ -226,19 +267,31 @@ def _corps(systeme: str, utilisateur: str, schema: dict) -> dict:
 
 
 def _url(methode: str) -> str:
-    """L'adresse complete, cle comprise.
-
-    LA CLE VOYAGE EN PARAMETRE D'URL parce que c'est ce que cette API
-    impose. Elle ne doit donc jamais etre journalisee : voir _signaler(),
-    qui ne consigne que le code et le message du fournisseur.
-    """
+    """L'adresse a appeler, selon le protocole en service."""
     if not parametres.llm_api_key:
         raise RuntimeError("LLM_API_KEY absent du .env.")
-    racine = (parametres.url_fournisseur or URL_DEFAUT).rstrip("/")
+
+    if _anthropic():
+        racine = (parametres.url_fournisseur or URL_ANTHROPIC).rstrip("/")
+        return f"{racine}/messages"
+
+    # LA CLE VOYAGE EN PARAMETRE D'URL, parce que c'est ce que cette API
+    # impose. Elle ne doit donc jamais etre journalisee : voir
+    # _signaler(), qui ne consigne que le code et le message.
+    racine = (parametres.url_fournisseur or URL_GEMINI).rstrip("/")
     return (
         f"{racine}/models/{parametres.llm_modele}:{methode}"
         f"?key={parametres.llm_api_key}"
     )
+
+
+def _entetes() -> dict:
+    """Les en-tetes, cle d'authentification comprise s'il y a lieu."""
+    entetes = {"content-type": "application/json"}
+    if _anthropic():
+        entetes["x-api-key"] = parametres.llm_api_key
+        entetes["anthropic-version"] = VERSION_ANTHROPIC
+    return entetes
 
 
 def _signaler(reponse: httpx.Response | None) -> None:
@@ -256,10 +309,17 @@ def _signaler(reponse: httpx.Response | None) -> None:
 def _texte(charge: dict) -> str:
     """Recolle les fragments de texte d'une reponse.
 
-    Le modele peut repartir sa sortie sur plusieurs `parts` — et, sur
-    les modeles a raisonnement, y glisser des parties qui n'en sont pas
-    (signatures de pensee). On ne garde que ce qui porte du texte.
+    Le modele peut repartir sa sortie sur plusieurs blocs — et, sur les
+    modeles a raisonnement, y glisser des blocs qui n'en sont pas
+    (pensee, signatures). On ne garde que ce qui porte du texte.
     """
+    if _anthropic():
+        return "".join(
+            bloc.get("text", "")
+            for bloc in charge.get("content") or []
+            if bloc.get("type") == "text"
+        )
+
     candidats = charge.get("candidates") or []
     if not candidats:
         return ""
@@ -276,11 +336,45 @@ def _arret_fautif(charge: dict) -> str | None:
     faisait avorter des reponses parfaitement valides, au dernier
     fragment, apres les avoir affichees a l'utilisateur.
     """
+    if _anthropic():
+        motif = charge.get("stop_reason")
+        return motif if motif in ARRETS_FAUTIFS_ANTHROPIC else None
+
     candidats = charge.get("candidates") or []
     if not candidats:
         return None
     motif = candidats[0].get("finishReason")
     return motif if motif in ARRETS_FAUTIFS else None
+
+
+def _texte_du_fragment(charge: dict) -> str:
+    """Le texte porte par UN fragment de flux.
+
+    UN FLUX N'EST PAS UNE REPONSE DECOUPEE. Le premier protocole emet des
+    evenements typés — ouverture de bloc, increment, fin — dont seuls les
+    increments de texte portent de la prose. Lire ces fragments avec
+    _texte(), qui attend la forme complete, ne rendrait jamais rien : le
+    flux paraitrait muet, puis la reponse tomberait d'un bloc a la fin.
+    """
+    if not _anthropic():
+        return _texte(charge)
+
+    if charge.get("type") == "content_block_delta":
+        delta = charge.get("delta") or {}
+        if delta.get("type") == "text_delta":
+            return delta.get("text", "")
+    return ""
+
+
+def _arret_du_fragment(charge: dict) -> str | None:
+    """Le motif d'arret, lu la ou chaque protocole le place en flux."""
+    if not _anthropic():
+        return _arret_fautif(charge)
+
+    if charge.get("type") == "message_delta":
+        motif = (charge.get("delta") or {}).get("stop_reason")
+        return motif if motif in ARRETS_FAUTIFS_ANTHROPIC else None
+    return None
 
 
 def appeler_llm(
@@ -310,7 +404,7 @@ def appeler_llm(
         try:
             reponse = httpx.post(
                 _url("generateContent"),
-                headers={"content-type": "application/json"},
+                headers=_entetes(),
                 json=corps,
                 timeout=DELAI_APPEL,
             )
@@ -339,11 +433,16 @@ def appeler_llm(
         return repli
 
     charge = reponse.json()
-    # Hors flux, une reponse sans candidat est bien une anomalie : c'est
-    # l'unique message, et il ne porte rien.
-    motif = _arret_fautif(charge) or (
-        None if charge.get("candidates") else "aucun candidat"
-    )
+
+    # Hors flux, une reponse vide est bien une anomalie : c'est l'unique
+    # message, et il ne porte rien.
+    #
+    # ON JUGE SUR LE TEXTE EXTRAIT, PAS SUR UN CHAMP PARTICULIER. La
+    # version precedente cherchait `candidates`, qui n'existe que chez un
+    # des deux fournisseurs : apres bascule, toute reponse — pourtant
+    # parfaitement valide — etait rejetee comme « aucun candidat ».
+    texte = _texte(charge)
+    motif = _arret_fautif(charge) or (None if texte else "reponse vide")
     if motif:
         # Tronquee ou refusee par les classificateurs : le JSON est
         # incomplet, donc inexploitable. On refuse plutot que de rendre
@@ -352,7 +451,7 @@ def appeler_llm(
         return repli
 
     try:
-        return json.loads(_texte(charge))
+        return json.loads(texte)
     except json.JSONDecodeError:
         # Ne devrait pas arriver avec un schema impose.
         journal.error("Reponse non conforme au schema impose.")
@@ -387,15 +486,22 @@ def appeler_llm_flux(
     motif = None
 
     try:
+        # `alt=sse` demande un flux d'evenements ligne a ligne chez le
+        # second fournisseur. Sans lui, son API rend un tableau JSON d'un
+        # seul tenant : le streaming existerait sur le papier et
+        # l'utilisateur attendrait quand meme la reponse entiere. Le
+        # premier, lui, diffuse des qu'on pose `stream: true` dans le
+        # corps.
+        adresse = (
+            _url("messages")
+            if _anthropic()
+            else _url("streamGenerateContent") + "&alt=sse"
+        )
         with httpx.stream(
             "POST",
-            # `alt=sse` demande un flux d'evenements ligne a ligne. Sans
-            # lui, l'API rend un tableau JSON d'un seul tenant : le
-            # streaming existerait sur le papier et l'utilisateur
-            # attendrait quand meme la reponse entiere.
-            _url("streamGenerateContent") + "&alt=sse",
-            headers={"content-type": "application/json"},
-            json=_corps(systeme, utilisateur, schema),
+            adresse,
+            headers=_entetes(),
+            json=_corps(systeme, utilisateur, schema, flux=True),
             timeout=DELAI_APPEL,
         ) as flux:
             if flux.status_code >= 400:
@@ -415,8 +521,8 @@ def appeler_llm_flux(
                 except json.JSONDecodeError:
                     continue
 
-                brut += _texte(charge)
-                motif = _arret_fautif(charge) or motif
+                brut += _texte_du_fragment(charge)
+                motif = _arret_du_fragment(charge) or motif
 
                 partiel = extraire_reponse_partielle(brut)
                 # On n'emet que si le texte a AVANCE : un affichage qui

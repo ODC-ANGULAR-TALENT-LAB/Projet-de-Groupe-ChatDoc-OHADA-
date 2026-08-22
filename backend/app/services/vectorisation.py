@@ -30,9 +30,15 @@ from app.services.embeddings import (
 
 journal = logging.getLogger(__name__)
 
-# Les fournisseurs plafonnent la taille d'une requete ; 64 tient
-# largement sous la limite tout en amortissant les allers-retours.
-TAILLE_LOT = 64
+# Les fournisseurs plafonnent la taille d'une requete.
+#
+# SEIZE, ET NON SOIXANTE-QUATRE. La limite ne porte pas sur le nombre
+# d'appels mais sur le VOLUME de chacun : mesure sur le fournisseur en
+# service, un lot de 16 passe systematiquement, un lot de 32 echoue une
+# fois sur deux, et 64 echoue toujours. La vectorisation s'arretait donc
+# des le deuxieme lot, et le message — « quota depasse » — laissait
+# croire a un compte sans credit alors que le compte etait bon.
+TAILLE_LOT = 16
 
 # Reprise sur coupure de connexion a l'ecriture. Trois essais
 # suffisent : une base hebergee qui ferme une connexion en rouvre
