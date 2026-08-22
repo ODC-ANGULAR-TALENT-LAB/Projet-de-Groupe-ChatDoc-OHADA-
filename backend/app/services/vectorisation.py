@@ -15,9 +15,11 @@ que le lot en cours.
 from __future__ import annotations
 
 import logging
+import time
 
 import httpx
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
 from app.config import parametres
 from app.services.embeddings import calculer_embeddings, formater_vecteur
@@ -27,6 +29,25 @@ journal = logging.getLogger(__name__)
 # Les fournisseurs plafonnent la taille d'une requete ; 64 tient
 # largement sous la limite tout en amortissant les allers-retours.
 TAILLE_LOT = 64
+
+# Reprise sur coupure de connexion a l'ecriture. Trois essais
+# suffisent : une base hebergee qui ferme une connexion en rouvre
+# une aussitot, et au-dela l'incident n'est plus passager.
+TENTATIVES_ECRITURE = 3
+ATTENTE_ECRITURE = 2.0
+
+# Pause entre deux lots, POUR NE PAS DECLENCHER LE PLAFOND plutot que
+# pour s'en remettre. Envoyer les lots dos a dos saturait la fenetre par
+# minute du fournisseur des le deuxieme, et la vectorisation passait
+# alors plus de temps a patienter qu'a travailler.
+#
+# Deux secondes ne coutent que deux minutes sur un corpus de cinq mille
+# articles, et elles evitent des attentes de plusieurs minutes.
+#
+# Cette pause n'existe QUE sur le chemin de masse. La vectorisation
+# d'une question d'utilisateur passe par calculer_embeddings() sans
+# jamais traverser cette boucle.
+PAUSE_ENTRE_LOTS = 2.0
 
 
 class VectorisationImpossible(RuntimeError):
@@ -128,6 +149,9 @@ def vectoriser(
 
     traites = 0
     for debut in range(0, len(articles), TAILLE_LOT):
+        if debut and not simuler:
+            time.sleep(PAUSE_ENTRE_LOTS)
+
         lot = articles[debut : debut + TAILLE_LOT]
         textes = [texte_a_vectoriser(article) for article in lot]
 
@@ -147,10 +171,36 @@ def vectoriser(
                 "schema SQL, puis revectorise tout."
             )
 
-        with moteur.begin() as cx:
-            enregistrer_vecteurs(
-                cx, [(article["id"], v) for article, v in zip(lot, vecteurs)]
-            )
+        # L'ECRITURE EST REESSAYEE, PAS L'APPEL. A ce stade les vecteurs
+        # sont deja calcules et payes ; les perdre parce qu'une connexion
+        # a lache est le pire des gaspillages.
+        #
+        # Le cas s'est produit en conditions reelles : une base hebergee
+        # a l'autre bout du reseau ferme la connexion pendant qu'on lui
+        # pousse deux megaoctets d'un coup. La transaction est atomique,
+        # donc rejouer le lot entier est sans danger — soit il est
+        # enregistre, soit il ne l'est pas.
+        for tentative in range(TENTATIVES_ECRITURE):
+            try:
+                with moteur.begin() as cx:
+                    enregistrer_vecteurs(
+                        cx,
+                        [(article["id"], v) for article, v in zip(lot, vecteurs)],
+                    )
+                break
+            except OperationalError as erreur:
+                if tentative == TENTATIVES_ECRITURE - 1:
+                    raise VectorisationImpossible(
+                        f"La base a ferme la connexion : {erreur}\n"
+                        f"{traites} article(s) deja enregistres : relancer "
+                        "reprendra ou le traitement s'est arrete."
+                    ) from erreur
+                journal.warning(
+                    "Connexion perdue a l'ecriture, nouvelle tentative (%s/%s).",
+                    tentative + 2,
+                    TENTATIVES_ECRITURE,
+                )
+                time.sleep(ATTENTE_ECRITURE * (tentative + 1))
 
         traites += len(lot)
         if progression:

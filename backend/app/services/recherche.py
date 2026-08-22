@@ -27,6 +27,7 @@ questions, sans exception. D'ou la fonction pertinence() ci-dessous.
 from __future__ import annotations
 
 import logging
+import time
 
 import httpx
 from sqlalchemy import text
@@ -43,6 +44,20 @@ NB_CANDIDATS = 20
 # reference de la litterature ; elle attenue l'ecart entre les premiers
 # rangs, ce qui evite qu'une seule des deux listes impose son ordre.
 K_RRF = 60
+
+# Couverture vectorielle en deca de laquelle on ignore le signal
+# semantique. 90 % laisse passer les quelques articles qu'une
+# vectorisation en cours n'a pas encore atteints, sans accorder foi a un
+# corpus vectorise au quart.
+COUVERTURE_MINIMALE = 0.90
+
+# Duree de vie du cache de couverture. Une vectorisation dure des
+# minutes ou des heures ; cinq minutes de retard sont sans consequence,
+# et epargnent un comptage a chaque recherche.
+DUREE_CACHE_COUVERTURE = 300.0
+
+_couverture: float | None = None
+_couverture_calculee_le = 0.0
 
 journal = logging.getLogger(__name__)
 
@@ -186,6 +201,26 @@ def rechercher_detaille(
         liste_vect = rechercher_vectoriel(cx, vecteur, sigle) if vecteur else []
         liste_lex = rechercher_lexical(cx, question, sigle)
 
+    # UNE VECTORISATION PARTIELLE EST PIRE QU'AUCUNE.
+    #
+    # Des qu'un seul article porte un vecteur, la moitie vectorielle
+    # remonte quelque chose — mais seulement parmi les articles DEJA
+    # vectorises. Pour une question portant sur un texte qui ne l'est
+    # pas encore, elle rend donc les articles les moins mauvais du
+    # sous-ensemble disponible, et `pertinence()` mesure leur
+    # ressemblance plutot que celle des articles reellement pertinents,
+    # que seul le lexical a trouves.
+    #
+    # Sous le seuil, la question est alors REFUSEE alors que la
+    # recherche lexicale y repondait. C'est exactement l'etat d'un
+    # corpus en cours de vectorisation, qui peut durer des jours quand
+    # le fournisseur limite la cadence.
+    #
+    # On n'accorde donc du credit au signal vectoriel que si la
+    # couverture est quasi complete.
+    if liste_vect and couverture_vectorielle() < COUVERTURE_MINIMALE:
+        liste_vect = []
+
     # LE MODE SE JUGE SUR LE RESULTAT, PAS SUR LA QUESTION.
     #
     # Vectoriser la question ne sert a rien si le CORPUS ne l'est pas.
@@ -220,6 +255,43 @@ def pertinence(resultats: list[tuple[dict, float]]) -> float:
     if not resultats:
         return 0.0
     return max(article["score_vectoriel"] for article, _ in resultats)
+
+
+def couverture_vectorielle(forcer: bool = False) -> float:
+    """Part des articles en vigueur qui portent un vecteur, entre 0 et 1.
+
+    LE RESULTAT EST GARDE EN MEMOIRE. Cette proportion ne bouge qu'au
+    rythme des vectorisations, qui sont des operations hors ligne : la
+    recalculer a chaque recherche ajouterait un balayage de table sur le
+    chemin le plus chaud du produit, pour une valeur qui reste identique
+    pendant des heures.
+
+    `forcer` sert aux tests et au back-office, qui doivent voir l'effet
+    d'une vectorisation sans attendre l'expiration du cache.
+    """
+    global _couverture, _couverture_calculee_le
+
+    maintenant = time.monotonic()
+    if (
+        not forcer
+        and _couverture is not None
+        and maintenant - _couverture_calculee_le < DUREE_CACHE_COUVERTURE
+    ):
+        return _couverture
+
+    with moteur.connect() as cx:
+        ligne = cx.execute(
+            text(
+                "SELECT COUNT(*) AS total, "
+                "       COUNT(embedding) AS vectorises "
+                "FROM article WHERE date_abrogation IS NULL"
+            )
+        ).mappings().one()
+
+    total = ligne["total"] or 0
+    _couverture = (ligne["vectorises"] / total) if total else 0.0
+    _couverture_calculee_le = maintenant
+    return _couverture
 
 
 def corpus_est_vectorise() -> bool:

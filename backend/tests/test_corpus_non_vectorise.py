@@ -52,6 +52,11 @@ def sans_base(monkeypatch):
     monkeypatch.setattr(
         recherche, "rechercher_lexical", lambda cx, q, sigle: list(LEXICAUX)
     )
+    # Corpus entierement vectorise par defaut : c'est l'etat nominal, et
+    # les cas qui testent une couverture partielle le redisent
+    # explicitement. Sans cette valeur, la vraie fonction interrogerait
+    # la base — que cette fixture a justement neutralisee.
+    monkeypatch.setattr(recherche, "couverture_vectorielle", lambda: 1.0)
 
 
 def test_corpus_sans_vecteurs_bascule_en_lexical_seul(sans_base, monkeypatch):
@@ -87,6 +92,52 @@ def test_corpus_vectorise_reste_en_hybride(sans_base, monkeypatch):
 
     assert mode == "hybride"
     assert recherche.pertinence(resultats) == pytest.approx(0.78)
+
+
+def test_couverture_partielle_ignore_le_signal_vectoriel(sans_base, monkeypatch):
+    """UNE VECTORISATION PARTIELLE EST PIRE QU'AUCUNE.
+
+    Des qu'un article porte un vecteur, la moitie vectorielle remonte
+    quelque chose — mais seulement parmi les articles deja vectorises.
+    Pour une question portant sur un texte encore absent de ce
+    sous-ensemble, `pertinence()` mesure donc la ressemblance des
+    articles les moins mauvais du lot disponible, et non celle des
+    articles justes, que seul le lexical a trouves.
+
+    Sous le seuil, la question est alors REFUSEE alors que la recherche
+    lexicale y repondait. Le cas n'a rien de theorique : il decrit tout
+    corpus en cours de vectorisation, ce qui peut durer des jours quand
+    le fournisseur limite la cadence.
+    """
+    monkeypatch.setattr(
+        recherche, "rechercher_vectoriel", lambda cx, v, s: list(VECTORIELS)
+    )
+    monkeypatch.setattr(recherche, "couverture_vectorielle", lambda: 0.15)
+
+    resultats, mode = recherche.rechercher_detaille("mentions du registre")
+
+    assert mode == "lexical_seul"
+    assert recherche.pertinence(resultats) == 0.0, (
+        "le score vectoriel d'un corpus incomplet ne doit pas servir "
+        "a decider d'un refus"
+    )
+
+
+def test_couverture_suffisante_retablit_l_hybride(sans_base, monkeypatch):
+    """Le seuil ne doit pas exiger la perfection.
+
+    Quelques articles non vectorises — un chargement recent, un texte
+    ajoute la veille — ne doivent pas priver tout le produit de sa
+    recherche semantique.
+    """
+    monkeypatch.setattr(
+        recherche, "rechercher_vectoriel", lambda cx, v, s: list(VECTORIELS)
+    )
+    monkeypatch.setattr(recherche, "couverture_vectorielle", lambda: 0.97)
+
+    _, mode = recherche.rechercher_detaille("mentions du registre")
+
+    assert mode == "hybride"
 
 
 def test_fournisseur_indisponible_reste_en_lexical_seul(sans_base, monkeypatch):

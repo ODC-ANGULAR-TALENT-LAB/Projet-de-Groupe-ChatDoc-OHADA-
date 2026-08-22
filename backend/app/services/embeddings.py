@@ -24,10 +24,18 @@ journal = logging.getLogger(__name__)
 
 DELAI_APPEL = 60
 
-# Reprise sur depassement de cadence. Six essais, d'une attente doublant
-# a chaque fois a partir de 4 s, laissent au plafond par minute le temps
-# de se vider — environ quatre minutes au total dans le pire cas.
-TENTATIVES_DEBIT = 6
+# Reprise sur depassement de cadence.
+#
+# HUIT ESSAIS, PAS SIX. Le plafond de l'offre gratuite se compte PAR
+# MINUTE : six essais couvraient 124 secondes, ce qui retombait parfois
+# dans la meme fenetre et faisait echouer la vectorisation pour de bon.
+# Huit essais portent l'attente cumulee a plus de huit minutes, soit
+# plusieurs fenetres — le plafond a le temps de se vider.
+#
+# Ces attentes ne penalisent que la vectorisation en masse. Une question
+# d'utilisateur ne vectorise qu'une phrase et ne rencontre ce plafond
+# que si le service est deja sature.
+TENTATIVES_DEBIT = 8
 ATTENTE_DEBIT = 4.0
 
 
