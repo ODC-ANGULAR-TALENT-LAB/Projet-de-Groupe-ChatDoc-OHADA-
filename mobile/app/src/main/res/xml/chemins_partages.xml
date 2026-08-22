@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chemins que le FileProvider peut partager avec le navigateur.
+     Uniquement le cache de l'application, et uniquement pour l'image
+     d'attente : la Trusted Web Activity n'a rien d'autre a lui passer. -->
+<paths>
+    <cache-path name="attente" path="." />
+</paths>

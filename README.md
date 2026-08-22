@@ -106,7 +106,9 @@ db/
   02_index_vectoriel.sql   index HNSW, à jouer en fin de phase B
   11_*.sql … 15_*.sql   migrations, jouées au démarrage du conteneur
 evaluation/         jeu des 50 questions (phase D)
-mobile/             coquille Android (WebView) vers le site déployé
+mobile/             application Android (Trusted Web Activity)
+  app/build.gradle.kts  URL et hôte injectés, signature depuis l'environnement
+frontend/public/.well-known/assetlinks.json  lie le domaine à l'APK signé
 .github/workflows/
   apk.yml           construit et publie l'APK en release
   reveil.yml        maintient l'API éveillée aux heures ouvrables
@@ -720,8 +722,10 @@ trace côté serveur.
 
 ## Application Android
 
-`mobile/` — une coquille Android qui ouvre le site déployé, publiée en
-release GitHub par `.github/workflows/apk.yml`.
+`mobile/` — une **Trusted Web Activity** : le site déployé s'affiche dans
+Chrome lui-même, sans barre d'adresse. Construite par
+`.github/workflows/apk.yml`, servie par le site
+(`/chatdocs-ohada.apk`) et publiée en release GitHub comme miroir.
 
 **Elle ne réimplémente rien.** Le corpus, la recherche et l'assistant
 restent côté web : une correction du site profite immédiatement à
@@ -755,26 +759,74 @@ https://github.com/ODC-ANGULAR-TALENT-LAB/Projet-de-Groupe-ChatDoc-OHADA-/releas
 
 C'est elle que porte le bandeau de la page d'accueil.
 
-### Signature
+### Signature — obligatoire depuis le passage en TWA
 
-Un APK non signé ne s'installe pas. Sans secrets configurés, le
-workflow signe avec la **clé de débogage** — installable, mais ce n'est
-pas une version de production, et le résumé le dit. Pour signer en
-release, définir `ANDROID_KEYSTORE_BASE64`,
-`ANDROID_KEYSTORE_MOT_DE_PASSE` et `ANDROID_CLE_ALIAS`.
+Android compare l'empreinte du certificat de l'APK à celle que le site
+déclare dans `/.well-known/assetlinks.json`. Une clé de débogage — tirée
+différemment sur chaque machine — ne peut correspondre à rien :
+l'application s'ouvrirait avec la barre d'adresse de Chrome, ce que la
+TWA sert précisément à éviter. Le workflow **s'arrête** donc si la clé
+manque, plutôt que de publier un APK qui paraît fonctionner.
 
-À l'installation, Android affichera un avertissement « source
-inconnue » : c'est le comportement normal hors Play Store.
+**Créer la clé, une seule fois.** Elle vaut pour toute la vie de
+l'application : la perdre oblige à publier sous une autre identité, et
+les utilisateurs devront désinstaller puis réinstaller.
 
-### Pourquoi un WebView et non une Trusted Web Activity
+```bash
+keytool -genkeypair -v   -keystore chatdocs.jks   -alias chatdocs   -keyalg RSA -keysize 4096 -validity 10000
+```
 
-Une TWA supprimerait la barre d'adresse, mais elle exige un fichier
-`assetlinks.json` servi par le domaine **et** une empreinte de clé
-stable. Tant que le domaine n'est pas figé, la TWA afficherait
-justement cette barre. Comme le WebView gère les *service workers*, la
-bibliothèque reste consultable hors ligne — l'avantage principal de la
-TWA disparaît. Le passage en TWA reste possible une fois le domaine
-arrêté.
+`keytool` est fourni avec le JDK. La commande demande un mot de passe,
+puis quelques champs d'identité — seul le premier, « nom et prénom »,
+apparaîtra ; les autres peuvent rester vides.
+
+**Poser les secrets** dans GitHub → *Settings* → *Secrets and variables*
+→ *Actions* :
+
+| Secret | Valeur |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -w0 chatdocs.jks` (une seule ligne) |
+| `ANDROID_KEYSTORE_MOT_DE_PASSE` | le mot de passe saisi ci-dessus |
+| `ANDROID_CLE_ALIAS` | `chatdocs` |
+| `ANDROID_CLE_MOT_DE_PASSE` | idem, sauf si vous en avez choisi un autre |
+
+Sous Windows, `base64 -w0` n'existe pas ; utiliser :
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("chatdocs.jks")) > cle.txt
+```
+
+**Garder le fichier `chatdocs.jks` hors du dépôt**, et en conserver une
+copie ailleurs que sur la machine de développement.
+
+L'empreinte, elle, n'est jamais saisie à la main : le workflow la lit
+dans l'APK qu'il vient de signer, écrit `assetlinks.json` et le commite.
+C'est le seul moyen d'être certain qu'elle correspond à ce qui est
+réellement publié.
+
+### Pourquoi une Trusted Web Activity
+
+Le site s'affiche dans **Chrome lui-même**, sans barre d'adresse dès lors
+que le domaine confirme le lien.
+
+**Ce qui a imposé ce choix.** Google refuse de s'authentifier depuis un
+WebView embarqué — sans cette règle, n'importe quelle application
+pourrait afficher une page de connexion Google et lire le mot de passe au
+passage. Le bouton ne s'affichait donc jamais dans l'application, alors
+qu'il fonctionnait dans le navigateur du même téléphone. Une TWA est un
+vrai Chrome : Google le traite comme tel.
+
+**Ce qu'on gagne au passage.** Les téléchargements et l'export PDF sont
+gérés par le navigateur, sans le pont JavaScript qu'il fallait écrire et
+protéger de la minification. Le moteur de rendu se met à jour avec
+Chrome, plus avec le système — ce qui compte sur un parc de téléphones
+anciens. Et le *service worker* continue de fonctionner : la
+bibliothèque reste consultable hors ligne.
+
+**Ce qu'on perd.** L'écran d'attente et le message hors ligne sur mesure
+laissent place à ceux de Chrome. Si aucun navigateur de l'appareil ne
+sait ouvrir une TWA, la bibliothèque retombe d'elle-même sur un onglet
+personnalisé — avec barre d'adresse, mais fonctionnel.
 
 ## Conditions d'utilisation
 

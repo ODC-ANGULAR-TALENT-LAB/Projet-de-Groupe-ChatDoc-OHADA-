@@ -4,18 +4,24 @@
     <!-- Le seul droit demandé, et il est indispensable : l'application
          n'affiche rien d'autre qu'un site distant. Ne rien demander de
          plus est ce qui permet à quelqu'un d'installer sans hésiter un
-         APK reçu hors magasin. -->
+         APK reçu hors magasin.
+
+         LE DROIT D'ÉCRITURE A DISPARU avec le WebView : c'est désormais
+         le navigateur qui gère les téléchargements, avec ses propres
+         permissions. Une application qui demande moins est une
+         application plus facile à faire installer. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Uniquement pour Android 9 et anterieur, et uniquement pour
-         deposer un export PDF dans le dossier Telechargements. A partir
-         d'Android 10 le stockage cloisonne rend ce droit inutile : on
-         passe par MediaStore, qui n'en demande aucun. Le plafonner ici
-         evite qu'un telephone recent affiche une demande de permission
-         que l'application n'utiliserait jamais. -->
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
+    <!-- Android 11 et suivants cloisonnent la visibilité des applications
+         installées. Sans cette déclaration, la bibliothèque ne TROUVE PAS
+         les navigateurs présents sur l'appareil, conclut qu'aucun ne sait
+         ouvrir une Trusted Web Activity, et se rabat sur un simple onglet
+         personnalisé — barre d'adresse comprise. -->
+    <queries>
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -26,17 +32,85 @@
         android:theme="@style/Theme.ChatDocs"
         android:usesCleartextTraffic="false">
 
+        <!-- TRUSTED WEB ACTIVITY, ET NON PLUS UN WEBVIEW.
+             Le site s'affiche dans Chrome lui-même, sans barre d'adresse
+             dès lors que le domaine confirme le lien par
+             /.well-known/assetlinks.json.
+
+             POURQUOI CE CHANGEMENT. Google refuse de s'authentifier
+             depuis un WebView embarqué — sans cette règle, n'importe
+             quelle application pourrait afficher une page de connexion
+             Google et lire le mot de passe au passage. Le bouton ne
+             s'affichait donc jamais dans l'application, alors qu'il
+             fonctionnait dans le navigateur du même téléphone. Ici,
+             c'est un vrai Chrome : Google le traite comme tel.
+
+             CE QU'ON GAGNE AU PASSAGE : les téléchargements et l'export
+             PDF sont gérés par le navigateur, sans le pont JavaScript
+             qu'il fallait écrire ; et le moteur de rendu se met à jour
+             avec Chrome plutôt qu'avec le système. -->
         <activity
-            android:name=".ActivitePrincipale"
+            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
             android:exported="true"
-            android:label="@string/nom_application"
-            android:launchMode="singleTask"
-            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout">
+            android:label="@string/nom_application">
+
+            <meta-data
+                android:name="android.support.customtabs.trusted.DEFAULT_URL"
+                android:value="@string/url_application" />
+
+            <!-- Barre d'état et de navigation aux couleurs du site : sans
+                 cela, la TWA les laisse blanches et la jonction avec
+                 l'en-tête bleu nuit se voit. -->
+            <meta-data
+                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
+                android:resource="@color/bleu_nuit" />
+            <meta-data
+                android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR"
+                android:resource="@color/papier" />
+
+            <!-- Écran d'attente pendant que le navigateur démarre. Sans
+                 lui, l'application s'ouvre sur du blanc pendant une
+                 seconde, ce qui se lit comme un plantage. -->
+            <meta-data
+                android:name="android.support.customtabs.trusted.SPLASH_IMAGE_DRAWABLE"
+                android:resource="@mipmap/ic_launcher" />
+            <meta-data
+                android:name="android.support.customtabs.trusted.SPLASH_SCREEN_BACKGROUND_COLOR"
+                android:resource="@color/papier" />
+            <meta-data
+                android:name="androidx.browser.trusted.FILE_PROVIDER_AUTHORITY"
+                android:value="${applicationId}.fournisseur" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- L'application s'ouvre aussi sur un lien vers le site :
+                 un article partagé par message atterrit dans
+                 l'application plutôt que dans le navigateur.
+                 `autoVerify` demande à Android de contrôler
+                 assetlinks.json à l'installation. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="@string/hote_application" />
+            </intent-filter>
         </activity>
+
+        <!-- Requis par la bibliothèque pour partager l'image d'attente
+             avec le navigateur, qui est un autre processus. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fournisseur"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/chemins_partages" />
+        </provider>
     </application>
 </manifest>

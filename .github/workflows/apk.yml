@@ -55,39 +55,76 @@ jobs:
           echo "valeur=$URL" >> "$GITHUB_OUTPUT"
           echo "### APK construit pour $URL" >> "$GITHUB_STEP_SUMMARY"
 
+      # LA SIGNATURE N'EST PLUS OPTIONNELLE.
+      #
+      # Depuis le passage en Trusted Web Activity, Android compare
+      # l'empreinte du certificat de l'APK a celle declaree par le site
+      # dans /.well-known/assetlinks.json. Une cle de debogage — engendree
+      # differemment sur chaque machine — ne peut correspondre a rien :
+      # l'application s'ouvrirait avec la barre d'adresse de Chrome, ce
+      # qui est exactement ce que la TWA sert a eviter.
+      #
+      # On s'arrete donc franchement plutot que de publier un APK qui
+      # PARAIT fonctionner tout en ayant perdu son interet.
+      - name: Verifier la cle de signature
+        run: |
+          if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 absent. Une Trusted Web"
+            echo "::error::Activity exige une cle stable : sans elle, le domaine"
+            echo "::error::ne peut pas verifier l'application et la barre"
+            echo "::error::d'adresse reste affichee. Voir le README, section"
+            echo "::error::« Application Android »."
+            exit 1
+          fi
+
+      - name: Preparer le magasin de cles
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/cle.jks"
+          echo "ANDROID_KEYSTORE_CHEMIN=$RUNNER_TEMP/cle.jks" >> "$GITHUB_ENV"
+
       - name: Construire
         working-directory: mobile
-        run: gradle assembleRelease -PurlApplication="${{ steps.url.outputs.valeur }}" --no-daemon
-
-      # UN APK NON SIGNE NE S'INSTALLE PAS. Deux cas, et le resume dit
-      # lequel s'est produit : un APK de debogage distribue en croyant
-      # tenir une version de production serait une mauvaise surprise.
-      - name: Signer
-        id: signature
+        env:
+          ANDROID_KEYSTORE_CHEMIN: ${{ env.ANDROID_KEYSTORE_CHEMIN }}
+          ANDROID_KEYSTORE_MOT_DE_PASSE: ${{ secrets.ANDROID_KEYSTORE_MOT_DE_PASSE }}
+          ANDROID_CLE_ALIAS: ${{ secrets.ANDROID_CLE_ALIAS }}
+          ANDROID_CLE_MOT_DE_PASSE: ${{ secrets.ANDROID_CLE_MOT_DE_PASSE }}
         run: |
-          NON_SIGNE=$(find mobile/app/build/outputs/apk/release -name "*.apk" | head -1)
-          if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
-            echo "signe=non" >> "$GITHUB_OUTPUT"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "**APK signe avec la cle de debogage.**" >> "$GITHUB_STEP_SUMMARY"
-            echo "Installable, mais ce n'est pas une version de production." >> "$GITHUB_STEP_SUMMARY"
-            echo "Pour signer en release : definissez les secrets ANDROID_KEYSTORE_BASE64," >> "$GITHUB_STEP_SUMMARY"
-            echo "ANDROID_KEYSTORE_MOT_DE_PASSE et ANDROID_CLE_ALIAS." >> "$GITHUB_STEP_SUMMARY"
-            cd mobile && gradle assembleDebug -PurlApplication="${{ steps.url.outputs.valeur }}" --no-daemon
-            cp app/build/outputs/apk/debug/app-debug.apk ../chatdocs-ohada.apk
-          else
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > cle.jks
-            "$ANDROID_HOME/build-tools/34.0.0/apksigner" sign \
-              --ks cle.jks \
-              --ks-pass "pass:${{ secrets.ANDROID_KEYSTORE_MOT_DE_PASSE }}" \
-              --ks-key-alias "${{ secrets.ANDROID_CLE_ALIAS }}" \
-              --out chatdocs-ohada.apk \
-              "$NON_SIGNE"
-            rm -f cle.jks
-            echo "signe=oui" >> "$GITHUB_OUTPUT"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "**APK signe en release.**" >> "$GITHUB_STEP_SUMMARY"
+          gradle assembleRelease -PurlApplication="${{ steps.url.outputs.valeur }}" --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk ../chatdocs-ohada.apk
+
+      # L'EMPREINTE EST LUE DANS L'APK CONSTRUIT, jamais saisie a la main.
+      #
+      # C'est le seul moyen d'etre certain qu'elle correspond a ce qui est
+      # reellement publie. Une empreinte recopiee dans un fichier se
+      # desynchronise au premier changement de cle, et le symptome — une
+      # barre d'adresse qui reapparait — ne designe pas sa cause.
+      - name: Extraire l'empreinte et publier assetlinks.json
+        id: empreinte
+        run: |
+          SHA=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify                   --print-certs chatdocs-ohada.apk                 | grep -i "SHA-256 digest" | head -1                 | sed 's/.*: *//'                 | tr -d ' ' | tr 'a-f' 'A-F'                 | sed 's/../&:/g; s/:$//')
+          if [ -z "$SHA" ]; then
+            echo "::error::Empreinte SHA-256 introuvable dans l'APK signe."
+            exit 1
           fi
+          echo "  empreinte : $SHA"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+          mkdir -p frontend/public/.well-known
+          cat > frontend/public/.well-known/assetlinks.json <<JSON
+          [
+            {
+              "relation": ["delegate_permission/common.handle_all_urls"],
+              "target": {
+                "namespace": "android_app",
+                "package_name": "cm.chatdocs.ohada",
+                "sha256_cert_fingerprints": ["$SHA"]
+              }
+            }
+          ]
+          JSON
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**APK signe en release.** Empreinte \`$SHA\`" >> "$GITHUB_STEP_SUMMARY"
 
       # LE SITE SERT L'APK LUI-MEME, et ce fichier doit donc suivre
       # chaque construction. Le lien du bandeau pointait auparavant vers
@@ -101,17 +138,17 @@ jobs:
       - name: Deposer l'APK dans le site
         run: |
           cp chatdocs-ohada.apk frontend/public/chatdocs-ohada.apk
-          if git diff --quiet -- frontend/public/chatdocs-ohada.apk; then
+          if git diff --quiet -- frontend/public/chatdocs-ohada.apk frontend/public/.well-known/assetlinks.json; then
             echo "APK identique a celui deja publie : rien a commiter."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add frontend/public/chatdocs-ohada.apk
+          git add frontend/public/chatdocs-ohada.apk frontend/public/.well-known/assetlinks.json
           # Le workflow ne se declenche que manuellement ou sur un tag :
           # ce commit ne peut donc pas le relancer en boucle. Il declenche
           # en revanche le redeploiement du site, ce qui est le but.
-          git commit -m "APK : mettre a jour le fichier servi par le site"
+          git commit -m "APK : mettre a jour le fichier et son empreinte"
           git push
 
       - name: Publier
@@ -133,6 +170,6 @@ jobs:
             du Play Store. Autorisez l'installation depuis votre
             navigateur, puis ouvrez le fichier telecharge.
 
-            Signature : ${{ steps.signature.outputs.signe == 'oui' && 'release' || 'debogage (essais uniquement)' }}
+            Signature : release, empreinte `${{ steps.empreinte.outputs.sha }}`
           files: chatdocs-ohada.apk
           make_latest: true

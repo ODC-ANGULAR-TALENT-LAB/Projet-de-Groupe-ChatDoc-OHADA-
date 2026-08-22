@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Palette « Lex-Sovereign », identique au site. Une teinte differente
+     ferait paraitre l'application etrangere au service qu'elle ouvre. -->
+<resources>
+    <color name="bleu_nuit">#1B2A4A</color>
+    <color name="papier">#F4F2EC</color>
+</resources>

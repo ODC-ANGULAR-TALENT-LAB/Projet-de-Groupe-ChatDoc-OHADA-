@@ -190,6 +190,18 @@ services:
     # n'apporterait qu'un gain marginal contre un risque certain.
 
     headers:
+      # LE FICHIER QUI LIE LE SITE A L'APPLICATION ANDROID.
+      #
+      # Android le telecharge a l'installation pour verifier que
+      # l'application a bien le droit d'ouvrir ce domaine sans barre
+      # d'adresse. Il exige `application/json` : servi autrement, la
+      # verification echoue en silence et la Trusted Web Activity se
+      # degrade en simple onglet de navigateur — exactement ce qu'elle
+      # sert a eviter, et sans le moindre message.
+      - path: /.well-known/assetlinks.json
+        name: Content-Type
+        value: application/json
+
       # TYPE MIME DE L'APK, DECLARE EXPLICITEMENT.
       #
       # Servi en `application/octet-stream` ou pire en `text/html`,
