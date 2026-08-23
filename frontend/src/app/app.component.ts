@@ -324,6 +324,27 @@ const DESTINATIONS: Destination[] = [
       >
         <div class="feuille-poignee" aria-hidden="true"></div>
 
+        <!-- L'IDENTITE DE LA SESSION, SUR TELEPHONE AUSSI.
+             L'avatar ne vivait que dans la barre latérale, masquée sous
+             1024 px : sur téléphone, rien ne disait à quel compte on
+             était connecté, et la photo du compte Google n'apparaissait
+             nulle part. Le passage de l'application Android en Trusted
+             Web Activity l'a rendu visible — c'est bien le format
+             mobile qui s'affiche, et il lui manquait cette pièce. -->
+        @if (auth.connecte() && profils.profil(); as moi) {
+          <a class="feuille-moi" routerLink="/parametres" (click)="fermerMenu()">
+            @if (profils.urlPhoto(moi); as url) {
+              <img [src]="url" alt="" referrerpolicy="no-referrer" />
+            } @else {
+              <span class="initiales" aria-hidden="true">{{ moi.initiales }}</span>
+            }
+            <span class="feuille-moi-texte">
+              <strong>{{ moi.prenom || moi.email }}</strong>
+              <small>Voir mon profil</small>
+            </span>
+          </a>
+        }
+
         @if (destinationsMenu().length) {
           <p class="feuille-titre">Navigation</p>
           <div class="feuille-liens">
@@ -886,6 +907,57 @@ const DESTINATIONS: Destination[] = [
       margin: 0 auto var(--e2);
       background: var(--bordure);
       border-radius: 999px;
+    }
+
+    /* L'identité en tête de feuille : c'est la première chose qu'on
+       vient vérifier quand on ouvre ce menu sur téléphone. */
+    .feuille-moi {
+      display: flex;
+      align-items: center;
+      gap: var(--e3);
+      min-height: 44px;
+      padding: var(--e2) var(--e1);
+      color: var(--bleu-nuit);
+      text-decoration: none;
+      border-bottom: 1px solid var(--bordure);
+
+      img,
+      .initiales {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .initiales {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bleu-nuit);
+        color: var(--papier);
+        font-size: var(--t-sm);
+        font-weight: 600;
+      }
+    }
+
+    .feuille-moi-texte {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+
+      strong {
+        /* Une adresse longue ne doit pas pousser la mise en page hors
+           de l'écran : elle se coupe plutôt que de tout décaler. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      small {
+        font-size: var(--t-xs);
+        color: var(--gris-texte);
+      }
     }
 
     .feuille-titre {
