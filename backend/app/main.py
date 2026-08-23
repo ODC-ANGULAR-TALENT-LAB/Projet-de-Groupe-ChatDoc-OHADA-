@@ -84,6 +84,56 @@ def _alerter_origines_injoignables() -> None:
         )
 
 
+SECRET_PAR_DEFAUT = "a_changer_imperativement"
+
+# RFC 7518 §3.2 : pour HS256, la cle doit valoir au moins la taille de
+# la sortie de la fonction de hachage, soit 32 octets. En dessous, la
+# recherche exhaustive redevient envisageable.
+LONGUEUR_SECRET_MINIMALE = 32
+
+
+def _verifier_secret_jwt() -> None:
+    """Refuse de demarrer en production avec un secret de session faible.
+
+    LE DEFAUT DU DEPOT EST PUBLIC. « a_changer_imperativement » est
+    ecrit dans config.py, lisible par quiconque ouvre le depot : deploye
+    tel quel, n'importe qui peut forger un jeton pour n'importe quel
+    compte, administration comprise. Aucune autre protection ne tient
+    ensuite — mot de passe, limitation des tentatives, controle des
+    roles sont tous contournes d'un coup.
+
+    ON ARRETE LE SERVICE PLUTOT QUE DE JOURNALISER UN AVERTISSEMENT.
+    Une API qui demarre en signalant discretement qu'elle n'est pas sure
+    reste en ligne pendant des mois : le message defile une fois, puis
+    plus personne ne le voit. Un demarrage qui echoue se corrige dans
+    l'heure — et l'hebergeur garde la version precedente en service le
+    temps qu'on s'en occupe.
+
+    En developpement on laisse passer : imposer un secret fort pour
+    lancer les tests ferait perdre du temps a chaque personne qui clone
+    le depot, sans rien proteger.
+    """
+    if not parametres.production:
+        return
+
+    secret = (parametres.jwt_secret or "").strip()
+    if secret == SECRET_PAR_DEFAUT:
+        raise RuntimeError(
+            "JWT_SECRET porte encore la valeur d'exemple du depot, qui est "
+            "publique. Toute personne ayant lu le code peut forger un jeton "
+            "de session pour n'importe quel compte. Definissez JWT_SECRET "
+            "dans l'environnement de l'hebergeur."
+        )
+    if len(secret.encode("utf-8")) < LONGUEUR_SECRET_MINIMALE:
+        raise RuntimeError(
+            f"JWT_SECRET fait {len(secret.encode('utf-8'))} octets ; il en "
+            f"faut au moins {LONGUEUR_SECRET_MINIMALE} pour HS256 "
+            "(RFC 7518 §3.2). Un secret plus court se retrouve par "
+            "recherche exhaustive."
+        )
+
+
+_verifier_secret_jwt()
 _alerter_origines_injoignables()
 
 # CORS restreint aux origines declarees. En production, une seule :

@@ -52,7 +52,21 @@ email-validator==2.3.0    # requis par pydantic.EmailStr
 # Voir app/services/llm.py.
 
 # --- Securite (phase G) ----------------------------------------------
-python-jose[cryptography]==3.5.0
+# PyJWT PLUTOT QUE python-jose. Le second tire `ecdsa`, une bibliotheque
+# de signature en Python pur que pip-audit signale (PYSEC-2026-1325) et
+# dont les auteurs indiquent eux-memes qu'elle n'offre aucune protection
+# contre les attaques par mesure du temps.
+#
+# Le projet ne signe qu'en HS256 — un secret partage, aucune courbe
+# elliptique — donc ce code n'etait jamais exerce. Il etait installe
+# quand meme, et une dependance vulnerable qu'on n'utilise pas reste une
+# dependance vulnerable : elle grossit l'image, apparait dans tous les
+# audits, et deviendra un chemin d'attaque le jour ou quelqu'un ajoutera
+# un algorithme asymetrique sans y penser.
+#
+# PyJWT couvre le meme besoin, est activement maintenu, et n'apporte
+# aucune dependance transitive de signature.
+PyJWT==2.13.0
 bcrypt==5.0.0             # directement, sans passlib : voir services/securite.py
 google-auth==2.56.3       # verification des jetons d'identite Google
 requests==2.34.2          # exige par google.auth.transport.requests

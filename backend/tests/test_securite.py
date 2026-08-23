@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 
 import pytest
-from jose import jwt
+import jwt
 
 from app.config import parametres
 from app.services.securite import ALGORITHME, creer_jeton, hacher, lire_jeton, verifier

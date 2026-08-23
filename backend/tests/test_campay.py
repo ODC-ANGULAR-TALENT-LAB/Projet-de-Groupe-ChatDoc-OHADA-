@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
-from jose import jwt
+import jwt
 from sqlalchemy import text
 
 from app.config import parametres

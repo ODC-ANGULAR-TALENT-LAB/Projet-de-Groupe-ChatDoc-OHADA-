@@ -17,7 +17,8 @@ import datetime
 import hashlib
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWTError
 
 from app.config import parametres
 
@@ -72,5 +73,5 @@ def lire_jeton(jeton: str) -> int | None:
     try:
         charge = jwt.decode(jeton, parametres.jwt_secret, algorithms=[ALGORITHME])
         return int(charge["sub"])
-    except (JWTError, KeyError, ValueError):
+    except (PyJWTError, KeyError, ValueError):
         return None

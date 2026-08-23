@@ -40,7 +40,13 @@ WORKDIR /app
 # Les dependances d'abord : cette couche ne se reconstruit que si
 # requirements.txt change.
 COPY backend/requirements.txt ./backend/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
+# `setuptools` est mis a jour AVEC pip. Il n'est pas dans
+# requirements.txt — ce n'est pas une dependance de l'application mais un
+# outil de construction — et l'image de base en livre une version que
+# pip-audit signale (PYSEC-2025-49 et suivants). Il n'est pas exerce a
+# l'execution, mais il figure dans l'image, donc dans tout audit de
+# celle-ci.
+RUN pip install --no-cache-dir --upgrade pip setuptools \
     && pip install --no-cache-dir -r backend/requirements.txt
 
 COPY backend/app ./backend/app

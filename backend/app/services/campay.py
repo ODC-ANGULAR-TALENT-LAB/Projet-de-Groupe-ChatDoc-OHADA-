@@ -34,7 +34,8 @@ import threading
 import time
 
 import httpx
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWTError
 
 from app.config import parametres
 
@@ -244,6 +245,6 @@ def signature_valide(signature: str) -> bool:
     try:
         jwt.decode(signature, cle, algorithms=["HS256"])
         return True
-    except JWTError:
+    except PyJWTError:
         journal.warning("Rappel CamPay rejete : signature invalide.")
         return False

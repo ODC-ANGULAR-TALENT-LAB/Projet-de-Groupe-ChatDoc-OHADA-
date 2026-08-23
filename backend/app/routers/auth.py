@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from app.dependances import utilisateur_courant
 from app.services.forfaits import credits_du_plan
 from app.models import Utilisateur
 from app.schemas import Identifiants, Inscription, Jeton, JetonGoogle, Quota
+from app.services.cadence import effacer, enregistrer_echec, secondes_restantes
 from app.services.google import JetonGoogleInvalide, verifier_jeton
 from app.services.profil import ProfilRefuse, nettoyer_prenom
 from app.services.securite import creer_jeton, hacher, verifier
@@ -99,8 +100,45 @@ def _refuser_si_suspendu(utilisateur: Utilisateur) -> None:
     raise HTTPException(status.HTTP_403_FORBIDDEN, detail)
 
 
+def _cles_de_cadence(requete: Request, email: str) -> list[str]:
+    """Ce sur quoi on compte les echecs : le compte, et l'origine.
+
+    L'ADRESSE VIENT DE `client.host`, PAS D'UN EN-TETE. `X-Forwarded-For`
+    est fourni par l'appelant et se falsifie d'une ligne : s'y fier
+    permettrait de remettre son propre compteur a zero a chaque
+    tentative, ce qui annulerait la protection tout en donnant
+    l'impression qu'elle existe.
+
+    C'est uvicorn qui traduit `X-Forwarded-For` en `client.host`, et
+    seulement s'il est lance avec `--proxy-headers` — ce que fait
+    scripts/demarrer_conteneur.sh. Sans ce drapeau, le conteneur ne
+    verrait que l'adresse du mandataire de l'hebergeur : tous les
+    visiteurs partageraient un compteur unique, et cinq echecs par cinq
+    personnes differentes fermeraient le service a tout le monde.
+    """
+    origine = requete.client.host if requete.client else "inconnue"
+    return [f"compte:{email.lower()}", f"origine:{origine}"]
+
+
 @routeur.post("/auth/connexion")
-def connexion(corps: Identifiants, db: Session = Depends(get_db)) -> Jeton:
+def connexion(
+    corps: Identifiants, requete: Request, db: Session = Depends(get_db)
+) -> Jeton:
+    cles = _cles_de_cadence(requete, corps.email)
+
+    # LE REFUS TOMBE AVANT LA VERIFICATION DU MOT DE PASSE. Verifier
+    # d'abord ferait payer un hachage bcrypt a chaque tentative : c'est
+    # precisement le calcul couteux qu'un attaquant cherche a declencher
+    # en masse pour saturer le service.
+    attente = secondes_restantes(cles)
+    if attente:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"Trop de tentatives de connexion. Reessayez dans "
+            f"{max(1, attente // 60)} minute(s).",
+            headers={"Retry-After": str(attente)},
+        )
+
     utilisateur = db.scalar(select(Utilisateur).where(Utilisateur.email == corps.email))
 
     # Meme message dans les trois cas : distinguer "e-mail inconnu",
@@ -111,11 +149,17 @@ def connexion(corps: Identifiants, db: Session = Depends(get_db)) -> Jeton:
         or utilisateur.mot_de_passe_hash is None
         or not verifier(corps.mot_de_passe, utilisateur.mot_de_passe_hash)
     ):
+        enregistrer_echec(cles)
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, "Identifiants invalides"
         )
 
     _refuser_si_suspendu(utilisateur)
+
+    # Une reussite efface l'ardoise : sans cela, quelqu'un qui se trompe
+    # quatre fois puis reussit resterait a un essai du blocage pendant un
+    # quart d'heure.
+    effacer(cles)
     return _jeton(utilisateur)
 
 
