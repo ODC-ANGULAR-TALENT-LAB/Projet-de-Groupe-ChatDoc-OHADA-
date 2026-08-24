@@ -1,0 +1,136 @@
+# Reprend la vectorisation du corpus, chaque jour, jusqu'a la fin.
+#
+# POURQUOI UN TRAVAIL PLANIFIE ET NON UNE COMMANDE A LANCER. L'offre
+# gratuite du fournisseur d'embeddings plafonne a MILLE REQUETES PAR
+# JOUR — un quota journalier, pas une cadence : attendre quelques
+# minutes n'y change rien, il faut attendre le lendemain. Un corpus de
+# 5 563 articles demande donc plusieurs jours, et une reprise manuelle
+# quotidienne finit toujours par etre oubliee un matin.
+#
+# LE TRAVAIL S'ARRETE TOUT SEUL. Des qu'il ne reste plus d'article a
+# vectoriser, il le dit et ne fait rien. Rien a desactiver le jour ou
+# c'est termine — sinon ce workflow tournerait pour rien pendant des
+# mois.
+#
+# Voir services/vectorisation.py pour le detail des lots et des
+# reprises sur depassement de cadence.
+
+name: Vectorisation du corpus
+
+on:
+  schedule:
+    # 08h23 UTC : peu apres la reinitialisation quotidienne du quota,
+    # quelle que soit l'heure d'ete en vigueur cote fournisseur. La
+    # minute n'est ni 0 ni 30, pour ne pas se joindre a la vague de
+    # travaux planifies qui partent a l'heure pile.
+    - cron: "23 8 * * *"
+  workflow_dispatch:
+
+# Deux executions simultanees se disputeraient le meme quota et les
+# memes lignes : la seconde attend, plutot que de gaspiller la moitie
+# du budget du jour.
+concurrency:
+  group: vectorisation
+  cancel-in-progress: false
+
+jobs:
+  vectoriser:
+    # UN SEUL DEPOT PORTE LES IDENTIFIANTS DE LA BASE, et c'est
+    # deliberé. Un secret de depot est lisible par quiconque peut y
+    # pousser un workflow : le placer sur le depot de groupe donnerait
+    # a toute l'equipe un acces complet a la base de production, pour
+    # une tache qui ne dure que quelques jours.
+    #
+    # Le depot de groupe garde le fichier — l'historique du projet doit
+    # etre complet — mais le travail s'y arrete immediatement, sans
+    # echouer. Un travail planifie qui echoue chaque matin finit par
+    # etre ignore, y compris le jour ou il signale un vrai probleme.
+    if: github.repository == 'ODC-ANGULAR-TALENT-LAB/CHRISTIAN'
+    runs-on: ubuntu-latest
+    # Le quota s'epuise bien avant : cette limite n'est la que pour
+    # qu'un appel bloque ne retienne pas un ouvrier six heures.
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer les dependances
+        working-directory: backend
+        run: pip install --quiet -r requirements.txt
+
+      - name: Vectoriser jusqu'a epuisement du quota du jour
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EMBEDDING_API_KEY: ${{ secrets.EMBEDDING_API_KEY }}
+          EMBEDDING_URL: https://generativelanguage.googleapis.com/v1beta/openai/embeddings
+          EMBEDDING_MODELE: gemini-embedding-001
+          EMBEDDING_DIMENSIONS: "1536"
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$EMBEDDING_API_KEY" ]; then
+            echo "::error::DATABASE_URL ou EMBEDDING_API_KEY manquant."
+            echo "::error::Voir le README, section « Vectorisation »."
+            exit 1
+          fi
+
+          reste() {
+            python - <<'PY'
+          from sqlalchemy import text
+          from app.db import moteur
+          with moteur.connect() as cx:
+              print(cx.execute(text(
+                  "SELECT COUNT(*) FROM article "
+                  "WHERE embedding IS NULL AND date_abrogation IS NULL"
+              )).scalar())
+          PY
+          }
+
+          depart=$(reste)
+          echo "Articles restants au depart : $depart"
+          if [ "$depart" = "0" ]; then
+            echo "### Corpus deja entierement vectorise — rien a faire." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # DIX PASSES AU PLUS. Chacune s'arrete d'elle-meme quand le
+          # fournisseur refuse ; on relance tant qu'une passe progresse.
+          # Deux passes sans progres signifient que le quota du jour est
+          # consomme : insister ne ferait qu'attendre pour rien.
+          precedent="$depart"
+          for passe in $(seq 1 10); do
+            python ingestion/4_vectoriser.py || true
+            courant=$(reste)
+            echo "Passe $passe : $precedent -> $courant"
+            [ "$courant" = "0" ] && break
+            [ "$courant" = "$precedent" ] && { echo "Quota du jour epuise."; break; }
+            precedent="$courant"
+            sleep 30
+          done
+
+          final=$(reste)
+          fait=$((depart - final))
+          total=$(python - <<'PY'
+          from sqlalchemy import text
+          from app.db import moteur
+          with moteur.connect() as cx:
+              print(cx.execute(text(
+                  "SELECT COUNT(*) FROM article WHERE date_abrogation IS NULL"
+              )).scalar())
+          PY
+          )
+          echo "### Vectorisation" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- vectorises aujourd'hui : **$fait**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- restants : **$final** sur $total" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$final" = "0" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Corpus complet.** Reste a construire l'index HNSW :" >> "$GITHUB_STEP_SUMMARY"
+            echo '`python ingestion/4_vectoriser.py --creer-index`' >> "$GITHUB_STEP_SUMMARY"
+            echo "et a recalibrer SEUIL_PERTINENCE — voir le README." >> "$GITHUB_STEP_SUMMARY"
+          fi
