@@ -7,47 +7,47 @@
 #   pip install -r requirements.txt
 
 # --- API -------------------------------------------------------------
-fastapi
-uvicorn[standard]
-python-multipart
+pip install fastapi
+pip install uvicorn[standard]
+pip install python-multipart
 
 # --- Base de donnees -------------------------------------------------
-sqlalchemy
-psycopg2-binary
-pgvector
+pip install sqlalchemy
+pip install psycopg2-binary
+pip install pgvector
 
 # --- Configuration ---------------------------------------------------
-pydantic-settings
-email-validator     # requis par pydantic.EmailStr
+pip install pydantic-settings
+pip install email-validator     # requis par pydantic.EmailStr
 
 # --- Generation de documents (phase F) -------------------------------
 # Export Word des documents types. Le format .docx est celui que le
 # client attend pour RETOUCHER le document ; le PDF, celui qu'il
 # transmet. Les deux sont demandes par le cahier des charges (§5).
-python-docx
+pip install python-docx
 
 # --- Fournisseur LLM (phase E) ---------------------------------------
-anthropic
+pip install anthropic
 
 # --- Securite (phase G) ----------------------------------------------
-python-jose[cryptography]
-bcrypt              # directement, sans passlib : voir app/services/securite.py
-google-auth         # verification des jetons d'identite Google
-requests            # exige par google.auth.transport.requests
+pip install python-jose[cryptography]
+pip install bcrypt              # directement, sans passlib : voir app/services/securite.py
+pip install google-auth         # verification des jetons d'identite Google
+pip install requests            # exige par google.auth.transport.requests
 
 # --- Ingestion du corpus (phase B) -----------------------------------
-pdfplumber
-pytesseract
+pip install pdfplumber
+pip install pytesseract
 # Export PDF d'une reponse sourcee. Il etait deja present comme
 # dependance transitive : on le declare, parce qu'on s'en sert
 # directement et qu'une transitive peut disparaitre a la prochaine mise
 # a jour de ce qui l'apportait.
-reportlab
+pip install reportlab
 # Le rendu des pages en images passe par pypdfium2, deja tire par
 # pdfplumber : pas de poppler a installer ni a mettre dans le PATH.
 # pdf2image n'est donc plus necessaire.
-pillow
+pip install pillow
 
 # --- Appels sortants et tests ----------------------------------------
-httpx
-pytest
+pip install httpx
+pip install pytest
