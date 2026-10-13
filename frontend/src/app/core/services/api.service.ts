@@ -73,8 +73,15 @@ export class ApiService {
    * 402 n'est pas une panne mais une limite du plan, et 503 n'est pas
    * un refus de l'assistant mais une indisponibilité : les confondre
    * donnerait à l'utilisateur une idée fausse de ce qui se passe.
+   *
+   * Même logique pour 401 sur `/auth/` : ce n'est pas une session
+   * expirée mais des identifiants refusés (mot de passe, jeton Google).
+   * Le message du serveur, « Identifiants invalides », est alors le bon.
    */
   private traduire(erreur: HttpErrorResponse) {
+    if (erreur.status === 401 && erreur.url?.includes('/auth/') && erreur.error?.detail) {
+      return throwError(() => new ErreurApi(erreur.error.detail, 401));
+    }
     const messages: Record<number, string> = {
       0: "Impossible de joindre le service. Vérifiez votre connexion.",
       401: 'Votre session a expiré. Reconnectez-vous.',

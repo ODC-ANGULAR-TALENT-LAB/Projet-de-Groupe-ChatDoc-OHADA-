@@ -40,8 +40,10 @@ class Parametres(BaseSettings):
         extra="ignore",
     )
 
-    # Base de donnees (port 5435 : voir docker-compose.yml)
-    database_url: str = "postgresql://chatdocs:chatdocs_local@localhost:5435/chatdocs"
+    # Base de donnees (port 5435 : voir docker-compose.yml). 127.0.0.1 et
+    # non localhost : sous Windows, localhost tente d'abord ::1, ou wslrelay
+    # peut ecouter sur le meme port et couper la connexion avant Docker.
+    database_url: str = "postgresql://chatdocs:chatdocs_local@127.0.0.1:5435/chatdocs"
 
     # Fournisseur LLM (phase E) - la cle ne quitte jamais le serveur
     #

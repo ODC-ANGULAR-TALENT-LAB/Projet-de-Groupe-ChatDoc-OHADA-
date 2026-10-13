@@ -5,6 +5,13 @@ services:
   db:
     image: pgvector/pgvector:pg16
     container_name: chatdocs_db
+    # Repart avec Docker Desktop. Sans cette ligne, tout redemarrage de
+    # Docker (mise a jour, mise en veille, WSL relance) laisse la base
+    # arretee : l'API demarre puis echoue a la premiere requete, et la
+    # connexion de l'application parait cassee sans raison visible.
+    # « unless-stopped » et non « always » : un `docker stop` volontaire
+    # reste respecte.
+    restart: unless-stopped
     environment:
       POSTGRES_USER: chatdocs
       POSTGRES_PASSWORD: chatdocs_local
