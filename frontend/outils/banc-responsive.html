@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Banc de mesure responsive</title>
+    <!--
+      POURQUOI UN CADRE PLUTOT QUE LE MODE APPAREIL DE CHROME.
+
+      Le mode appareil des outils de développement ne s'ouvre et ne se
+      règle qu'à la main : on ne peut ni l'automatiser, ni relire ses
+      valeurs. Or les media queries répondent à la largeur du CADRE
+      autant qu'à celle de la fenêtre. Un `iframe` de 320 px déclenche
+      donc exactement les mêmes règles qu'un téléphone de 320 px, et
+      cette fois la mesure est reproductible : mêmes largeurs, mêmes
+      pages, mêmes seuils, à chaque exécution.
+
+      Ce fichier est un OUTIL, pas une page de l'application. Il n'est
+      pas déclaré dans les ressources d'`angular.json` et ne part donc
+      pas en production.
+    -->
+    <style>
+      body { font: 13px/1.5 ui-monospace, monospace; margin: 0; padding: 8px; }
+      iframe { border: 1px solid #999; display: block; }
+      pre { white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <iframe id="cadre" width="320" height="640"></iframe>
+    <pre id="resultat">prêt</pre>
+
+    <script>
+      const CADRE = document.getElementById('cadre');
+      const SORTIE = document.getElementById('resultat');
+
+      // Les seuils viennent des règles de plateforme : 44 px de côté
+      // pour une cible tactile (Apple HIG), 16 px de police pour un
+      // champ de saisie (en deçà, iOS agrandit la page au toucher).
+      const CIBLE_MINIMALE = 44;
+      const POLICE_CHAMP_MINIMALE = 16;
+
+      const CHAMPS = 'input, select, textarea';
+      const INTERACTIFS =
+        "a[href], button, input, select, textarea, [role='button'], [tabindex]:not([tabindex='-1'])";
+
+      function attendre(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+      }
+
+      function nommer(el) {
+        const classe = el.className && typeof el.className === 'string'
+          ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.')
+          : '';
+        const texte = (el.getAttribute('aria-label') || el.textContent || '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 34);
+        return `${el.tagName.toLowerCase()}${classe}${texte ? ` « ${texte} »` : ''}`;
+      }
+
+      // CE QUE LE BANC NE DOIT PAS COMPTER.
+      //
+      // Trois choses sortent volontairement du cadre visible, et les
+      // signaler noierait les vrais défauts :
+      //
+      //   — le lien d'évitement, garé hors écran jusqu'à ce que le
+      //     clavier lui donne le focus ;
+      //   — la classe `.invisible`, qui réduit un libellé à 1 px pour
+      //     le réserver aux lecteurs d'écran ;
+      //   — le bouton Google, rendu par un script tiers dans notre
+      //     page : sa taille ne nous appartient pas.
+      //
+      // Un banc qui crie sur ces trois-là à chaque exécution finit par
+      // ne plus être lu.
+      function horsChamp(el, style, largeur) {
+        if (el.closest('.invisible')) return true;
+        if (el.closest("[class*='nsm7Bb'], [id^='credential_picker']")) return true;
+        const r = el.getBoundingClientRect();
+        if (r.right < 0 || r.left > largeur) return true;
+        // Le motif « réservé aux lecteurs d'écran » : une boîte de 1 px
+        // avec un rognage. Elle n'est pas destinée à être vue.
+        if (r.width <= 1 && r.height <= 1) return true;
+        return style.clipPath && style.clipPath !== 'none';
+      }
+
+      function visible(el, style) {
+        const r = el.getBoundingClientRect();
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          style.visibility !== 'hidden' &&
+          style.display !== 'none' &&
+          style.opacity !== '0'
+        );
+      }
+
+      function auditer(doc, largeur) {
+        const constats = [];
+        const vus = new Set();
+
+        function ajouter(genre, el, detail) {
+          const cle = genre + '|' + nommer(el) + '|' + detail;
+          if (vus.has(cle)) return;
+          vus.add(cle);
+          constats.push({ genre, element: nommer(el), detail });
+        }
+
+        // 1. DEBORDEMENT HORIZONTAL. On ne signale pas la page entière —
+        //    cela ne dit pas quoi corriger — mais l'élément fautif : le
+        //    plus profond dont le bord droit dépasse la largeur.
+        const debordent = [];
+        for (const el of doc.querySelectorAll('body *')) {
+          const style = doc.defaultView.getComputedStyle(el);
+          if (!visible(el, style)) continue;
+          if (horsChamp(el, style, largeur)) continue;
+          if (style.position === 'fixed') continue;
+          const r = el.getBoundingClientRect();
+          if (r.right > largeur + 1 || r.left < -1) {
+            debordent.push({ el, r, style });
+          }
+        }
+        // Un parent qui déborde parce que son enfant déborde n'est pas
+        // la cause : on ne garde que les éléments sans descendant fautif.
+        const ensemble = new Set(debordent.map((d) => d.el));
+        for (const d of debordent) {
+          let interne = false;
+          for (const autre of ensemble) {
+            if (autre !== d.el && d.el.contains(autre)) { interne = true; break; }
+          }
+          if (interne) continue;
+          // Un conteneur qui défile dans son coin est voulu (tableaux).
+          let p = d.el.parentElement, contenu = false;
+          while (p && p !== doc.body) {
+            const sp = doc.defaultView.getComputedStyle(p);
+            if (sp.overflowX === 'auto' || sp.overflowX === 'scroll' || sp.overflowX === 'hidden') {
+              contenu = true; break;
+            }
+            p = p.parentElement;
+          }
+          if (contenu) continue;
+          ajouter('débordement', d.el, `bord droit à ${Math.round(d.r.right)} px pour ${largeur} px`);
+        }
+
+        // 2. CIBLES TACTILES. On mesure la zone RÉELLE, pas la boîte
+        //    déclarée : un lien en ligne dans un paragraphe n'est pas
+        //    une commande et n'a pas à faire 44 px.
+        for (const el of doc.querySelectorAll(INTERACTIFS)) {
+          const style = doc.defaultView.getComputedStyle(el);
+          if (!visible(el, style)) continue;
+          if (horsChamp(el, style, largeur)) continue;
+          if (el.matches("input[type='hidden']")) continue;
+          // Une case a cocher est petite par nature ; ce qui doit etre
+          // atteignable, c'est le libelle qui l'enveloppe.
+          if (el.matches("[type='checkbox'], [type='radio']") && el.closest('label')) continue;
+          // `label` figure dans la liste au même titre que `p` : le lien
+          // vers les conditions vit à l'intérieur d'une phrase, pas dans
+          // une barre de commandes. L'élargir à 44 px reviendrait à
+          // poser un bouton au milieu d'un paragraphe.
+          if (style.display === 'inline' && el.closest('p, li, td, label')) continue;
+          const r = el.getBoundingClientRect();
+          if (r.height < CIBLE_MINIMALE - 0.5 || r.width < CIBLE_MINIMALE - 0.5) {
+            ajouter('cible', el, `${Math.round(r.width)}×${Math.round(r.height)} px`);
+          }
+        }
+
+        // 3. ZOOM AUTOMATIQUE iOS.
+        for (const el of doc.querySelectorAll(CHAMPS)) {
+          const style = doc.defaultView.getComputedStyle(el);
+          if (!visible(el, style)) continue;
+          if (horsChamp(el, style, largeur)) continue;
+          if (el.matches("[type='checkbox'], [type='radio'], [type='hidden']")) continue;
+          const taille = parseFloat(style.fontSize);
+          if (taille < POLICE_CHAMP_MINIMALE - 0.5) {
+            ajouter('zoom iOS', el, `police ${taille} px`);
+          }
+        }
+
+        // 4. TEXTE TRONQUÉ SANS L'AVOIR DEMANDÉ. Une coupure voulue
+        //    porte `text-overflow: ellipsis` ; sans elle, le texte est
+        //    simplement rogné et devient illisible.
+        for (const el of doc.querySelectorAll('body *')) {
+          const style = doc.defaultView.getComputedStyle(el);
+          if (!visible(el, style)) continue;
+          if (horsChamp(el, style, largeur)) continue;
+          if (style.overflow === 'visible' || style.textOverflow === 'ellipsis') continue;
+          if (el.scrollWidth > el.clientWidth + 2 && el.children.length === 0) {
+            ajouter('rognage', el, `${el.scrollWidth} px de contenu dans ${el.clientWidth} px`);
+          }
+        }
+
+        return constats;
+      }
+
+      window.mesurer = async function (route, largeur, hauteur) {
+        CADRE.width = largeur;
+        CADRE.height = hauteur || 640;
+        await new Promise((resolve) => {
+          CADRE.onload = resolve;
+          CADRE.src = route;
+        });
+        // Le temps que les données arrivent et que la mise en page se
+        // stabilise : mesurer trop tôt donne l'état de chargement.
+        await attendre(2200);
+        const doc = CADRE.contentDocument;
+        const constats = auditer(doc, largeur);
+        const resultat = {
+          route,
+          largeur,
+          defilementPage: doc.documentElement.scrollWidth > largeur + 1,
+          constats,
+        };
+        SORTIE.textContent = JSON.stringify(resultat, null, 1);
+        return resultat;
+      };
+    </script>
+  </body>
+</html>

@@ -3,6 +3,8 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CorpusService } from '../../core/services/corpus.service';
 import { IconeComponent } from '../../partage/composants/icone.component';
+import { BlasonComponent } from '../../partage/composants/blason.component';
+import { Inclinaison3dDirective } from '../../partage/directives/inclinaison-3d.directive';
 
 interface Profil {
   titre: string;
@@ -58,7 +60,7 @@ const LIEN_APK = '/chatdocs-ohada.apk';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, IconeComponent],
+  imports: [RouterLink, IconeComponent, BlasonComponent, Inclinaison3dDirective],
   templateUrl: './landing.page.html',
   styleUrl: './landing.page.scss',
 })

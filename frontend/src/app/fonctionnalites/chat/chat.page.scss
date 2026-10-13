@@ -80,22 +80,43 @@
   text-align: left;
 
   button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
     width: 100%;
+    min-height: var(--cible-tactile);
     text-align: left;
     background: var(--surface);
     border: 1px solid var(--bordure);
     border-radius: var(--rayon-carte);
-    padding: 0.7rem 0.85rem;
+    padding: 0.7rem 0.85rem 0.7rem 1rem;
     font: inherit;
     font-size: var(--t-md);
     color: var(--bleu-nuit);
     cursor: pointer;
-    transition: border-color 160ms ease-out, background-color 160ms ease-out;
+    box-shadow: var(--ombre-1);
+
+    /* La flèche n'apparaît qu'au survol et glisse vers la droite : elle
+       dit « cliquer remplit la question » sans encombrer la liste au
+       repos. Au doigt, sans survol, elle reste visible mais discrète. */
+    app-icone {
+      color: var(--or-fonce);
+      opacity: 0.35;
+      transition:
+        transform var(--duree-etat) var(--courbe-ressort),
+        opacity var(--duree-etat) ease-out;
+    }
 
     &:hover,
     &:focus-visible {
       border-color: var(--or);
       background: var(--fond-citation);
+
+      app-icone {
+        opacity: 1;
+        transform: translateX(3px);
+      }
     }
   }
 }
@@ -167,12 +188,18 @@
      accidentel. */
   &:focus-within {
     border-color: var(--or);
-    box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
+    box-shadow: 0 0 0 3px var(--champ-anneau);
   }
 
   textarea {
     flex: 1;
     resize: none;
+    /* 37 px à vide : c'était la plus petite cible de l'application,
+       pour son champ le plus important. La hauteur minimale ne gêne pas
+       la croissance automatique — `min-height` l'emporte sur la hauteur
+       posée en ligne quand le texte est court, et s'efface dès qu'il
+       dépasse une ligne. */
+    min-height: var(--cible-tactile);
     border: none;
     background: none;
     padding: 0.4rem 0.35rem;
@@ -183,8 +210,14 @@
     color: var(--texte);
     max-height: 40vh;
 
-    &:focus {
+    /* Le cadre appartient au conteneur, qui s'illumine par
+       `:focus-within`. Le champ doit donc renoncer explicitement à
+       l'anneau commun : posé ici, il dessinerait un second contour
+       DANS le premier. */
+    &:focus,
+    &:focus-visible {
       outline: none;
+      box-shadow: none;
     }
 
     &::placeholder {

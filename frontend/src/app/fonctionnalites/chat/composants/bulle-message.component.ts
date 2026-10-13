@@ -223,12 +223,6 @@ import { ChatService } from '../../../core/services/chat.service';
       textarea {
         width: 100%;
         margin-bottom: var(--e3);
-        padding: 0.45rem 0.55rem;
-        font: inherit;
-        font-size: var(--t-md);
-        background: var(--surface);
-        border: 1px solid var(--gris-bordure);
-        border-radius: var(--rayon);
         resize: vertical;
       }
 

@@ -129,13 +129,7 @@ import { IconeComponent } from './icone.component';
       }
 
       textarea {
-        padding: 0.6rem;
-        font: inherit;
-        font-size: var(--t-md);
         line-height: 1.6;
-        background: var(--surface);
-        border: 1px solid var(--gris-bordure);
-        border-radius: var(--rayon);
         resize: vertical;
       }
     }

@@ -48,11 +48,15 @@
 
   &:focus-within {
     border-color: var(--or);
-    box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
+    box-shadow: 0 0 0 3px var(--champ-anneau);
   }
 
   input {
     flex: 1;
+    /* Le champ mesurait 40 px : c'est lui, et non son cadre, qui reçoit
+       le doigt. Le rembourrage horizontal reste mince à dessein, la
+       bordure étant portée par le conteneur. */
+    min-height: var(--cible-tactile);
     border: none;
     background: none;
     padding: 0.5rem 0.35rem;
@@ -61,8 +65,14 @@
     font-size: var(--t-lg);
     color: var(--texte);
 
-    &:focus {
+    /* Le cadre appartient au conteneur, qui s'illumine par
+       `:focus-within`. Le champ doit donc renoncer explicitement à
+       l'anneau commun : posé ici, il dessinerait un second contour
+       DANS le premier. */
+    &:focus,
+    &:focus-visible {
       outline: none;
+      box-shadow: none;
     }
 
     &::placeholder {
@@ -173,6 +183,10 @@
 
   button {
     width: 100%;
+    /* Sur écran large la suggestion tient sur une ligne et retombait à
+       41 px ; sur écran étroit elle passe à deux lignes et dépasse
+       d'elle-même. La hauteur minimale ne sert que le premier cas. */
+    min-height: var(--cible-tactile);
     text-align: left;
     background: var(--surface);
     border: 1px solid var(--bordure);

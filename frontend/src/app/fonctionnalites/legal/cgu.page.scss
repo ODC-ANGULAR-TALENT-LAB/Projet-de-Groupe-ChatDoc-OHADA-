@@ -22,6 +22,9 @@ header {
 }
 
 .retour {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cible-tactile);
   font-size: var(--t-md);
   color: var(--gris-texte);
   text-decoration: none;
@@ -88,6 +91,9 @@ section {
   border-top: 1px solid var(--bordure);
 
   a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--cible-tactile);
     font-size: var(--t-md);
     color: var(--bleu-nuit);
     font-weight: 500;

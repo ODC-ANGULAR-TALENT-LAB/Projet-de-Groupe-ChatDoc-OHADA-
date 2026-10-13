@@ -56,11 +56,16 @@ const EXEMPLES = [
               <p>Posez votre question en français courant. Chaque réponse cite
                  l'article officiel qui la fonde — et l'assistant refuse
                  explicitement quand le corpus ne permet pas de répondre.</p>
-              <ul class="exemples">
+              <ul class="exemples cascade">
                 @for (exemple of exemples; track exemple) {
                   <li>
-                    <button type="button" (click)="question.set(exemple)">
-                      {{ exemple }}
+                    <button
+                      type="button"
+                      class="carte-relief"
+                      (click)="question.set(exemple)"
+                    >
+                      <span>{{ exemple }}</span>
+                      <app-icone nom="fleche" />
                     </button>
                   </li>
                 }

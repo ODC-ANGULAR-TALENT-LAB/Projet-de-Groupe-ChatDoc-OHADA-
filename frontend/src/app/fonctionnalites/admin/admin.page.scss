@@ -28,7 +28,7 @@ h2 {
 .bloc {
   background: #fff;
   border: 1px solid var(--bordure);
-  border-radius: 8px;
+  border-radius: var(--rayon-carte);
   padding: 1rem;
   margin-bottom: 1rem;
 }
@@ -46,12 +46,6 @@ h2 {
 
   input,
   select {
-    font: inherit;
-    font-size: var(--t-md);
-    padding: 0.45rem 0.6rem;
-    border: 1px solid var(--gris-bordure);
-    border-radius: 6px;
-    background: #fff;
     width: 100%;
   }
 
@@ -135,7 +129,7 @@ h2 {
     background: var(--fond-citation);
     padding: 0.6rem 0.75rem;
     margin-bottom: 0.5rem;
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 var(--rayon) var(--rayon) 0;
   }
 
   .numero {
@@ -266,7 +260,7 @@ code {
   font-size: var(--t-xs);
   background: var(--fond);
   padding: 0.1rem 0.3rem;
-  border-radius: 3px;
+  border-radius: var(--rayon);
 }
 
 .aide {

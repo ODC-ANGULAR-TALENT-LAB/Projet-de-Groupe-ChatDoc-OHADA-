@@ -23,6 +23,8 @@ import { FavorisService } from './core/services/favoris.service';
 import { ProfilService } from './core/services/profil.service';
 import { HistoriqueService } from './core/services/historique.service';
 import { IconeComponent } from './partage/composants/icone.component';
+import { BlasonComponent } from './partage/composants/blason.component';
+import { Inclinaison3dDirective } from './partage/directives/inclinaison-3d.directive';
 
 /**
  * Coquille de l'application.
@@ -73,7 +75,7 @@ const DESTINATIONS: Destination[] = [
   // pouvoir interroger l'assistant pour vérifier que le texte qu'il
   // vient de déposer produit les bonnes citations. C'est son outil de
   // contrôle, pas une commodité.
-  { chemin: '/chat', libelle: 'Assistant', icone: 'nouveau-chat', audience: 'tous' },
+  { chemin: '/chat', libelle: 'Assistant', icone: 'assistant', audience: 'tous' },
   {
     chemin: '/bibliotheque',
     libelle: 'Bibliothèque',
@@ -97,7 +99,7 @@ const DESTINATIONS: Destination[] = [
   {
     chemin: '/administration',
     libelle: 'Administration',
-    icone: 'compte',
+    icone: 'bouclier',
     audience: 'personnel',
     admin: true,
   },
@@ -106,7 +108,7 @@ const DESTINATIONS: Destination[] = [
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconeComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconeComponent, BlasonComponent, Inclinaison3dDirective],
   // La classe suit l'état de la route : c'est elle qui déclenche le
   // passage de la grille applicative au flux d'une page publique.
   // Tant qu'on ne sait pas (`null`), on reste en flux : c'est l'état
@@ -125,14 +127,8 @@ const DESTINATIONS: Destination[] = [
     @if (coquille()) {
     <!-- BARRE LATÉRALE — poste de travail -->
     <aside class="laterale">
-      <a class="marque" routerLink="/">
-        <img
-          class="marque-blason"
-          src="/images/blason.webp"
-          alt=""
-          width="131"
-          height="162"
-        />
+      <a class="marque" routerLink="/" appInclinaison3d="14">
+        <app-blason class="marque-blason" />
         <span class="marque-texte">
           <span class="marque-nom">ChatDocs</span>
           <span class="marque-suffixe">OHADA</span>
@@ -250,14 +246,8 @@ const DESTINATIONS: Destination[] = [
     @if (coquille()) {
     <!-- BARRE HAUTE — téléphone uniquement -->
     <header class="barre">
-      <a class="marque" routerLink="/">
-        <img
-          class="marque-blason"
-          src="/images/blason.webp"
-          alt=""
-          width="131"
-          height="162"
-        />
+      <a class="marque" routerLink="/" appInclinaison3d="14">
+        <app-blason class="marque-blason" />
         <span class="marque-texte">
           <span class="marque-nom">ChatDocs</span>
           <span class="marque-suffixe">OHADA</span>
@@ -374,11 +364,11 @@ const DESTINATIONS: Destination[] = [
               }
             </a>
             <a routerLink="/calculateurs" routerLinkActive="actif" (click)="fermerMenu()">
-              <app-icone nom="balance" />
+              <app-icone nom="calculatrice" />
               Calculateurs
             </a>
             <a routerLink="/conformite" routerLinkActive="actif" (click)="fermerMenu()">
-              <app-icone nom="valide" />
+              <app-icone nom="conformite" />
               Conformité
             </a>
           </div>
@@ -388,25 +378,21 @@ const DESTINATIONS: Destination[] = [
         <div class="feuille-liens">
           @if (!estPersonnel()) {
             <a routerLink="/forfaits" routerLinkActive="actif" (click)="fermerMenu()">
-              <app-icone nom="compte" />
+              <app-icone nom="forfait" />
               Forfaits
             </a>
           }
-          <!-- « corpus » et non « balance » : la balance est déjà celle
-               des calculateurs, quelques lignes plus haut. Deux entrées
-               voisines partageant une icône se confondent au coup
-               d'oeil, qui est le seul dont on dispose sur téléphone. -->
           <a routerLink="/methodologie" routerLinkActive="actif" (click)="fermerMenu()">
-            <app-icone nom="corpus" />
+            <app-icone nom="methodologie" />
             Méthodologie
           </a>
           <a routerLink="/journal" routerLinkActive="actif" (click)="fermerMenu()">
-            <app-icone nom="historique" />
+            <app-icone nom="journal" />
             Mises à jour
           </a>
           @if (auth.connecte() && !estPersonnel()) {
             <a routerLink="/avis" routerLinkActive="actif" (click)="fermerMenu()">
-              <app-icone nom="signaler" />
+              <app-icone nom="avis" />
               Votre avis
             </a>
           }
@@ -453,9 +439,14 @@ const DESTINATIONS: Destination[] = [
       flex-direction: column;
       gap: var(--e1);
       padding: var(--e6) var(--e3);
-      background: var(--bleu-nuit);
+      /* Une lueur en haut à gauche, là où se tient le blason : la barre
+         cesse d'être un aplat et devient un plan éclairé, ce qui donne
+         leur sens aux tuiles en relief qu'elle porte. */
+      background:
+        radial-gradient(120% 45% at 0% 0%, rgb(201 162 39 / 12%) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bleu-nuit-clair) 0%, var(--bleu-nuit) 35%, #16223d 100%);
       color: var(--sur-nuit);
-      box-shadow: var(--ombre-flottante);
+      box-shadow: var(--ombre-3);
       overflow-y: auto;
     }
 
@@ -463,6 +454,11 @@ const DESTINATIONS: Destination[] = [
       display: inline-flex;
       align-items: center;
       gap: 0.45em;
+      /* Le mot-image est aussi le lien de retour à l'accueil, et la
+         mesure le donnait à 34 px de haut. C'est le premier geste que
+         l'on tente quand on s'est perdu dans l'application : il doit
+         se rattraper au doigt, pas se viser. */
+      min-height: var(--cible-tactile);
       font-family: var(--police-serif);
       text-decoration: none;
       line-height: 1.1;
@@ -499,9 +495,11 @@ const DESTINATIONS: Destination[] = [
          devait desormais partager cette largeur avec le blason. A la
          taille precedente, l'ensemble depassait et le mot-image sortait
          de la barre. */
+      /* 1.25rem : Fraunces est plus large que le serif précédent, et à
+         22 px le nom passait sous le blason. */
       .marque {
         padding: 0 var(--e2);
-        font-size: var(--t-2xl);
+        font-size: 1.25rem;
         font-weight: 700;
         letter-spacing: -0.02em;
         /* Ceinture et bretelles : si la largeur venait a manquer de
@@ -526,23 +524,55 @@ const DESTINATIONS: Destination[] = [
       display: flex;
       align-items: center;
       gap: var(--e2);
-      margin-bottom: var(--e4);
-      padding: 0.6rem var(--e2);
-      background: transparent;
-      color: var(--sur-nuit);
-      border: 1px solid rgb(255 255 255 / 18%);
+      margin-bottom: var(--e5);
+      min-height: var(--cible-tactile);
+      padding: 0.6rem var(--e3);
+      color: var(--bleu-encre);
+      background: linear-gradient(180deg, #e0bf52 0%, var(--or) 100%);
+      border: 1px solid var(--or-fonce);
       border-radius: var(--rayon);
       font: inherit;
       font-size: var(--t-md);
-      font-weight: 500;
+      font-weight: 700;
       text-align: left;
       cursor: pointer;
-      transition: background-color 160ms ease-out, border-color 160ms ease-out;
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 45%),
+        0 var(--tranche) 0 var(--tranche-or),
+        0 8px 18px rgb(0 0 0 / 30%);
+      transition:
+        transform var(--duree-etat) var(--courbe-ressort),
+        box-shadow var(--duree-etat) var(--courbe-sortie),
+        filter var(--duree-etat) ease-out;
 
-      &:hover,
+      app-icone {
+        transition: transform var(--duree-etat) var(--courbe-ressort);
+      }
+
+      &:hover {
+        filter: brightness(1.06);
+        transform: translateY(-1px);
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 45%),
+          0 calc(var(--tranche) + 1px) 0 var(--tranche-or),
+          0 12px 24px rgb(0 0 0 / 35%);
+
+        app-icone {
+          transform: rotate(-12deg) scale(1.12);
+        }
+      }
+
+      &:active {
+        transition-duration: var(--duree-geste);
+        transform: translateY(var(--tranche));
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 45%),
+          0 0 0 var(--tranche-or),
+          0 2px 4px rgb(0 0 0 / 30%);
+      }
+
       &:focus-visible {
-        background: rgb(255 255 255 / 7%);
-        border-color: var(--or);
+        outline-color: #fff;
       }
     }
 
@@ -552,34 +582,112 @@ const DESTINATIONS: Destination[] = [
       gap: 2px;
 
       a {
+        position: relative;
+        isolation: isolate;
         display: flex;
         align-items: center;
-        gap: var(--e2);
-        /* Le filet actif fait 3 px : on réserve la place des deux côtés
-           pour que l'entrée ne se décale pas en devenant active. */
-        padding: 0.6rem var(--e2) 0.6rem calc(var(--e2) - 3px);
-        border-left: 3px solid transparent;
-        border-radius: 0 var(--rayon) var(--rayon) 0;
+        gap: var(--e3);
+        padding: 0.375rem var(--e2);
+        border-radius: var(--rayon);
         color: var(--sur-nuit-faible);
         font-size: var(--t-md);
         font-weight: 500;
         text-decoration: none;
-        transition: background-color 160ms ease-out, color 160ms ease-out;
+        transition: color var(--duree-etat) ease-out;
+
+        /* LE FOND ACTIF GLISSE depuis la gauche au lieu d'apparaître :
+           l'œil suit le mouvement jusqu'à la nouvelle destination, et
+           sait où il est arrivé sans avoir à relire la liste. Un filet
+           doré marque le bord, là où se tenait l'ancien liseré. */
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          border-radius: inherit;
+          background: linear-gradient(90deg, rgb(201 162 39 / 18%), rgb(255 255 255 / 4%) 70%);
+          box-shadow: inset 3px 0 0 var(--or);
+          transform: scaleX(0);
+          transform-origin: left center;
+          opacity: 0;
+          transition:
+            transform var(--duree-page) var(--courbe-sortie),
+            opacity var(--duree-etat) ease-out;
+        }
 
         &:hover {
-          background: rgb(255 255 255 / 6%);
           color: var(--sur-nuit);
+
+          &::before {
+            transform: scaleX(1);
+            opacity: 0.35;
+          }
+        }
+
+        /* LA TUILE. L'icône est posée dans un petit carré de verre
+           bombé : reflet clair en haut, arête sombre en bas, ombre
+           portée. Au survol, la tuile pivote vers le pointeur et monte
+           vers le lecteur ; la perspective est déclarée sur la tuile
+           elle-même pour que chacune tourne autour de son propre centre. */
+        app-icone {
+          --taille-icone: 2rem;
+          padding: 0.4375rem;
+          border-radius: 9px;
+          color: var(--sur-nuit);
+          background: linear-gradient(145deg, rgb(255 255 255 / 14%), rgb(255 255 255 / 3%));
+          box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 16%),
+            inset 0 -1px 0 rgb(0 0 0 / 30%),
+            0 2px 5px rgb(0 0 0 / 30%);
+          transform: perspective(240px) rotateX(0deg) rotateY(0deg);
+          transition:
+            transform var(--duree-etat) var(--courbe-ressort),
+            background var(--duree-etat) ease-out,
+            box-shadow var(--duree-etat) ease-out,
+            color var(--duree-etat) ease-out;
+        }
+
+        &:hover app-icone {
+          transform: perspective(240px) rotateX(10deg) rotateY(-20deg) translateZ(6px) scale(1.06);
+          box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 22%),
+            inset 0 -1px 0 rgb(0 0 0 / 30%),
+            6px 6px 12px rgb(0 0 0 / 35%);
         }
       }
 
       .actif {
-        background: rgb(255 255 255 / 9%);
-        border-left-color: var(--or);
         color: #fff;
+        font-weight: 600;
 
-        app-icone {
-          color: var(--or);
+        &::before {
+          transform: scaleX(1);
+          opacity: 1;
         }
+
+        /* La tuile active passe à l'or massif et se retourne une fois en
+           arrivant — le seul mouvement qui dit « vous êtes ici » sans
+           texte ni couleur seule. */
+        app-icone {
+          color: var(--bleu-encre);
+          background: linear-gradient(145deg, #ecd27a 0%, var(--or) 50%, var(--or-fonce) 100%);
+          box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 55%),
+            inset 0 -2px 0 rgb(0 0 0 / 18%),
+            0 4px 12px rgb(201 162 39 / 35%);
+          /* backwards et non both : une fois retournée, la tuile doit
+             redevenir libre de pivoter au survol. */
+          animation: tuile-arrivee 520ms var(--courbe-ressort) backwards;
+        }
+      }
+    }
+
+    @keyframes tuile-arrivee {
+      from {
+        transform: perspective(240px) rotateY(-180deg) scale(0.8);
+      }
+      to {
+        transform: perspective(240px) rotateY(0deg) scale(1);
       }
     }
 
@@ -779,6 +887,10 @@ const DESTINATIONS: Destination[] = [
     main {
       grid-area: principal;
       min-height: 0;
+      /* Seul le contenu change de page ; la barre latérale et les onglets
+         restent en place. Nommer la zone l'isole dans la transition de
+         page (voir ::view-transition-*(page) dans styles.scss). */
+      view-transition-name: page;
 
       /* « hidden » ici COUPAIT purement et simplement les pages longues.
          main est la rangée 1fr d'une grille haute de 100dvh : tout ce
@@ -796,8 +908,14 @@ const DESTINATIONS: Destination[] = [
     .onglets {
       grid-area: onglets;
       display: flex;
-      background: var(--surface);
+      /* Verre dépoli : le contenu qui défile passe dessous, flouté. La
+         barre se lit comme un plan posé au-dessus de la page, ce qui
+         justifie que ses tuiles actives en sortent. */
+      background: rgb(255 255 255 / 88%);
+      backdrop-filter: saturate(1.4) blur(14px);
+      -webkit-backdrop-filter: saturate(1.4) blur(14px);
       border-top: 1px solid var(--bordure);
+      box-shadow: 0 -6px 20px rgb(27 42 74 / 6%);
       /* Marge de sécurité pour la barre d'accueil des téléphones. */
       padding-bottom: env(safe-area-inset-bottom, 0);
 
@@ -816,22 +934,61 @@ const DESTINATIONS: Destination[] = [
            signale l'onglet courant. Une seule variable donne désormais
            la mesure aux deux. */
         height: var(--h-onglets);
-        padding: 0.45rem 0.25rem;
+        padding: 0.3rem 0.25rem;
         font-size: var(--t-xs);
+        font-weight: 500;
         color: var(--gris-texte);
         text-decoration: none;
         border-top: 2px solid transparent;
+        -webkit-tap-highlight-color: transparent;
 
-        --taille-icone: 1.35rem;
+        --taille-icone: 1.75rem;
+
+        app-icone {
+          padding: 0.25rem;
+          border-radius: 8px;
+          transition:
+            transform var(--duree-etat) var(--courbe-ressort),
+            background var(--duree-etat) ease-out,
+            box-shadow var(--duree-etat) ease-out,
+            color var(--duree-etat) ease-out;
+        }
+
+        /* Au toucher, la tuile s'enfonce sous le doigt avant de
+           naviguer : le retour arrive en moins de 100 ms, bien avant
+           que la page suivante ne s'affiche. */
+        &:active app-icone {
+          transition-duration: var(--duree-geste);
+          transform: scale(0.88);
+        }
       }
 
+      /* L'onglet actif sort de la barre : sa tuile monte, passe au bleu
+         nuit en relief et rebondit en arrivant. */
       .actif {
         color: var(--bleu-nuit);
+        font-weight: 700;
         border-top-color: var(--or);
 
         app-icone {
-          color: var(--or-fonce);
+          color: var(--or);
+          background: linear-gradient(160deg, var(--bleu-nuit-clair), var(--bleu-nuit));
+          box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 18%),
+            0 3px 0 var(--tranche-nuit),
+            0 6px 12px rgb(27 42 74 / 30%);
+          transform: translateY(-3px);
+          animation: onglet-arrivee 480ms var(--courbe-ressort) backwards;
         }
+      }
+    }
+
+    @keyframes onglet-arrivee {
+      0% {
+        transform: translateY(4px) scale(0.7) rotateX(60deg);
+      }
+      100% {
+        transform: translateY(-3px) scale(1) rotateX(0deg);
       }
     }
 
@@ -848,16 +1005,30 @@ const DESTINATIONS: Destination[] = [
       justify-content: center;
       gap: 0.15rem;
       height: var(--h-onglets);
-      padding: 0.45rem 0.25rem;
+      padding: 0.3rem 0.25rem;
       font-family: inherit;
       font-size: var(--t-xs);
+      font-weight: 500;
       color: var(--gris-texte);
       background: none;
       border: none;
       border-top: 2px solid transparent;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
 
-      --taille-icone: 1.35rem;
+      --taille-icone: 1.75rem;
+
+      app-icone {
+        padding: 0.25rem;
+        border-radius: 8px;
+        transition: transform var(--duree-etat) var(--courbe-ressort);
+      }
+
+      /* Le menu s'ouvre : l'icône tourne d'un quart de tour en passant
+         du hamburger à la croix, au lieu de sauter d'un dessin à l'autre. */
+      &.actif app-icone {
+        transform: rotate(90deg);
+      }
     }
 
     .voile-menu {
@@ -1051,11 +1222,17 @@ const DESTINATIONS: Destination[] = [
       left: -999px;
 
       &:focus {
+        /* Une fois apparu, c'est un bouton comme un autre : il se
+           touche autant qu'il se valide au clavier. Il sortait à 24 px
+           de haut. */
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--cible-tactile);
         left: var(--e2);
         top: var(--e2);
         z-index: 10;
         background: var(--surface);
-        padding: var(--e2);
+        padding: var(--e2) var(--e3);
         border-radius: var(--rayon);
       }
     }

@@ -255,7 +255,7 @@ export function analyser(texte: string): Bloc[] {
       font-size: 0.9em;
       background: var(--surface-basse);
       padding: 0.1em 0.35em;
-      border-radius: 3px;
+      border-radius: var(--rayon);
     }
   `,
 })

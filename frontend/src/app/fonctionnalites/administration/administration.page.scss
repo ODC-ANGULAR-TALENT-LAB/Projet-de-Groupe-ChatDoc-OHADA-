@@ -188,20 +188,7 @@ h2 {
 
   input,
   select {
-    min-height: 44px;
-    padding: 0.55rem 0.65rem;
-    font: inherit;
-    /* 16 px : en dessous, iOS zoome à la mise au point. */
-    font-size: var(--t-lg);
-    background: var(--surface);
-    border: 1px solid var(--gris-bordure);
-    border-radius: var(--rayon);
 
-    &:focus {
-      outline: none;
-      border-color: var(--or);
-      box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
-    }
   }
 }
 
@@ -237,17 +224,8 @@ h2 {
     min-width: 12rem;
     min-height: 44px;
     padding: 0.55rem 0.65rem;
-    font: inherit;
     font-size: var(--t-lg);
-    background: var(--surface);
-    border: 1px solid var(--gris-bordure);
-    border-radius: var(--rayon);
 
-    &:focus {
-      outline: none;
-      border-color: var(--or);
-      box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
-    }
   }
 }
 
@@ -511,20 +489,9 @@ tr.inactif {
 }
 
 .champ textarea {
-  padding: 0.55rem 0.65rem;
-  font: inherit;
-  font-size: var(--t-lg);
   line-height: 1.6;
-  background: var(--surface);
-  border: 1px solid var(--gris-bordure);
-  border-radius: var(--rayon);
   resize: vertical;
 
-  &:focus {
-    outline: none;
-    border-color: var(--or);
-    box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
-  }
 }
 
 /* --- Actions sur un compte ------------------------------------------ */

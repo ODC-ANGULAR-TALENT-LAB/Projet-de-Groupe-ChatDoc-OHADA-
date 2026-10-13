@@ -13,6 +13,8 @@ import { ErreurApi } from '../../core/services/api.service';
 import { GoogleService } from '../../core/services/google.service';
 import { ProfilService } from '../../core/services/profil.service';
 import { IconeComponent } from '../../partage/composants/icone.component';
+import { BlasonComponent } from '../../partage/composants/blason.component';
+import { Inclinaison3dDirective } from '../../partage/directives/inclinaison-3d.directive';
 
 /**
  * Connexion.
@@ -27,7 +29,7 @@ import { IconeComponent } from '../../partage/composants/icone.component';
 @Component({
   selector: 'app-connexion',
   standalone: true,
-  imports: [FormsModule, RouterLink, IconeComponent],
+  imports: [FormsModule, RouterLink, IconeComponent, BlasonComponent, Inclinaison3dDirective],
   templateUrl: './connexion.page.html',
   styleUrl: './authentification.scss',
 })

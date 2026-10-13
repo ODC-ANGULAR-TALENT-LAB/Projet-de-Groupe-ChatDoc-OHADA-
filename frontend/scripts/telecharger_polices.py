@@ -1,4 +1,4 @@
-"""Telecharge Source Serif 4 + Inter depuis Google Fonts et les embarque.
+"""Telecharge Fraunces + Figtree depuis Google Fonts et les embarque.
 
 POURQUOI EMBARQUER PLUTOT QUE LIER. Le cahier des charges vise des
 utilisateurs a Douala, ou la connexion n'est ni constante ni rapide. Une
@@ -23,12 +23,18 @@ AGENT = (
     "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 )
 
-# Le serif sert aussi aux extraits d'articles, pas seulement aux titres :
-# il lui faut donc le poids normal (400) en plus des poids de titrage.
+# POLICES VARIABLES. Une plage de graisses (400..700) au lieu d'une liste :
+# Google renvoie alors UN fichier par sous-ensemble qui couvre toutes les
+# graisses, au lieu d'un fichier par graisse. Quatre fichiers au lieu de
+# douze, et les graisses intermediaires (550, 650) deviennent possibles.
+#
+# Fraunces porte aussi l'axe de taille optique (opsz) : le dessin s'affine
+# en grand pour les titres et s'epaissit en petit pour les extraits
+# d'articles. Le serif sert aux deux, il lui faut donc cet axe.
 DEMANDE = (
     "https://fonts.googleapis.com/css2"
-    "?family=Inter:wght@400;500;600"
-    "&family=Source+Serif+4:wght@400;600;700"
+    "?family=Figtree:wght@400..700"
+    "&family=Fraunces:opsz,wght@9..144,400..700"
     "&display=swap"
 )
 
@@ -50,7 +56,8 @@ def lire(url: str) -> bytes:
 
 
 def nom_fichier(famille: str, graisse: str, sous_ensemble: str) -> str:
-    return f"{famille.replace(' ', '-').lower()}-{graisse}-{sous_ensemble}.woff2"
+    # Une plage « 400 700 » devient « 400-700 » dans le nom de fichier.
+    return f"{famille.replace(' ', '-').lower()}-{graisse.replace(' ', '-')}-{sous_ensemble}.woff2"
 
 
 def main() -> None:
@@ -69,7 +76,7 @@ def main() -> None:
             continue
 
         famille = re.search(r"font-family: '([^']+)'", bloc).group(1)
-        graisse = re.search(r"font-weight: (\d+)", bloc).group(1)
+        graisse = re.search(r"font-weight: ([\d ]+);", bloc).group(1).strip()
         source = re.search(r"url\((https://[^)]+\.woff2)\)", bloc).group(1)
         plage = re.search(r"unicode-range: ([^;]+);", bloc)
 

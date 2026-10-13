@@ -80,6 +80,12 @@
 }
 
 .lien-connexion {
+  /* La zone atteignable monte à 44 px sans que le texte bouge :
+     `inline-flex` + `align-items` recentrent le libellé dans la
+     hauteur gagnée, au lieu de le pousser vers le haut. */
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cible-tactile);
   color: var(--sur-nuit);
   font-size: var(--t-md);
   font-weight: 500;
@@ -103,28 +109,75 @@
   font-weight: 600;
   text-decoration: none;
   border-radius: var(--rayon);
-  transition: background-color 160ms ease, border-color 160ms ease;
-}
+  touch-action: manipulation;
+  transition:
+    transform var(--duree-etat) var(--courbe-ressort),
+    box-shadow var(--duree-etat) var(--courbe-sortie),
+    background-color var(--duree-etat) ease-out,
+    border-color var(--duree-etat) ease-out,
+    color var(--duree-etat) ease-out;
 
-.bouton-or {
-  color: var(--bleu-encre);
-  background: var(--or);
-  border: 1px solid var(--or);
+  app-icone {
+    transition: transform var(--duree-etat) var(--courbe-ressort);
+  }
 
-  &:hover {
-    background: #d9b43a;
-    border-color: #d9b43a;
+  &:hover app-icone {
+    transform: translateX(3px);
+  }
+
+  &:active {
+    transition-duration: var(--duree-geste);
   }
 }
 
-.bouton-fantome {
-  color: #fff;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+/* Même relief que les boutons de l'application (voir %relief-bouton
+   dans styles.scss) : tranche dorée sous la face, montée au survol,
+   écrasement à l'appui. Les deux pages se répondent. */
+.bouton-or {
+  color: var(--bleu-encre);
+  background: linear-gradient(180deg, #e0bf52 0%, var(--or) 100%);
+  border: 1px solid var(--or-fonce);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 45%),
+    0 var(--tranche) 0 var(--tranche-or),
+    0 10px 24px rgb(4 21 52 / 35%);
 
   &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 45%),
+      0 calc(var(--tranche) + 2px) 0 var(--tranche-or),
+      0 16px 32px rgb(4 21 52 / 40%);
+  }
+
+  &:active {
+    transform: translateY(var(--tranche));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 45%),
+      0 0 0 var(--tranche-or),
+      0 2px 6px rgb(4 21 52 / 35%);
+  }
+}
+
+/* Le bouton fantôme est en verre : il laisse voir la photo derrière lui,
+   flouée, et prend du relief sans concurrencer l'or. */
+.bouton-fantome {
+  color: #fff;
+  background: rgb(255 255 255 / 8%);
+  border: 1px solid rgb(255 255 255 / 35%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%);
+
+  &:hover {
+    transform: translateY(-2px);
     border-color: var(--or);
     color: var(--or);
+    background: rgb(255 255 255 / 12%);
+  }
+
+  &:active {
+    transform: translateY(1px);
   }
 }
 
@@ -140,10 +193,11 @@
 
 .hero {
   position: relative;
-  /* Le fond porte la barre publique : les deux forment un seul bloc
-     bleu nuit, sans couture visible. */
-  margin-top: -84px;
-  padding: 84px 0 0;
+  /* La barre publique est DANS ce bloc (voir le gabarit) : les deux ne
+     forment qu'un seul aplat bleu nuit, sans compensation à régler.
+     Il y avait ici `margin-top: -84px; padding: 84px 0 0` — la hauteur
+     de la barre sur une ligne, qui cessait d'être juste dès qu'elle en
+     prenait deux. */
   background: var(--bleu-encre);
   color: var(--sur-nuit);
   overflow: hidden;
@@ -461,16 +515,32 @@
   }
 }
 
+/* Tuile d'icône bombée : reflet en haut, arête en bas, ombre portée.
+   Elle pivote quand on survole la carte qui la porte — la carte, elle,
+   reste immobile : elle se lit, elle ne se clique pas. */
 .vignette {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: var(--e3);
-  color: var(--or-fonce);
-  background: var(--or-pale);
-  border-radius: var(--rayon);
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--e4);
+  color: var(--bleu-encre);
+  background: linear-gradient(145deg, #f3dc8c 0%, var(--or) 55%, var(--or-fonce) 100%);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    inset 0 -2px 0 rgb(0 0 0 / 15%),
+    0 3px 0 var(--tranche-or),
+    0 10px 20px rgb(201 162 39 / 30%);
+  transform: perspective(300px) rotateX(0deg) rotateY(0deg);
+  transition: transform var(--duree-page) var(--courbe-ressort);
+
+  --taille-icone: 1.5rem;
+}
+
+.carte:hover .vignette {
+  transform: perspective(300px) rotateX(12deg) rotateY(-18deg) translateZ(8px);
 }
 
 /* ------------------------------------------------------------------ */
@@ -531,6 +601,7 @@
 .lien-clair {
   display: inline-flex;
   align-items: center;
+  min-height: var(--cible-tactile);
   gap: var(--e2);
   color: var(--or);
   font-size: var(--t-md);
@@ -618,6 +689,12 @@
   gap: var(--e5);
 
   a {
+    /* La zone atteignable monte à 44 px sans que le texte bouge :
+         `inline-flex` + `align-items` recentrent le libellé dans la
+         hauteur gagnée, au lieu de le pousser vers le haut. */
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--cible-tactile);
     color: var(--sur-nuit-faible);
     font-size: var(--t-md);
     text-decoration: none;
@@ -666,47 +743,64 @@
   z-index: 3;
   display: flex;
   align-items: center;
-  padding: var(--e3) var(--e4);
+  padding: var(--e2) var(--e3);
   background: var(--or);
   color: var(--bleu-encre);
 }
 
+/* UNE SEULE RANGÉE, ET RIEN NE PASSE À LA LIGNE.
+   `flex-wrap: wrap` faisait tenir le bandeau sur QUATRE rangées sur un
+   téléphone de 360 px — l'icône seule, le texte sur deux lignes, puis
+   le bouton étalé sur toute la largeur. Il mangeait la moitié de
+   l'écran avant que la page ne commence, pour une proposition
+   secondaire.
+
+   `min-width: 0` sur le texte est ce qui permet à la rangée de tenir :
+   sans lui, un élément flex refuse de descendre sous la largeur de son
+   contenu et repousse le bouton à la ligne suivante. */
 .bandeau-contenu {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: var(--e3);
+  gap: var(--e2);
   max-width: 1200px;
   margin: 0 auto;
   flex: 1;
+  min-width: 0;
 
   p {
+    flex: 1;
+    min-width: 0;
     margin: 0;
-    font-size: var(--t-md);
-    line-height: 1.5;
+    font-size: var(--t-sm);
+    line-height: 1.35;
   }
 
   app-icone {
     flex-shrink: 0;
   }
+}
 
-  /* La note passe APRES le bouton dans le flux, mais sur sa propre
-     ligne : elle explique ce qui va se produire sans disputer
-     l'attention à l'action elle-même. */
-  .bandeau-note {
-    flex-basis: 100%;
-    margin: 0;
-    font-size: var(--t-xs);
-    opacity: 0.85;
+/* L'accroche est le seul élément vraiment facultatif du bandeau : elle
+   séduit, elle n'informe pas. Sous 480 px elle disparaît pour que le
+   titre tienne sur une ligne. */
+@media (max-width: 480px) {
+  .bandeau-accroche {
+    display: none;
   }
 }
 
 .bandeau-action {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0.5rem 1rem;
-  font-size: var(--t-md);
+  flex-shrink: 0;
+  /* 40 px et non 44 : dans une rangée de 40 px de haut, un bouton de 44
+     ferait grandir tout le bandeau de ce qu'on vient de lui reprendre.
+     La cible reste confortable, et le bandeau entier est refermable
+     d'un bouton voisin qui, lui, fait ses 44 px. */
+  min-height: 40px;
+  padding: 0.4rem 0.85rem;
+  font-size: var(--t-sm);
   font-weight: 600;
   color: var(--or);
   background: var(--bleu-encre);
@@ -728,11 +822,3 @@
   cursor: pointer;
 }
 
-/* Sur téléphone, le bouton prend toute la largeur : c'est là que le
-   bandeau sert le plus. */
-@media (max-width: 600px) {
-  .bandeau-action {
-    width: 100%;
-    justify-content: center;
-  }
-}

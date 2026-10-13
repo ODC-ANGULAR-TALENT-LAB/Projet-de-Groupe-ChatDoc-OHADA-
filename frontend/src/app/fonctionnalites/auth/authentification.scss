@@ -84,23 +84,25 @@ label {
   color: var(--texte);
 }
 
-input[type='email'],
-input[type='password'] {
-  padding: 0.7rem 0.75rem;
-  font: inherit;
-  /* 16 px au minimum : en dessous, iOS agrandit la page au focus et
-     l'utilisateur se retrouve à devoir dézoomer pour continuer. */
-  font-size: var(--t-lg);
-  background: var(--surface);
-  border: 1px solid var(--gris-bordure);
-  border-radius: var(--rayon);
+/* CETTE PAGE NE DÉCLARE PLUS SES CHAMPS, ET C'EST VOULU. Ils viennent
+   de la feuille globale, qui les désigne PAR EXCLUSION plutôt que par
+   énumération — et c'est ce détail qui compte ici.
 
-  &:focus-visible {
-    outline: 2px solid var(--bleu-nuit);
-    outline-offset: 1px;
-    border-color: var(--bleu-nuit);
-  }
-}
+   La règle qui vivait à cet endroit visait
+   `input[type='email'], input[type='password']`. Deux champs lui
+   échappaient :
+
+   1. « Prénom », de type `text` : 22 px de haut, 13,3 px de police —
+      la valeur par défaut du navigateur, aucune règle ne l'atteignait.
+   2. Le champ de mot de passe LUI-MÊME, dès qu'on appuie sur l'œil.
+      Son type est lié (`[type]="mdpVisible() ? 'text' : 'password'"`) :
+      en révélant son mot de passe, l'utilisateur voyait le champ
+      s'écraser de 44 à 22 px et la police rétrécir, au milieu du
+      formulaire.
+
+   Elle portait en plus son propre anneau de mise au point, en bleu
+   nuit, là où le reste de l'application en dorait le contour : une
+   troisième apparence pour un même geste. */
 
 .champ {
   display: flex;

@@ -23,6 +23,56 @@ import { Component, computed, input } from '@angular/core';
 
 /** Tracés, indexés par nom. Grille 24×24. */
 const TRACES: Record<string, string[]> = {
+  // UNE ICÔNE, UN SENS. Plusieurs entrées empruntaient l'icône d'une
+  // autre : « Assistant » celle du bouton « Nouvelle question »,
+  // « Administration » et « Forfaits » celle du profil, « Mises à jour »
+  // celle de l'historique, « Votre avis » le drapeau de signalement. Sur
+  // téléphone, où l'on choisit au coup d'œil, deux entrées au même dessin
+  // se confondent — et un drapeau pour « donner son avis » dit « signaler
+  // un problème ». Les huit tracés qui suivent leur rendent un sens propre.
+  assistant: [
+    'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
+    'M13 8H7',
+    'M17 12H7',
+  ],
+  bouclier: [
+    'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z',
+    'm9 12 2 2 4-4',
+  ],
+  calculatrice: [
+    'M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z',
+    'M8 6h8',
+    'M16 14v4',
+    'M16 10h.01',
+    'M12 10h.01',
+    'M8 10h.01',
+    'M12 14h.01',
+    'M8 14h.01',
+    'M12 18h.01',
+    'M8 18h.01',
+  ],
+  conformite: [
+    'M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z',
+    'M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2',
+    'm9 14 2 2 4-4',
+  ],
+  forfait: [
+    'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z',
+    'M2 10h20',
+    'M6 15h4',
+  ],
+  methodologie: [
+    'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z',
+    'M12 16v-4',
+    'M12 8h.01',
+  ],
+  journal: [
+    'M10.27 21a2 2 0 0 0 3.46 0',
+    'M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.96 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.41 5.96-2.74 7.33',
+  ],
+  avis: [
+    'M11.53 2.3a.53.53 0 0 1 .95 0l2.31 4.68a2.12 2.12 0 0 0 1.6 1.16l5.16.76a.53.53 0 0 1 .3.9l-3.74 3.64a2.12 2.12 0 0 0-.61 1.88l.88 5.14a.53.53 0 0 1-.77.56l-4.62-2.43a2.12 2.12 0 0 0-1.97 0L6.4 21.01a.53.53 0 0 1-.77-.56l.88-5.14a2.12 2.12 0 0 0-.61-1.88L2.16 9.8a.53.53 0 0 1 .3-.91l5.16-.75a2.12 2.12 0 0 0 1.6-1.16z',
+  ],
   'nouveau-chat': [
     'M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7',
     'M18.4 2.6a1.9 1.9 0 0 1 2.7 2.7L12.5 14l-3.6 1 1-3.6z',

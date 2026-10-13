@@ -3,10 +3,16 @@
 /* Identité visuelle « Lex-Sovereign » — cahier des charges §12 et
    maquette (stitch_.../lex_sovereign/DESIGN.md).
 
-   Minimalisme institutionnel : bleu nuit pour l'autorité, or réservé
-   STRICTEMENT à la base légale et aux actions principales, fond papier
-   crème pour la lecture longue. La profondeur vient des filets et des
-   aplats, pas des ombres portées. */
+   Bleu nuit pour l'autorité, or réservé STRICTEMENT à la base légale et
+   aux actions principales, fond papier crème pour la lecture longue.
+
+   LA PROFONDEUR EST UN SIGNAL, PAS UN DÉCOR. Ce qui se touche est en
+   relief (boutons, tuiles d'icônes, blason) ; ce qui se lit reste à plat.
+   Un lecteur distingue ainsi, sans y penser, le texte de loi des
+   commandes qui l'entourent. Le relief se construit avec les jetons
+   `--relief-*` et `--ombre-*` ci-dessous, jamais avec une ombre inventée
+   sur place : c'est leur échelle commune qui fait paraître l'ensemble
+   éclairé par une seule et même lumière, venue d'en haut. */
 
 :root {
   /* --- Couleurs de marque ------------------------------------------- */
@@ -54,9 +60,16 @@
      peut échouer à chaque visite. Les valeurs qui suivent restent des
      replis — ils servent le temps du chargement, grâce à
      `font-display: swap`. */
-  --police-serif: 'Source Serif 4', 'Source Serif Pro', 'Iowan Old Style',
-    Georgia, 'Times New Roman', serif;
-  --police-interface: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+  /* Fraunces : un serif d'édition à taille optique — fin et contrasté
+     en titrage, robuste en petit corps pour les extraits d'articles.
+     Figtree : une linéale géométrique, nette à 13 px dans l'interface.
+     Plus Jakarta Sans a été essayée et écartée : son espace entre les
+     mots est si étroit qu'à la résolution d'un écran courant, sous
+     Windows, « Posez votre » se lisait « Posezvotre ». Pour un outil où
+     l'on lit des articles entiers, c'est disqualifiant.
+     Les deux sont variables (une seule police couvre 400 à 700). */
+  --police-serif: Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --police-interface: Figtree, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     system-ui, sans-serif;
 
   /* --- Échelle typographique ------------------------------------------
@@ -99,17 +112,96 @@
   --e6: 1.5rem; /* 24 px */
   --e8: 2rem; /* 32 px */
 
+  /* --- Champs de saisie : une seule source ---------------------------
+     Les champs étaient redéfinis dans DOUZE fichiers, avec six valeurs
+     de rembourrage — 0,45 / 0,5 / 0,55 / 0,6 / 0,65 / 0,7 rem — et
+     aucune hauteur minimale. Deux conséquences mesurables :
+
+     1. La cible tactile tombait à ~33 px, sous les 44 px nécessaires
+        pour être atteinte sans viser.
+     2. À 14 px, iOS AGRANDIT la page dès qu'on touche un champ. L'écran
+        saute, et il faut dézoomer à la main après chaque saisie.
+
+     D'où ces trois variables. Un champ qui les emploie est correct
+     partout, et le jour où l'une bouge, elle bouge pour toute
+     l'application. */
+  --controle-hauteur: 2.75rem; /* 44 px — cible tactile minimale */
+  --controle-police: 1rem; /* 16 px — en deçà, iOS zoome */
+  --controle-rembourrage: 0.625rem 0.75rem; /* 10 px 12 px */
+
+  /* Les trois états d'une bordure de champ. Les nommer évite qu'un
+     écran invente sa propre nuance de survol. */
+  --champ-bordure: var(--gris-bordure);
+  --champ-bordure-survol: #a9a294;
+  --champ-bordure-active: var(--or);
+  /* Le halo de mise au point. 18 % : assez pour se voir sur le papier
+     crème, assez discret pour ne pas transformer le champ en alerte. */
+  --champ-anneau: rgb(201 162 39 / 18%);
+
+  /* --- Cible tactile -------------------------------------------------
+     44 px, la mesure d'Apple, reprise par Material sous 48 dp. Elle
+     vaut pour TOUT ce qui se touche, pas seulement les champs : la
+     mesure des pages a trouvé des liens de navigation à 17 et 21 px de
+     haut — un tiers de la hauteur d'un doigt.
+
+     Elle ne diminue pas sur poste de travail. Un lien qui monte à 44 px
+     dans une rangée déjà plus haute ne change rien à l'écran, et le
+     jour où la page est ouverte sur un écran tactile, elle est juste. */
+  --cible-tactile: 2.75rem; /* 44 px */
+
+  /* --- Formes et gabarits -------------------------------------------- */
   /* Formes douces mais pas de pilules : on reste sur un outil sérieux. */
-  --rayon: 4px;
-  --rayon-carte: 8px;
+  --rayon: 8px;
+  --rayon-carte: 14px;
   --rayon-champ: 10px;
 
   --largeur-laterale: 280px;
   --largeur-lecture: 800px;
 
-  /* Seule la barre latérale et les modales portent une ombre, très
-     diffuse, pour se détacher du plan de lecture. */
-  --ombre-flottante: 0 4px 20px rgb(27 42 74 / 8%);
+  /* --- Profondeur : une seule lumière, venue d'en haut ----------------
+     Chaque ombre est double : une courte et dense qui pose l'objet sur
+     son plan, une longue et diffuse qui dit à quelle hauteur il flotte.
+     Une ombre unique paraît collée ou floue ; c'est la paire qui donne
+     le volume. Toutes sont teintées de bleu nuit, jamais de noir pur,
+     qui salit le papier crème. */
+  --ombre-1: 0 1px 2px rgb(27 42 74 / 8%), 0 2px 6px rgb(27 42 74 / 6%);
+  --ombre-2: 0 2px 4px rgb(27 42 74 / 8%), 0 8px 20px rgb(27 42 74 / 10%);
+  --ombre-3: 0 4px 8px rgb(27 42 74 / 10%), 0 18px 40px rgb(27 42 74 / 16%);
+  --ombre-flottante: var(--ombre-2);
+
+  /* RELIEF DES COMMANDES. La tranche (`0 Npx 0`) est l'épaisseur du
+     bouton vu de face ; le reflet intérieur en haut est l'arête qui
+     accroche la lumière. Enfoncer un bouton, c'est réduire sa tranche
+     d'autant qu'on le descend : il s'écrase sur place, sans rien pousser
+     autour de lui, puisque `transform` ne touche pas à la mise en page. */
+  --tranche: 4px;
+  --reflet: inset 0 1px 0 rgb(255 255 255 / 22%);
+  --tranche-nuit: #0b1630;
+  --tranche-or: #8a6d14;
+  --tranche-claire: #cfc8b6;
+
+  /* --- Mouvement : un seul rythme pour toute l'application -----------
+     Rapide à l'entrée d'un geste (retour en moins de 100 ms), plus lent
+     pour les changements de page qu'on doit pouvoir suivre des yeux.
+     Le ressort dépasse légèrement sa cible avant de s'y poser : c'est
+     ce qui donne aux boutons et aux tuiles un air physique plutôt que
+     mécanique. */
+  --duree-geste: 120ms;
+  --duree-etat: 220ms;
+  --duree-page: 320ms;
+  --courbe-sortie: cubic-bezier(0.22, 1, 0.36, 1);
+  --courbe-ressort: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Sur poste de travail, le pointeur est précis et l'écran large : on
+   peut resserrer sans rien perdre. Le zoom iOS n'existe pas ici, donc
+   la contrainte des 16 px tombe. */
+@media (min-width: 1024px) {
+  :root {
+    --controle-hauteur: 2.375rem; /* 38 px */
+    --controle-police: var(--t-md); /* 14 px */
+    --controle-rembourrage: 0.5rem 0.625rem;
+  }
 }
 
 * {
@@ -144,6 +236,123 @@ select {
   outline-offset: 2px;
 }
 
+/* --- Zones de saisie -------------------------------------------------
+   UNE SEULE DÉFINITION POUR TOUTE L'APPLICATION.
+
+   Le relevé a trouvé DEUX apparences de mise au point qui coexistaient :
+   cinq champs prenaient une bordure dorée avec un halo diffus, les huit
+   autres ne définissaient rien et retombaient sur l'anneau global —
+   un trait de 2 px détaché du champ par 2 px de vide. Les deux se
+   valent isolément ; c'est de les rencontrer tour à tour, en remplissant
+   un même formulaire, qui donne l'impression d'un assemblage.
+
+   Le repli de couleur est le même partout, l'anneau aussi, et le survol
+   — qui n'existait nulle part — dit désormais qu'un champ se clique
+   avant même qu'on le touche.
+
+   `outline` transparent plutôt qu'absent : en mode contraste forcé
+   (Windows, préférence système), le navigateur REMPLACE une bordure
+   transparente par une couleur système. `outline: none` aurait laissé
+   ces utilisateurs sans aucun repère de mise au point ; ici ils gardent
+   le leur, et nous gardons le nôtre. */
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+    [type='file']
+  ),
+select,
+textarea {
+  /* Les trois métriques viennent d'ici aussi, et plus de chaque page.
+     Elles y étaient recopiées douze fois avec six valeurs de
+     rembourrage différentes ; le jour où l'une doit bouger, elle bouge
+     une fois. Les champs qui ont un besoin propre — la zone de saisie
+     du chat, encadrée par son conteneur — se redéclarent chez eux. */
+  min-height: var(--controle-hauteur);
+  padding: var(--controle-rembourrage);
+  font: inherit;
+  font-size: var(--controle-police);
+  color: var(--texte);
+  background-color: var(--champ-fond, var(--surface));
+  border: 1px solid var(--champ-bordure);
+  border-radius: var(--rayon);
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  transition:
+    border-color 140ms ease-out,
+    box-shadow 140ms ease-out;
+
+  &::placeholder {
+    /* L'invite n'est pas une valeur : elle doit se lire sans jamais
+       être prise pour du texte déjà saisi. */
+    color: var(--texte-faible);
+    opacity: 1;
+  }
+
+  &:hover:not(:disabled):not([readonly]) {
+    border-color: var(--champ-bordure-survol);
+  }
+
+  &:focus-visible {
+    border-color: var(--champ-bordure-active);
+    box-shadow: 0 0 0 3px var(--champ-anneau);
+  }
+
+  &:disabled {
+    color: var(--texte-faible);
+    background-color: var(--surface-basse);
+    cursor: not-allowed;
+  }
+
+  /* EN LECTURE SEULE, CE N'EST PAS LA MÊME CHOSE QUE DÉSACTIVÉ : la
+     valeur reste sélectionnable et copiable, et le champ reste
+     atteignable au clavier. Le fond le distingue, le curseur aussi. */
+  &[readonly] {
+    background-color: var(--surface-basse);
+    border-style: dashed;
+  }
+}
+
+/* Le menu déroulant natif ne se ressemble pas d'un système à l'autre :
+   flèche bleue sur Windows, chevron gris sur macOS, triangle sur
+   Android. On le neutralise et on redessine le chevron, pour qu'un
+   « choisir » ait la même tête que les champs qui l'entourent.
+
+   Le SVG est écrit dans la feuille, sans requête : une flèche qui
+   arrive en retard ferait clignoter chaque menu au chargement. */
+select {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%235f5f5f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6.5 8 10.5 12 6.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 1rem;
+}
+
+/* Le champ de fichier garde son rendu natif — lui imposer une hauteur
+   ou un fond décale le bouton que le système dessine à l'intérieur.
+   Seul ce bouton est repris, pour qu'il cesse d'être le seul élément
+   gris de formulaires qui n'en comptent aucun autre. */
+input[type='file'] {
+  font-size: var(--controle-police);
+
+  &::file-selector-button {
+    margin-right: var(--e3);
+    padding: 0.4rem 0.75rem;
+    font: inherit;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    color: var(--bleu-nuit);
+    background: var(--surface);
+    border: 1px solid var(--champ-bordure);
+    border-radius: var(--rayon);
+    cursor: pointer;
+    transition: border-color 140ms ease-out;
+  }
+
+  &::file-selector-button:hover {
+    border-color: var(--champ-bordure-active);
+  }
+}
+
 /* --- Boutons ---------------------------------------------------------
    UNE SEULE DÉFINITION, ET ELLE VIT ICI. Ces classes étaient
    redéfinies dans six feuilles de page : l'encapsulation d'Angular
@@ -163,6 +372,7 @@ select {
    côtoient. */
 
 %socle-bouton {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -170,62 +380,119 @@ select {
   /* Le socle tactile ne dépend pas du texte : un bouton court et un
      bouton long font la même hauteur. */
   min-height: 44px;
-  padding: 0.6rem 1.1rem;
+  padding: 0.6rem 1.15rem;
   font: inherit;
   font-size: var(--t-md);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.2;
+  letter-spacing: 0.005em;
   border-radius: var(--rayon);
   text-decoration: none;
   cursor: pointer;
   /* Empêche le délai de 300 ms au toucher, sans désactiver le zoom. */
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    background-color 160ms ease-out,
-    border-color 160ms ease-out,
-    color 160ms ease-out;
+    transform var(--duree-etat) var(--courbe-ressort),
+    box-shadow var(--duree-etat) var(--courbe-sortie),
+    background-color var(--duree-etat) ease-out,
+    border-color var(--duree-etat) ease-out,
+    color var(--duree-etat) ease-out,
+    filter var(--duree-etat) ease-out;
+
+  /* L'icône suit le geste avec un temps de retard : elle avance un peu
+     plus que le bouton au survol. C'est ce décalage, plus que le
+     mouvement lui-même, qui donne l'impression de profondeur. */
+  app-icone {
+    transition: transform var(--duree-etat) var(--courbe-ressort);
+  }
+
+  &:hover:not(:disabled):not([aria-disabled='true']) app-icone {
+    transform: translateX(2px) scale(1.08);
+  }
+
+  /* L'enfoncement est rapide (un doigt n'attend pas) ; le retour, lui,
+     prend le ressort de la transition par défaut. */
+  &:active:not(:disabled):not([aria-disabled='true']) {
+    transition-duration: var(--duree-geste);
+  }
 
   &:disabled,
   &[aria-disabled='true'] {
     /* 0,45 : assez éteint pour se lire comme inactif, assez présent
-       pour que l'intitulé reste déchiffrable. */
+       pour que l'intitulé reste déchiffrable. Un bouton inactif perd
+       aussi son relief : il ne promet plus de s'enfoncer. */
     opacity: 0.45;
     cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* Le relief en trois temps, partagé par les variantes pleines :
+     repos   — la tranche se voit sous la face ;
+     survol  — le bouton monte d'un pixel, l'ombre portée s'allonge ;
+     appui   — il descend de toute sa tranche, qui disparaît.
+   `--teinte-tranche` est fixée par chaque variante. */
+%relief-bouton {
+  box-shadow:
+    var(--reflet),
+    0 var(--tranche) 0 var(--teinte-tranche),
+    var(--ombre-1);
+
+  &:hover:not(:disabled):not([aria-disabled='true']) {
+    transform: translateY(-1px);
+    box-shadow:
+      var(--reflet),
+      0 calc(var(--tranche) + 1px) 0 var(--teinte-tranche),
+      var(--ombre-2);
+  }
+
+  &:active:not(:disabled):not([aria-disabled='true']) {
+    transform: translateY(var(--tranche));
+    box-shadow:
+      var(--reflet),
+      0 0 0 var(--teinte-tranche),
+      0 1px 2px rgb(27 42 74 / 12%);
   }
 }
 
 .principal {
   @extend %socle-bouton;
+  @extend %relief-bouton;
+  --teinte-tranche: var(--tranche-nuit);
   color: #fff;
-  background: var(--bleu-nuit);
-  border: 1px solid var(--bleu-nuit);
+  /* Un dégradé vertical léger : la face reçoit la lumière en haut. À
+     plat, le même bleu paraît un aplat imprimé ; bombé, un objet. */
+  background: linear-gradient(180deg, var(--bleu-nuit-clair) 0%, var(--bleu-nuit) 100%);
+  border: 1px solid var(--bleu-encre);
 
   &:hover:not(:disabled) {
-    background: var(--bleu-nuit-clair);
-    border-color: var(--bleu-nuit-clair);
+    filter: brightness(1.08);
   }
+}
 
-  /* L'enfoncement se marque par la couleur, jamais par un déplacement :
-     un bouton qui bouge décale ce qui l'entoure. */
-  &:active:not(:disabled) {
-    background: var(--bleu-encre);
-    border-color: var(--bleu-encre);
-  }
+/* Action d'engagement sur fond sombre ou dans un parcours de conversion
+   (page d'accueil, forfaits) : l'or prend le relais du bleu. Le texte
+   reste bleu nuit — du blanc sur cet or tomberait à 2,4:1. */
+.principal.or {
+  --teinte-tranche: var(--tranche-or);
+  color: var(--bleu-encre);
+  background: linear-gradient(180deg, #ddb945 0%, var(--or) 100%);
+  border-color: var(--or-fonce);
 }
 
 .secondaire {
   @extend %socle-bouton;
+  @extend %relief-bouton;
+  --teinte-tranche: var(--tranche-claire);
   color: var(--bleu-nuit);
-  background: var(--surface);
+  background: linear-gradient(180deg, #fff 0%, #faf8f3 100%);
   border: 1px solid var(--gris-bordure);
 
   &:hover:not(:disabled),
   &:focus-visible {
     border-color: var(--or);
-  }
-
-  &:active:not(:disabled) {
-    background: var(--surface-haute);
   }
 }
 
@@ -233,29 +500,36 @@ select {
   @extend %socle-bouton;
   padding: 0.6rem 0.5rem;
   font-size: var(--t-sm);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--gris-texte);
   background: none;
   border: 0;
   text-decoration: underline;
-  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-underline-offset: 0.25em;
 
   &:hover:not(:disabled) {
     color: var(--bleu-nuit);
+    text-decoration-color: var(--or);
   }
 }
 
 /* Action destructrice : couleur sémantique ET intitulé explicite, pour
-   qu'elle ne se distingue pas de la couleur seule. */
+   qu'elle ne se distingue pas de la couleur seule. Elle garde un relief
+   discret au repos et ne prend sa couleur pleine qu'au survol : on ne
+   rend pas désirable ce qui efface. */
 .destructif {
   @extend %socle-bouton;
+  @extend %relief-bouton;
+  --teinte-tranche: #d9bcbc;
   color: #8c2f2f;
   background: var(--surface);
   border: 1px solid #d9bcbc;
 
   &:hover:not(:disabled) {
+    --teinte-tranche: #5e1d1d;
     color: #fff;
-    background: #8c2f2f;
+    background: linear-gradient(180deg, #a13a3a 0%, #8c2f2f 100%);
     border-color: #8c2f2f;
   }
 }
@@ -288,6 +562,106 @@ time,
   white-space: nowrap;
 }
 
+/* --- Titres -----------------------------------------------------------
+   Fraunces s'affine d'elle-même avec la taille (axe optique, activé par
+   défaut) ; on resserre seulement l'approche des grands corps, qui
+   paraissent sinon espacés. `balance` répartit un titre sur deux lignes
+   de longueur voisine au lieu d'en laisser un mot seul en dessous. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* --- Changement de page ----------------------------------------------
+   L'ancienne page s'efface vite, la nouvelle monte légèrement vers le
+   lecteur en se précisant. La sortie est plus brève que l'entrée (60 %) :
+   l'interface paraît répondre tout de suite, et c'est la page d'arrivée
+   qu'on prend le temps de montrer.
+
+   Le reste de l'écran (racine) ne s'anime pas : la barre latérale et les
+   onglets ne bougent pas quand on change de page, et les faire fondre
+   donnerait l'impression que toute l'application se recharge. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(page) {
+  animation: page-sortie 180ms ease-in both;
+}
+
+::view-transition-new(page) {
+  animation: page-entree var(--duree-page) var(--courbe-sortie) both;
+}
+
+@keyframes page-sortie {
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
+  }
+}
+
+@keyframes page-entree {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(3px);
+  }
+}
+
+/* --- Entrée en cascade -----------------------------------------------
+   Pour une liste de cartes ou de suggestions : chaque élément arrive
+   40 ms après le précédent. Assez pour que l'œil lise un ordre, trop peu
+   pour qu'on attende le dernier. Au-delà du huitième, tous arrivent
+   ensemble — une longue liste ne doit pas mettre une seconde à paraître. */
+.cascade > * {
+  animation: cascade-entree 420ms var(--courbe-sortie) backwards;
+}
+
+@for $i from 1 through 8 {
+  .cascade > :nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 40}ms;
+  }
+}
+
+.cascade > :nth-child(n + 9) {
+  animation-delay: 320ms;
+}
+
+@keyframes cascade-entree {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotateX(-8deg);
+  }
+}
+
+/* --- Carte en relief --------------------------------------------------
+   Pour une carte qui se clique (suggestion, offre, fiche) : elle monte
+   vers le pointeur et son ombre s'allonge. Réservée à ce qui se clique —
+   une carte de lecture qui bouge au survol promet une action qu'elle
+   n'a pas. */
+.carte-relief {
+  transition:
+    transform var(--duree-etat) var(--courbe-ressort),
+    box-shadow var(--duree-etat) var(--courbe-sortie),
+    border-color var(--duree-etat) ease-out;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--ombre-2);
+    }
+  }
+
+  &:active {
+    transition-duration: var(--duree-geste);
+    transform: translateY(0) scale(0.99);
+    box-shadow: var(--ombre-1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -295,5 +669,18 @@ time,
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Les pseudo-éléments de transition de page ne sont pas atteints par
+     `*` : sans cette règle, le changement de page resterait animé chez
+     ceux qui ont demandé le contraire. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  .carte-relief:hover {
+    transform: none;
   }
 }

@@ -116,20 +116,12 @@ h1 {
   }
 
   textarea {
-    padding: 0.65rem;
-    font: inherit;
-    font-size: var(--t-lg);
+    /* Pas de hauteur minimale ici : une zone de texte fait déjà
+       plusieurs lignes, la contrainte tactile est acquise. Restent le
+       rembourrage et la taille de police, communs à tous les champs. */
     line-height: 1.6;
-    background: var(--surface);
-    border: 1px solid var(--gris-bordure);
-    border-radius: var(--rayon);
     resize: vertical;
 
-    &:focus {
-      outline: none;
-      border-color: var(--or);
-      box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
-    }
   }
 }
 

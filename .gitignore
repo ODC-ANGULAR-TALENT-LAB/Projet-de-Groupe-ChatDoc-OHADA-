@@ -37,3 +37,10 @@ Desktop.ini
 
 # Journaux du serveur de developpement (voir backend/scripts/demarrer_api.ps1)
 backend/journal-api*.log
+
+# Sorties de l'outil de mesure responsive (frontend/outils) : le profil
+# du navigateur sans tête et le relevé de la dernière campagne. Le relevé
+# se régénère à chaque exécution ; le versionner ferait un conflit à
+# chaque mesure sans rien apprendre à personne.
+frontend/outils/.profil-chrome/
+frontend/outils/constats-responsive.json

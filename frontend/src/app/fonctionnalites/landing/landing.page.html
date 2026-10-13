@@ -14,9 +14,19 @@
   <aside class="bandeau-mobile">
     <div class="bandeau-contenu">
       <app-icone nom="telecharger" />
+      <!-- UNE SEULE LIGNE. Le bandeau tenait auparavant sur trois — un
+           titre, une accroche, puis un avertissement Android sur sa
+           propre ligne — et mangeait le tiers d'un écran de téléphone
+           avant même que la page ne commence. Une proposition
+           secondaire ne doit pas coûter plus de place que ce qu'elle
+           propose.
+
+           L'avertissement Android n'est pas perdu : il est repris dans
+           la description de la release et dans le README. Il n'avait
+           sa place ici que si le bandeau restait discret. -->
       <p>
-        <strong>ChatDocs OHADA sur Android.</strong>
-        Le corpus dans votre poche, consultable même hors connexion.
+        <strong>ChatDocs OHADA sur Android</strong>
+        <span class="bandeau-accroche"> — le corpus dans votre poche</span>
       </p>
       <!-- `download`, ET PLUS DE `target`. Le fichier étant désormais
            servi par ce site, l'attribut `download` fonctionne : le
@@ -25,17 +35,8 @@
            `download` est sans effet — la page était alors quittée, et
            un onglet séparé restait blanc derrière le téléchargement. -->
       <a class="bandeau-action" [href]="lienApk" download="chatdocs-ohada.apk">
-        Télécharger l'application
+        Télécharger
       </a>
-      <!-- DIRE CE QUI VA SE PASSER, AVANT QUE CELA ARRIVE. Android
-           demande une autorisation explicite pour installer hors
-           magasin, et le téléchargement paraît figé à 100 % tant qu'on
-           ne l'a pas accordée. Prévenir ici évite de prendre une
-           protection du système pour une panne. -->
-      <p class="bandeau-note">
-        Android demandera d'autoriser l'installation depuis votre
-        navigateur : c'est normal hors Play Store.
-      </p>
     </div>
     <button
       type="button"
@@ -47,36 +48,6 @@
     </button>
   </aside>
 }
-
-<!-- ================================================================ -->
-<!-- BARRE PUBLIQUE                                                    -->
-<!-- ================================================================ -->
-<header class="entete">
-  <a class="marque" routerLink="/">
-    <img
-      class="marque-blason"
-      src="/images/blason.webp"
-      alt=""
-      width="131"
-      height="162"
-    />
-    <span class="marque-texte">
-      <span class="marque-nom">ChatDocs</span>
-      <span class="marque-suffixe">OHADA</span>
-    </span>
-  </a>
-
-  <nav class="liens" aria-label="Sections">
-    <a href="#professionnels">Fonctionnalités</a>
-    <a href="#fiabilite">Fiabilité</a>
-    <a routerLink="/methodologie">Méthodologie</a>
-  </nav>
-
-  <div class="acces">
-    <a class="lien-connexion" routerLink="/connexion">Connexion</a>
-    <a class="bouton-or" routerLink="/inscription">Essai gratuit</a>
-  </div>
-</header>
 
 <!-- ================================================================ -->
 <!-- HERO — fond bleu nuit sous un voile                               -->
@@ -123,6 +94,44 @@
     fond. Le halo, lui, conduit l'œil vers la démonstration.
   -->
   <div class="voile" aria-hidden="true"></div>
+
+  <!-- ============================================================== -->
+  <!-- BARRE PUBLIQUE                                                  -->
+  <!--                                                                 -->
+  <!-- ELLE EST DANS LE HERO, ET C'EST LE CORRECTIF.                   -->
+  <!--                                                                 -->
+  <!-- Elle était posée juste avant, et le hero la rattrapait par un    -->
+  <!-- `margin-top: -84px` pour glisser dessous. 84 px, c'était sa      -->
+  <!-- hauteur SUR UNE LIGNE. Sur un téléphone de 360 px, « Connexion » -->
+  <!-- et « Essai gratuit » passent à la ligne : la barre monte à       -->
+  <!-- ~135 px, le hero n'en remonte toujours que 84, et cinquante      -->
+  <!-- pixels de barre restent sur le fond crème — avec « ChatDocs »    -->
+  <!-- en blanc sur crème, illisible.                                   -->
+  <!--                                                                 -->
+  <!-- À l'intérieur, il n'y a plus rien à compenser : le fond du hero  -->
+  <!-- porte la barre quelle que soit sa hauteur, sur un écran comme    -->
+  <!-- sur l'autre.                                                     -->
+  <!-- ============================================================== -->
+  <header class="entete">
+    <a class="marque" routerLink="/" appInclinaison3d="14">
+      <app-blason class="marque-blason" />
+      <span class="marque-texte">
+        <span class="marque-nom">ChatDocs</span>
+        <span class="marque-suffixe">OHADA</span>
+      </span>
+    </a>
+
+    <nav class="liens" aria-label="Sections">
+      <a href="#professionnels">Fonctionnalités</a>
+      <a href="#fiabilite">Fiabilité</a>
+      <a routerLink="/methodologie">Méthodologie</a>
+    </nav>
+
+    <div class="acces">
+      <a class="lien-connexion" routerLink="/connexion">Connexion</a>
+      <a class="bouton-or" routerLink="/inscription">Essai gratuit</a>
+    </div>
+  </header>
 
   <div class="hero-contenu">
     <div class="hero-texte">
@@ -276,14 +285,8 @@
 <!-- ================================================================ -->
 <footer class="pied">
   <div class="pied-contenu">
-    <a class="marque" routerLink="/">
-      <img
-        class="marque-blason"
-        src="/images/blason.webp"
-        alt=""
-        width="131"
-        height="162"
-      />
+    <a class="marque" routerLink="/" appInclinaison3d="14">
+      <app-blason class="marque-blason" />
       <span class="marque-texte">
         <span class="marque-nom">ChatDocs</span>
         <span class="marque-suffixe">OHADA</span>

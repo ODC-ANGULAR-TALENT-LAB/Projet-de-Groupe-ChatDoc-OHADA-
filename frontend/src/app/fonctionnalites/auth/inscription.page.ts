@@ -13,6 +13,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { ErreurApi } from '../../core/services/api.service';
 import { GoogleService } from '../../core/services/google.service';
 import { IconeComponent } from '../../partage/composants/icone.component';
+import { BlasonComponent } from '../../partage/composants/blason.component';
+import { Inclinaison3dDirective } from '../../partage/directives/inclinaison-3d.directive';
 
 /** Longueur exigée par le serveur. Répétée ici pour prévenir AVANT
     l'envoi : un refus après coup fait ressaisir le formulaire. */
@@ -28,7 +30,7 @@ const LONGUEUR_MINIMALE = 8;
 @Component({
   selector: 'app-inscription',
   standalone: true,
-  imports: [FormsModule, RouterLink, IconeComponent],
+  imports: [FormsModule, RouterLink, IconeComponent, BlasonComponent, Inclinaison3dDirective],
   templateUrl: './inscription.page.html',
   styleUrl: './authentification.scss',
 })

@@ -49,15 +49,11 @@ header {
     color: var(--gris-texte);
   }
 
-  select,
-  input[type='file'] {
-    padding: 0.5rem 0.6rem;
-    font: inherit;
-    font-size: var(--t-md);
-    background: var(--surface);
-    border: 1px solid var(--gris-bordure);
-    border-radius: var(--rayon);
-  }
+  /* Le menu déroulant et le champ de fichier n'ont plus rien à déclarer
+     ici : leur apparence, leur hauteur et leur mise au point viennent
+     de la feuille globale, qui traite aussi le cas du champ de fichier
+     à part — son bouton est dessiné par le système et une hauteur
+     imposée le laisserait flotter au milieu d'un cadre vide. */
 
   button {
     align-self: flex-start;

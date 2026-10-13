@@ -96,15 +96,9 @@ header {
   }
 
   input[type='text'] {
-    padding: 0.55rem 0.6rem;
-    font: inherit;
     /* Chiffres à chasse fixe : sans eux, la largeur du champ danse à
        chaque frappe sur un montant à sept chiffres. */
     font-variant-numeric: tabular-nums;
-    font-size: var(--t-lg);
-    background: var(--surface);
-    border: 1px solid var(--gris-bordure);
-    border-radius: var(--rayon);
   }
 
   button {

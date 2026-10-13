@@ -125,7 +125,7 @@ import { NoeudSommaire } from '../../../core/models';
         color: var(--bleu-nuit);
         text-decoration: none;
         border: 1px solid var(--bordure);
-        border-radius: 4px;
+        border-radius: var(--rayon);
         padding: 0.2rem 0.5rem;
 
         &:hover,

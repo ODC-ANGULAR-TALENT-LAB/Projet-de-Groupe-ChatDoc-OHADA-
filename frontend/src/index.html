@@ -11,20 +11,19 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="manifest" href="manifest.webmanifest">
 
-  <!-- Préchargement des deux seules graisses présentes sur TOUTE page :
-       Inter 400 pour l'interface, Source Serif 4 600 pour les titres et
+  <!-- Préchargement des deux polices présentes sur TOUTE page :
+       Figtree pour l'interface, Fraunces pour les titres et
        les références d'articles. Sans cela, le navigateur ne les
        découvre qu'après avoir analysé la feuille de style, et le texte
        bascule sous les yeux du lecteur.
 
-       On s'arrête à deux : précharger chaque graisse ferait télécharger
-       d'emblée des fichiers que la page courante n'emploie pas, ce qui
-       retarderait précisément ce qu'on cherche à accélérer. Les autres
-       arrivent à la demande, via unicode-range. -->
+       Ce sont des polices VARIABLES : un seul fichier par famille porte
+       toutes les graisses. Précharger le sous-ensemble latin suffit ;
+       le latin étendu arrive à la demande, via unicode-range. -->
   <link rel="preload" as="font" type="font/woff2" crossorigin
-        href="polices/inter-400-latin.woff2">
+        href="polices/figtree-400-700-latin.woff2">
   <link rel="preload" as="font" type="font/woff2" crossorigin
-        href="polices/source-serif-4-600-latin.woff2">
+        href="polices/fraunces-400-700-latin.woff2">
 </head>
 <body>
   <app-root></app-root>

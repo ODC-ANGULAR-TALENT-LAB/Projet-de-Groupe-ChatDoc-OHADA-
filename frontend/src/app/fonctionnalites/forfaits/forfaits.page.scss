@@ -278,18 +278,9 @@ h1 {
   input {
     min-height: 44px;
     padding: 0.6rem 0.7rem;
-    font: inherit;
     /* 16 px minimum : en dessous, iOS zoome à la mise au point. */
     font-size: var(--t-lg);
-    background: var(--surface);
-    border: 1px solid var(--gris-bordure);
-    border-radius: var(--rayon);
 
-    &:focus {
-      outline: none;
-      border-color: var(--or);
-      box-shadow: 0 0 0 3px rgb(201 162 39 / 18%);
-    }
   }
 
   .aide {
