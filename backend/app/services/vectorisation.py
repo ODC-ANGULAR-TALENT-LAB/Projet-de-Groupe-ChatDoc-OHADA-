@@ -40,6 +40,19 @@ journal = logging.getLogger(__name__)
 # croire a un compte sans credit alors que le compte etait bon.
 TAILLE_LOT = 16
 
+# TEXTES TRAITES EN PREMIER, dans cet ordre. Le quota gratuit ne couvre
+# qu'environ 1 000 articles par jour : l'ordre de la file decide de ce
+# qui fonctionne pendant les jours de rattrapage. Elle suivait l'ordre
+# d'insertion, et AUSCGIE et le CGI — charges en dernier — passaient
+# apres tout le reste, alors que le droit des societes et la fiscalite
+# sont les deux promesses de la page d'accueil et le sujet des questions
+# d'exemple. Le 14 octobre 2026, aucun des deux n'avait un seul vecteur :
+# l'assistant refusait une question de base sur la SARL et se trompait
+# d'un facteur dix sur le capital minimum d'une SA.
+#
+# Les autres textes suivent, dans l'ordre d'insertion.
+TEXTES_PRIORITAIRES: tuple[str, ...] = ("AUSCGIE", "CGI")
+
 # Reprise sur coupure de connexion a l'ecriture. Trois essais
 # suffisent : une base hebergee qui ferme une connexion en rouvre
 # une aussitot, et au-dela l'incident n'est plus passager.
@@ -96,10 +109,24 @@ def articles_a_traiter(
         conditions.append("t.sigle = :sigle")
         parametres_requete["sigle"] = sigle
 
+    # Rang de priorite : 0 pour le premier texte prioritaire, 1 pour le
+    # suivant... et len(TEXTES_PRIORITAIRES) pour tous les autres. Les
+    # sigles passent en parametres, jamais dans la chaine SQL.
+    cas = " ".join(
+        f"WHEN :prioritaire_{i} THEN {i}" for i in range(len(TEXTES_PRIORITAIRES))
+    )
+    for i, prioritaire in enumerate(TEXTES_PRIORITAIRES):
+        parametres_requete[f"prioritaire_{i}"] = prioritaire
+    ordre = (
+        f"CASE t.sigle {cas} ELSE {len(TEXTES_PRIORITAIRES)} END, a.id"
+        if TEXTES_PRIORITAIRES
+        else "a.id"
+    )
+
     requete = (
         "SELECT a.id, a.numero, a.chemin, a.contenu, t.sigle "
         "FROM article a JOIN texte t ON t.id = a.texte_id "
-        f"WHERE {' AND '.join(conditions)} ORDER BY a.id"
+        f"WHERE {' AND '.join(conditions)} ORDER BY {ordre}"
     )
     if limite:
         requete += " LIMIT :limite"
