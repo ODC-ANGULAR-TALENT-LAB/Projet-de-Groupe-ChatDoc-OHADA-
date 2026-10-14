@@ -192,10 +192,11 @@ const DESTINATIONS: Destination[] = [
         </a>
       }
 
-      <!-- OUTILS DU CLIENT. Favoris, calculateurs et conformité suivent
-           des dossiers : un compte d'exploitation n'en a aucun, et les
-           lui proposer laisse croire qu'il lui manque quelque chose. -->
-      @if (!estPersonnel()) {
+      <!-- OUTILS, POUR TOUS LES COMPTES. Ils étaient réservés aux
+           clients ; l'administrateur doit pourtant pouvoir les ouvrir —
+           pour vérifier ce que voit un client, répondre à une question
+           sur un calcul, ou s'en servir lui-même. Le serveur ne les
+           restreint à aucun rôle. -->
       <nav class="nav-outils" aria-label="Outils">
         <a routerLink="/favoris" routerLinkActive="actif">
           Favoris
@@ -212,24 +213,20 @@ const DESTINATIONS: Destination[] = [
         <a routerLink="/calculateurs" routerLinkActive="actif">Calculateurs</a>
         <a routerLink="/conformite" routerLinkActive="actif">Conformité</a>
       </nav>
-      }
 
       <!-- Pages de transparence : des références, pas des destinations
            quotidiennes. « Votre avis » les rejoint parce qu'on n'y va
            pas non plus tous les jours — mais il faut pouvoir le trouver
            sans passer par les réglages du compte. -->
       <nav class="nav-outils" aria-label="À propos">
-        <!-- Forfaits et avis sont des pages de client : le premier
-             vend des crédits, le second demande son opinion sur le
-             service à celui qui le rend. Méthodologie et mises à jour
-             restent : ce sont des pages de transparence sur le corpus,
-             utiles à tous. -->
-        @if (!estPersonnel()) {
-          <a routerLink="/forfaits" routerLinkActive="actif">Forfaits</a>
-        }
+        <!-- Forfaits s'affiche aussi pour le personnel : la page le
+             reconnaît et montre le catalogue sans proposer d'achat (le
+             serveur refuse de toute façon une demande d'un compte
+             d'exploitation). -->
+        <a routerLink="/forfaits" routerLinkActive="actif">Forfaits</a>
         <a routerLink="/methodologie" routerLinkActive="actif">Méthodologie</a>
         <a routerLink="/journal" routerLinkActive="actif">Mises à jour</a>
-        @if (auth.connecte() && !estPersonnel()) {
+        @if (auth.connecte()) {
           <a routerLink="/avis" routerLinkActive="actif">Votre avis</a>
         }
       </nav>
@@ -351,8 +348,7 @@ const DESTINATIONS: Destination[] = [
           </div>
         }
 
-        @if (!estPersonnel()) {
-          <p class="feuille-titre">Outils</p>
+        <p class="feuille-titre">Outils</p>
           <div class="feuille-liens">
             <a routerLink="/favoris" routerLinkActive="actif" (click)="fermerMenu()">
               <app-icone nom="favori" />
@@ -372,16 +368,13 @@ const DESTINATIONS: Destination[] = [
               Conformité
             </a>
           </div>
-        }
 
         <p class="feuille-titre">À propos</p>
         <div class="feuille-liens">
-          @if (!estPersonnel()) {
-            <a routerLink="/forfaits" routerLinkActive="actif" (click)="fermerMenu()">
-              <app-icone nom="forfait" />
-              Forfaits
-            </a>
-          }
+          <a routerLink="/forfaits" routerLinkActive="actif" (click)="fermerMenu()">
+            <app-icone nom="forfait" />
+            Forfaits
+          </a>
           <a routerLink="/methodologie" routerLinkActive="actif" (click)="fermerMenu()">
             <app-icone nom="methodologie" />
             Méthodologie
@@ -390,7 +383,7 @@ const DESTINATIONS: Destination[] = [
             <app-icone nom="journal" />
             Mises à jour
           </a>
-          @if (auth.connecte() && !estPersonnel()) {
+          @if (auth.connecte()) {
             <a routerLink="/avis" routerLinkActive="actif" (click)="fermerMenu()">
               <app-icone nom="avis" />
               Votre avis
@@ -1348,12 +1341,6 @@ export class AppComponent {
       if (destination.audience === 'client') return !personnel;
       return true;
     });
-  }
-
-  /** Ce compte sert-il à exploiter le service plutôt qu'à s'en servir ? */
-  protected estPersonnel(): boolean {
-    const role = this.auth.quota()?.role;
-    return role === 'juriste' || role === 'admin';
   }
 
   /**

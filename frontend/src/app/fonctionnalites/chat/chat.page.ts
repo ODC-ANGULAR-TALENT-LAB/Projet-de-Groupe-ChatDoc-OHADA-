@@ -42,10 +42,18 @@ const EXEMPLES = [
         <header class="entete">
           <h1>Poser une question</h1>
           @if (auth.quota(); as quota) {
-            <span class="quota" [class.epuise]="quota.quota_restant === 0">
-              {{ quota.quota_restant }} question{{ quota.quota_restant > 1 ? 's' : '' }}
-              restante{{ quota.quota_restant > 1 ? 's' : '' }}
-            </span>
+            <!-- LE PERSONNEL N'A PAS DE QUOTA. Le serveur ne le bloque ni
+                 ne le décompte (chat.py) ; lui afficher « 10 questions
+                 restantes » annonçait une limite qui n'existe pas, et un
+                 compteur qui ne bougeait jamais. -->
+            @if (quota.role === 'admin' || quota.role === 'juriste') {
+              <span class="quota">Questions illimitées</span>
+            } @else {
+              <span class="quota" [class.epuise]="quota.quota_restant === 0">
+                {{ quota.quota_restant }} question{{ quota.quota_restant > 1 ? 's' : '' }}
+                restante{{ quota.quota_restant > 1 ? 's' : '' }}
+              </span>
+            }
           }
         </header>
 
