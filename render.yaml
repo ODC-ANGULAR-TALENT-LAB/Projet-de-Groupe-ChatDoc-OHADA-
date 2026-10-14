@@ -1,9 +1,8 @@
 # ChatDocs OHADA — infrastructure declaree (Render Blueprint).
 #
-# Ce fichier decrit LA TOTALITE du deploiement : la base PostgreSQL,
-# l'API et le site. Render le lit a chaque poussee sur `main` et
-# reconstruit ce qui a change. Il n'y a rien a cliquer ensuite, hormis
-# les secrets — voir plus bas.
+# Ce fichier decrit l'API et le site. Render le lit a chaque poussee sur
+# `main` et reconstruit ce qui a change. La base PostgreSQL, elle, vit
+# chez Neon — voir plus bas pourquoi elle n'est plus ici.
 #
 # MISE EN PLACE, UNE SEULE FOIS
 #   Render > New > Blueprint > choisir ce depot > Apply.
@@ -36,30 +35,27 @@
 # -----------------------------------------------------------------
 # CE QUE L'OFFRE GRATUITE IMPOSE, ET QU'AUCUN REGLAGE NE CONTOURNE
 # -----------------------------------------------------------------
-# 1. LA BASE EXPIRE 30 JOURS APRES SA CREATION. Quatorze jours de
-#    sursis, puis les donnees sont supprimees. C'est une echeance, pas
-#    une mise en veille : la maintenir eveillee n'y change rien. Notez
-#    la date de creation ; passer la base en offre payante avant terme
-#    conserve les donnees, la recreer les perd.
+# 1. LA BASE GRATUITE DE RENDER EXPIRE 30 JOURS APRES SA CREATION, puis
+#    est supprimee 14 jours plus tard. C'EST ARRIVE : creee le 21 aout
+#    2026, elle a expire le 20 septembre. L'API ne pouvait plus demarrer
+#    (les migrations echouent, le conteneur s'arrete, Render le relance
+#    en boucle) et le site est reste sans API trois semaines et demie.
+#    La base est donc chez NEON : PostgreSQL 16 + pgvector, gratuit SANS
+#    date d'expiration. Son adresse est un secret saisi dans le tableau
+#    de bord (DATABASE_URL, plus bas).
 #
 # 2. L'API S'ENDORT apres 15 minutes sans requete, et met environ une
-#    minute a se reveiller. .github/workflows/reveil.yml l'appelle
-#    toutes les dix minutes aux heures ouvrables pour l'eviter.
+#    minute a se reveiller. Une sonde EXTERNE (UptimeRobot) appelle /vie
+#    toutes les cinq minutes, jour et nuit. Les taches planifiees de
+#    GitHub ne suffisent pas : elles sont retardees ou sautees quand
+#    GitHub est charge (34 passages par jour observes pour 108 prevus).
+#    .github/workflows/reveil.yml reste en renfort.
 #
 # 3. 750 HEURES D'INSTANCE PAR MOIS pour l'espace de travail entier.
-#    Le site statique n'en consomme aucune — il est servi par le CDN.
-#    Seule l'API compte, d'ou la plage horaire restreinte du reveil.
-
-databases:
-  - name: chatdocs-db
-    databaseName: chatdocs
-    user: chatdocs
-    plan: free
-    # pgvector est requis : db/init/01_schema.sql fait
-    # `CREATE EXTENSION vector`. Il est fourni par les images
-    # PostgreSQL 16 de Render.
-    postgresMajorVersion: "16"
-    region: frankfurt
+#    Eveillee en permanence, l'API en consomme 744 au plus (mois de 31
+#    jours) : cela tient, A CONDITION QUE CE SOIT LE SEUL SERVICE WEB
+#    GRATUIT de l'espace de travail. Le site statique n'en consomme
+#    aucune — il est servi par le CDN.
 
 services:
   # ---------------------------------------------------------------
@@ -77,13 +73,20 @@ services:
     # Render attend une reponse 2xx ici avant de basculer le trafic sur
     # la nouvelle version. Un demarrage qui echoue laisse donc
     # l'ancienne en ligne au lieu de couper le service.
-    healthCheckPath: /sante
+    #
+    # /vie et non /sante : Render l'appelle sans cesse, et /sante
+    # interroge la base. Neon ne pourrait plus jamais s'endormir et
+    # epuiserait son quota de calcul gratuit. Une base injoignable reste
+    # detectee au deploiement : les migrations echouent avant meme que
+    # l'API ne demarre.
+    healthCheckPath: /vie
     autoDeploy: true
     envVars:
+      # Chaine de connexion Neon (Dashboard > Connect), de la forme
+      #   postgresql://<user>:<mot-de-passe>@<hote>.neon.tech/chatdocs?sslmode=require
+      # C'est un secret : il ne figure jamais dans le depot.
       - key: DATABASE_URL
-        fromDatabase:
-          name: chatdocs-db
-          property: connectionString
+        sync: false
 
       # NE PAS REMPLACER PAR `fromService`. La tentation est forte : ce
       # domaine se deduit du nom du service, et une reference eviterait

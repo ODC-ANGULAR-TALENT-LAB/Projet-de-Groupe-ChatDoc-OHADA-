@@ -7,7 +7,7 @@ Lancement, depuis le dossier backend/ :
 import logging
 from urllib.parse import urlparse
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
@@ -197,8 +197,23 @@ def racine() -> dict:
     return {"service": "ChatDocs OHADA", "version": app.version}
 
 
+@app.get("/vie", tags=["technique"])
+def vie() -> dict:
+    """Le processus repond. Rien de plus, et c'est voulu.
+
+    AUCUNE REQUETE EN BASE. Cette sonde est appelee toutes les cinq
+    minutes (sonde externe, verification de Render) pour empecher l'API
+    gratuite de s'endormir. La base Neon, elle, doit pouvoir s'endormir :
+    c'est ce qui la garde dans son quota de calcul gratuit. Une sonde
+    frequente qui l'interrogerait la tiendrait eveillee jour et nuit.
+
+    L'etat de la base se lit sur /sante, appelee rarement.
+    """
+    return {"api": "ok"}
+
+
 @app.get("/sante", tags=["technique"])
-def sante() -> dict:
+def sante(reponse: Response) -> dict:
     """Etat de l'API, de sa base et de son corpus.
 
     Le compte d'articles vectorises n'est pas decoratif : sans
@@ -243,6 +258,11 @@ def sante() -> dict:
             ).scalar()
     except Exception as erreur:  # noqa: BLE001 - on veut le diagnostic brut
         etat["base"] = "indisponible"
+        # 503 ET NON 200. L'API est restee hors service trois semaines et
+        # demie parce que cette route repondait 200 en ecrivant
+        # « indisponible » dans un corps que rien ne lisait. Une sonde
+        # externe ne lit que le code : c'est lui qui doit dire la panne.
+        reponse.status_code = 503
         # Le detail expose la chaine de connexion et la topologie interne :
         # utile en developpement, a ne pas publier.
         if not parametres.production:

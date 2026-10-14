@@ -1,34 +1,36 @@
-# Maintient l'API eveillee aux heures ouvrables.
+# Renfort pour garder l'API eveillee.
 #
 # POURQUOI. Un service web de l'offre gratuite de Render s'endort apres
 # 15 minutes sans requete, et le reveil prend environ une minute. Le
 # visiteur qui arrive le premier attend donc devant une page qui semble
-# figee — et c'est exactement ce qui se produit devant un jury, puisque
-# personne n'a utilise l'application depuis la veille.
+# figee — et c'est exactement ce qui se produit devant un jury.
 #
-# Un appel toutes les dix minutes suffit a l'empecher de s'endormir.
+# CE N'EST QU'UN RENFORT. La sonde principale est EXTERNE (UptimeRobot,
+# toutes les 5 minutes, voir le README). Les taches planifiees de GitHub
+# sont retardees, voire sautees, quand la plateforme est chargee : sur
+# l'historique de ce fichier, 34 passages par jour au mieux pour 108
+# prevus. Et GitHub desactive les planifications d'un depot sans
+# activite pendant 60 jours. Seule, cette tache ne tient pas l'API
+# eveillee ; en renfort, elle couvre les trous de la sonde.
 #
-# POURQUOI PAS 24 HEURES SUR 24. Render offre 750 heures d'instance par
-# mois et par espace de travail. Un service eveille en permanence en
-# consomme 720 : le quota tient, mais il ne reste rien pour quoi que ce
-# soit d'autre, et le depassement suspend le service jusqu'au mois
-# suivant — une panne totale, au pire moment possible.
+# /vie ET NON /sante. /vie ne touche pas la base : Neon peut s'endormir
+# entre deux visites, ce qui la garde dans son quota de calcul gratuit.
 #
-# La plage ci-dessous (05h-23h UTC, soit 06h-minuit a Douala) represente
-# environ 540 heures et laisse plus de 200 heures de marge pour le
-# trafic reel des heures creuses.
+# 24 HEURES SUR 24. Eveillee en permanence, l'API consomme au plus
+# 744 heures par mois, sous les 750 que Render offre par espace de
+# travail — a condition qu'elle soit le seul service web gratuit.
 #
-# CE QUE CE FICHIER NE PEUT PAS FAIRE. Une base PostgreSQL gratuite
-# EXPIRE 30 JOURS APRES SA CREATION, avec 14 jours de sursis avant
-# suppression definitive des donnees. Aucun appel periodique n'y change
-# rien : c'est une echeance, pas une mise en veille. Voir le README.
+# CE QUE CE FICHIER N'A PAS VU. Du 20 septembre au 14 octobre 2026,
+# chacun de ses passages a echoue : la base Render avait expire. Les
+# echecs restaient dans l'onglet Actions, que personne ne regardait. La
+# sonde externe, elle, envoie un courriel.
 
 name: Reveil de l'API
 
 on:
   schedule:
-    # Toutes les 10 minutes, de 05h00 a 22h50 UTC.
-    - cron: "*/10 5-22 * * *"
+    # Toutes les 10 minutes, jour et nuit.
+    - cron: "*/10 * * * *"
   # Permet de reveiller l'API a la demande, juste avant une
   # demonstration, sans attendre le prochain passage.
   workflow_dispatch:
@@ -37,7 +39,7 @@ jobs:
   appeler:
     runs-on: ubuntu-latest
     steps:
-      - name: Appeler /sante
+      - name: Appeler /vie
         env:
           # Variable du depot : Settings > Secrets and variables >
           # Actions > Variables. Exemple :
@@ -60,9 +62,9 @@ jobs:
           code=$(curl --silent --show-error --location \
                       --max-time 90 --retry 3 --retry-delay 10 \
                       --output /dev/null --write-out "%{http_code}" \
-                      "${URL_API%/}/sante")
+                      "${URL_API%/}/vie")
 
-          echo "GET ${URL_API%/}/sante -> $code"
+          echo "GET ${URL_API%/}/vie -> $code"
           case "$code" in
             2*) echo "API eveillee." ;;
             *)  echo "::error::L'API ne repond pas correctement (code $code)."; exit 1 ;;

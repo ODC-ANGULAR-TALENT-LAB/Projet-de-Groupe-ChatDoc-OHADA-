@@ -112,7 +112,7 @@ frontend/public/.well-known/assetlinks.json  lie le domaine à l'APK signé
 .github/workflows/
   apk.yml           construit et publie l'APK en release
   reveil.yml        maintient l'API éveillée aux heures ouvrables
-render.yaml         TOUT le déploiement : base, API, site
+render.yaml         déploiement de l'API et du site (la base est chez Neon)
 .dockerignore       le contexte étant la racine, il évite d'y verser le frontend
 docker-compose.yml
 .env.example
@@ -628,27 +628,63 @@ de développeur.
 
 ## Déploiement
 
-Tout est décrit dans **`render.yaml`**, à la racine. Render lit ce
-fichier et crée les trois briques lui-même — base PostgreSQL comprise —
-puis redéploie à chaque poussée sur `main`.
+L'API et le site sont décrits dans **`render.yaml`**, à la racine :
+Render les crée et les redéploie à chaque poussée sur `main`. La base
+vit chez **Neon**, et une sonde externe tient l'API éveillée.
 
-| Brique | Ce que Render crée | Offre |
+| Brique | Où | Offre |
 |---|---|---|
-| PostgreSQL 16 + pgvector | `chatdocs-db` | gratuite, **expire à 30 jours** |
-| API FastAPI (Docker) | `chatdocs-api` | gratuite, s'endort à 15 min |
-| Site Angular (statique) | `chatdocs-web` | gratuite, jamais en veille |
+| PostgreSQL 16 + pgvector | Neon | gratuite, **sans expiration**, s'endort sans trafic |
+| API FastAPI (Docker) | Render, `chatdocs-api` | gratuite, gardée éveillée par la sonde |
+| Site Angular (statique) | Render, `chatdocs-web` | gratuite, jamais en veille |
+| Sonde de disponibilité | UptimeRobot | gratuite, alerte par courriel |
+
+> **Pourquoi la base a quitté Render.** Sa base gratuite expire 30 jours
+> après sa création. Créée le 21 août 2026, elle a expiré le 20
+> septembre : l'API ne pouvait plus démarrer, et le site est resté sans
+> API **trois semaines et demie** sans que personne ne le voie — `/sante`
+> répondait encore 200, et les échecs du réveil restaient dans l'onglet
+> Actions. Neon n'a pas d'échéance ; `/sante` répond désormais 503 quand
+> la base manque, et la sonde envoie un courriel.
 
 **Ne pas mettre l'API sur Vercel** : ses fonctions serverless coupent à
 10 s en offre Hobby, et `/chat/question/flux` diffuse des réponses qui
 mettent couramment 8 à 12 s — on serait pile sur la limite, avec des
 coupures aléatoires impossibles à diagnostiquer.
 
-### 1. Appliquer le blueprint
+### 1. Créer la base chez Neon
+
+1. [neon.tech](https://neon.tech) → nouveau projet, **PostgreSQL 16**,
+   région **AWS Europe (Frankfurt)** — la même que l'API, pour que chaque
+   requête ne traverse pas l'Europe.
+2. Nommer la base `chatdocs`. **Connect** → copier la chaîne de
+   connexion (elle se termine par `?sslmode=require`).
+3. Y copier la base locale, corpus et comptes compris. Placer la chaîne
+   dans un fichier `.env.neon` à la racine (ignoré par git), **entre
+   apostrophes** — `DATABASE_URL='postgresql://...'`. La chaîne de Neon
+   contient un `&` (`?sslmode=require&channel_binding=require`) : sans
+   apostrophes, le shell y voit « lancer en arrière-plan », la variable
+   reste vide, et `psql` tente une base locale inexistante. Puis :
+
+   ```bash
+   set -a; . ./.env.neon; set +a
+   docker exec chatdocs_db pg_dump -U chatdocs -d chatdocs \
+       --no-owner --no-privileges --clean --if-exists \
+     | docker exec -i -e CIBLE="$DATABASE_URL" chatdocs_db \
+       sh -c 'psql "$CIBLE" -v ON_ERROR_STOP=1 -q'
+   ```
+
+   Le client `psql` du conteneur sert de pont : rien à installer sur la
+   machine. Les extensions `vector` et `citext` sont recréées par le
+   vidage ; Neon fournit les deux.
+
+### 2. Appliquer le blueprint
 
 Render → **New** → **Blueprint** → choisir ce dépôt → **Apply**.
 
 Render demande alors les valeurs marquées `sync: false` : la clé du
-fournisseur, le nom du modèle, les identifiants Google et CamPay. Elles
+fournisseur, le nom du modèle, les identifiants Google et CamPay, et
+`DATABASE_URL` — la chaîne de connexion Neon de l'étape 1. Elles
 **ne sont pas dans le dépôt** et n'y entreront jamais ; Render les
 conserve chiffrées. `JWT_SECRET` est généré par Render, et personne n'a
 besoin de le connaître.
@@ -670,7 +706,7 @@ C'est tout. Le schéma s'applique au démarrage du conteneur
 > services sont renommés ou reçoivent un domaine personnalisé, les deux
 > valeurs à corriger sont dans `render.yaml`.
 
-### 2. Ce qui reste manuel, et pourquoi
+### 3. Ce qui reste manuel, et pourquoi
 
 **L'origine du site doit être déclarée dans la console Google**, sans
 quoi le bouton de connexion Google ne s'affiche pas du tout. Google ne
@@ -680,33 +716,44 @@ peut pas la deviner.
 `https://chatdocs-api.onrender.com/paiements/campay`.
 
 **La variable de dépôt `URL_API`** (GitHub → Settings → Secrets and
-variables → Actions → Variables) alimente le réveil périodique. Sans
+variables → Actions → Variables) alimente le réveil de renfort. Sans
 elle, le workflow s'arrête proprement au lieu d'échouer.
 
-### 3. Ce que l'offre gratuite impose
+**Le secret `DATABASE_URL` du dépôt** (même écran, onglet *Secrets*)
+alimente la vectorisation quotidienne. Il doit porter la chaîne Neon,
+comme le tableau de bord de Render.
 
-**La base expire 30 jours après sa création**, puis quatorze jours de
-sursis avant suppression définitive des données. Ce n'est pas une mise
-en veille : aucun réveil périodique n'y change quoi que ce soit.
-**Notez la date de création.** Passer la base en offre payante avant
-l'échéance conserve les données ; la recréer les perd.
+**La sonde UptimeRobot** ([uptimerobot.com](https://uptimerobot.com),
+gratuit) — deux moniteurs HTTP(s) :
+
+| Moniteur | URL | Intervalle | Rôle |
+|---|---|---|---|
+| Éveil | `https://chatdocs-api.onrender.com/vie` | 5 min | empêche l'API de s'endormir |
+| Santé | `https://chatdocs-api.onrender.com/sante` | 60 min | alerte si la base ou l'API tombe |
+
+### 4. Ce que l'offre gratuite impose
+
+**Deux sondes, et pas une, à cause de Neon.** Une base Neon gratuite
+s'endort après 5 minutes sans requête ; c'est ce qui la garde dans son
+quota de calcul mensuel. `/vie` ne touche pas la base : appelée toutes
+les cinq minutes, elle tient l'API éveillée et laisse Neon dormir.
+`/sante` interroge la base — appelée toutes les cinq minutes, elle la
+tiendrait éveillée jour et nuit et épuiserait le quota avant la fin du
+mois. D'où l'intervalle d'une heure. Pour la même raison, Render vérifie
+`/vie` et non `/sante` (`healthCheckPath`).
 
 **L'API s'endort après 15 minutes sans requête** et met environ une
-minute à se réveiller — soit exactement ce que verra le premier
-visiteur du matin. `.github/workflows/reveil.yml` l'appelle toutes les
-dix minutes entre 6 h et minuit (heure de Douala).
+minute à se réveiller. La sonde l'appelle toutes les cinq minutes, jour
+et nuit ; `.github/workflows/reveil.yml` double cet appel toutes les dix
+minutes. Seul, ce dernier ne suffit pas : GitHub retarde ou saute les
+tâches planifiées quand il est chargé (34 passages par jour observés
+pour 108 prévus), et **désactive les planifications après 60 jours sans
+activité** sur le dépôt.
 
-**750 heures d'instance par mois** pour l'espace de travail entier. Un
-service éveillé en permanence en consomme 720 : le quota tiendrait
-juste, sans marge, et le dépassement suspend le service jusqu'au mois
-suivant. D'où la plage horaire restreinte du réveil — environ 540
-heures, plus de 200 heures de réserve.
-
-> Deux limites du réveil, à connaître. GitHub **désactive les workflows
-> planifiés après 60 jours sans activité** sur le dépôt : une poussée
-> suffit à les relancer. Et les horaires ne sont pas garantis à la
-> minute — c'est sans importance ici, l'endormissement demande quinze
-> minutes de silence.
+**750 heures d'instance par mois** pour l'espace de travail entier.
+Éveillée en permanence, l'API en consomme 744 au plus : cela tient, **à
+condition qu'elle soit le seul service web gratuit de l'espace de
+travail**. Le site statique ne compte pas.
 
 Avant une démonstration, `workflow_dispatch` réveille l'API à la
 demande sans attendre le prochain passage.
@@ -1068,8 +1115,9 @@ y est testée. Le frontend affiche ce que le serveur a déjà validé.
 découverte le jour J ne laisse aucun temps pour réagir.
 
 La création de l'infrastructure est décrite plus haut, dans
-[Déploiement](#déploiement) : `render.yaml` s'en charge entièrement, schéma de
-base compris. Ce qui suit ne concerne que ce qu'un blueprint ne peut pas faire.
+[Déploiement](#déploiement) : la base chez Neon, l'API et le site par
+`render.yaml` — le schéma s'applique au démarrage de l'API. Ce qui suit ne
+concerne que ce qu'un blueprint ne peut pas faire.
 
 ### 1. Charger le corpus
 
@@ -1127,3 +1175,10 @@ ChatDocs OHADA est une **aide à la recherche documentaire**. Il ne constitue ni
 une consultation juridique, ni un conseil fiscal, ni un acte relevant d'une
 profession réglementée. L'extrait officiel est affiché précisément pour que
 l'utilisateur exerce son propre contrôle professionnel.
+
+
+## Identifiants Admin
+
+Compte admin ChatDocs OHADA (local)
+E-mail       : admin@chatdocs-ohada.cm
+Mot de passe : sX1OZXHmfJm18oSN
