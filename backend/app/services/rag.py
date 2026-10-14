@@ -13,6 +13,7 @@ demontrable plutot qu'affirmee.
 from __future__ import annotations
 
 import logging
+import re
 
 import httpx
 
@@ -127,6 +128,13 @@ MESSAGE_NON_FONDE = (
     "Je ne parviens pas a fonder une reponse fiable sur les textes disponibles."
 )
 
+MESSAGE_REFERENCE_HORS_SOURCES = (
+    "La reponse redigee renvoyait a un article qui ne figurait pas parmi les "
+    "textes consultes : elle a ete ecartee plutot que de vous presenter une "
+    "affirmation non verifiee. Voici les articles du corpus qui correspondent "
+    "le mieux a votre question : lisez-les directement, ils font foi."
+)
+
 
 def construire_message_utilisateur(
     contexte: str, question: str, historique: list[dict] | None = None
@@ -214,6 +222,69 @@ def valider_citations(
         )
 
     return validees
+
+
+# --- References ecrites DANS LE TEXTE de la reponse ----------------------
+#
+# valider_citations() ne lit que la liste `citations`. Le texte, lui,
+# pouvait nommer un article absent du contexte, cite de memoire par le
+# modele. Constat en production le 14 octobre 2026 : « 1 000 000 FCFA
+# (art. 387 AUSCGIE) » avec des citations jointes valides (824 et 65) —
+# et l'article 387, jamais fourni au modele, dit 10.000.000 FCFA. La liste
+# passait le controle ; l'affirmation, fausse d'un facteur dix, aussi.
+#
+# Le prompt impose la forme « (art. 12 AUSCGIE) » : c'est elle, et ses
+# variantes courantes, que l'on repere ici.
+
+# Un numero d'article : 387, 337-1, 387 bis.
+_NUMERO = r"\d+(?:-\d+)?(?:\s+(?:bis|ter|quater|quinquies))?"
+# « art. », « article(s) », suivi d'une suite de numeros reliee par des
+# virgules ou « et », puis d'un sigle facultatif (« du CGI », « AUSCGIE »).
+_REFERENCE = re.compile(
+    r"\bart(?:icle)?s?\.?\s+"
+    rf"(?P<numeros>{_NUMERO}(?:\s*(?:,|\bet\b)\s*{_NUMERO})*)"
+    r"(?:\s+(?:du\s+|de\s+l['’]\s*)?(?P<sigle>[A-Z][A-Z0-9]{1,11})\b)?",
+    re.IGNORECASE,
+)
+
+
+def _normaliser_numero(numero: str) -> str:
+    return " ".join(numero.lower().split())
+
+
+def extraire_references(texte: str) -> set[tuple[str, str | None]]:
+    """Les (numero, sigle ou None) des articles nommes dans un texte."""
+    references: set[tuple[str, str | None]] = set()
+    for correspondance in _REFERENCE.finditer(texte or ""):
+        sigle = correspondance.group("sigle")
+        # Le sigle est en capitales dans le texte ; un mot ordinaire en
+        # minuscules (« du code ») n'en est pas un.
+        if sigle and not sigle.isupper():
+            sigle = None
+        for numero in re.findall(_NUMERO, correspondance.group("numeros"), re.IGNORECASE):
+            references.add((_normaliser_numero(numero), sigle))
+    return references
+
+
+def references_hors_contexte(
+    texte: str, resultats: list[tuple[dict, float]]
+) -> set[tuple[str, str | None]]:
+    """Les articles nommes dans le texte mais absents du contexte fourni.
+
+    Avec un sigle, le couple (numero, sigle) doit figurer au contexte :
+    l'article 337 d'AUSCGIE n'est pas celui du CGI. Sans sigle, le numero
+    suffit.
+    """
+    couples = {
+        (_normaliser_numero(article["numero"]), article["sigle"])
+        for article, _ in resultats
+    }
+    numeros = {numero for numero, _ in couples}
+    return {
+        (numero, sigle)
+        for numero, sigle in extraire_references(texte)
+        if ((numero, sigle) not in couples if sigle else numero not in numeros)
+    }
 
 
 class ServiceIndisponible(RuntimeError):
@@ -388,6 +459,21 @@ def _finaliser(brut: dict, resultats: list[tuple[dict, float]]) -> dict:
     if confiance != "insuffisante" and not citations:
         journal.warning("Reponse rejetee : affirmation sans citation.")
         return refus(MESSAGE_NON_FONDE)
+
+    # Aucun article nomme dans le texte qui n'ait ete fourni au modele.
+    # La redaction est ecartee, mais pas la recherche : les articles
+    # trouves restent montres, tels quels — ils font foi, et ils ne
+    # contiennent aucune affirmation du modele.
+    hors_sources = references_hors_contexte(brut.get("reponse", ""), resultats)
+    if hors_sources:
+        journal.warning(
+            "Redaction ecartee : articles nommes hors contexte %s.",
+            sorted(hors_sources, key=str),
+        )
+        return {
+            **articles_sans_synthese(resultats, "hybride"),
+            "reponse": MESSAGE_REFERENCE_HORS_SOURCES,
+        }
 
     return {
         "reponse": brut.get("reponse", ""),

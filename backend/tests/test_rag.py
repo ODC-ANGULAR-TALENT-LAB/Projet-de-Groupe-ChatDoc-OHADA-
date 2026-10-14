@@ -349,3 +349,85 @@ def test_le_seuil_n_est_pas_applique_en_lexical_seul(monkeypatch):
 
     assert resultat["refus"] is False
     assert resultat["citations"]
+
+
+# ---------------------------------------------------------------------
+# References ecrites DANS LE TEXTE de la reponse
+# ---------------------------------------------------------------------
+#
+# Le controle des citations ne lisait que la liste `citations`. Le texte,
+# lui, pouvait nommer un article absent du contexte — cite de memoire par
+# le modele. Constat en production le 14 octobre 2026 : « Le capital
+# minimum d'une SA est de 1 000 000 FCFA (art. 387 AUSCGIE) », citations
+# jointes 824 et 65, et l'article 387 — jamais fourni au modele — dit en
+# realite 10.000.000 FCFA. La liste etait valide, l'affirmation fausse.
+
+def test_reference_textuelle_hors_contexte_ecarte_la_redaction(repondre_avec):
+    resultat = repondre_avec(
+        {
+            "reponse": "Le capital minimum est de 1 000 000 FCFA (art. 387 AUSCGIE).",
+            "citations": [{"article_id": 10, "extrait": "quinze jours"}],
+            "confiance": "elevee",
+        }
+    )
+
+    # La prose fautive n'est pas montree...
+    assert "1 000 000" not in resultat["reponse"]
+    assert resultat["reponse"] == rag.MESSAGE_REFERENCE_HORS_SOURCES
+    # ... mais les articles trouves le sont : ils font foi.
+    assert resultat["sans_synthese"] is True
+    assert resultat["refus"] is False
+    assert {c["numero"] for c in resultat["citations"]} == {"337", "338"}
+
+
+def test_references_textuelles_du_contexte_acceptees(repondre_avec):
+    resultat = repondre_avec(
+        {
+            "reponse": (
+                "Le delai est de quinze jours (art. 337 AUSCGIE). "
+                "Voir aussi les articles 337 et 338, ainsi que l'Article 338."
+            ),
+            "citations": [{"article_id": 10, "extrait": "quinze jours"}],
+            "confiance": "elevee",
+        }
+    )
+
+    assert resultat["refus"] is False
+    assert not resultat.get("sans_synthese")
+    assert "quinze jours" in resultat["reponse"]
+
+
+def test_meme_numero_dans_un_autre_texte_est_hors_contexte(repondre_avec):
+    """Le contexte porte l'article 337 d'AUSCGIE, pas celui du CGI."""
+    resultat = repondre_avec(
+        {
+            "reponse": "Le taux est fixe a 30 % (art. 337 CGI).",
+            "citations": [{"article_id": 10, "extrait": "quinze jours"}],
+            "confiance": "elevee",
+        }
+    )
+
+    assert resultat["reponse"] == rag.MESSAGE_REFERENCE_HORS_SOURCES
+
+
+def test_une_seule_reference_inventee_dans_une_liste_suffit(repondre_avec):
+    resultat = repondre_avec(
+        {
+            "reponse": "Voir les articles 337, 338 et 999 AUSCGIE.",
+            "citations": [{"article_id": 10, "extrait": "quinze jours"}],
+            "confiance": "elevee",
+        }
+    )
+
+    assert resultat["reponse"] == rag.MESSAGE_REFERENCE_HORS_SOURCES
+
+
+def test_extraire_references_reconnait_les_formes_courantes():
+    refs = rag.extraire_references(
+        "(art. 12 AUSCGIE), article 337, Art. 387 bis, articles 10 et 11 du CGI"
+    )
+
+    assert ("12", "AUSCGIE") in refs
+    assert ("337", None) in refs
+    assert ("387 bis", None) in refs
+    assert ("10", "CGI") in refs and ("11", "CGI") in refs
