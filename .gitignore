@@ -39,8 +39,11 @@ Desktop.ini
 backend/journal-api*.log
 
 # Sorties de l'outil de mesure responsive (frontend/outils) : le profil
-# du navigateur sans tête et le relevé de la dernière campagne. Le relevé
-# se régénère à chaque exécution ; le versionner ferait un conflit à
-# chaque mesure sans rien apprendre à personne.
+# du navigateur sans tête, le relevé de la dernière campagne et les
+# captures. Tout se régénère à chaque exécution ; le versionner ferait un
+# conflit à chaque mesure sans rien apprendre à personne. Les captures
+# portent le nom passé à capturer.py, d'où le motif sur l'extension
+# plutôt qu'une liste de fichiers.
 frontend/outils/.profil-chrome/
 frontend/outils/constats-responsive.json
+frontend/outils/*.png
