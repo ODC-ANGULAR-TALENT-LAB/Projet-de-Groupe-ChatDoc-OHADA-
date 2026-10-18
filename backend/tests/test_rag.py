@@ -243,6 +243,35 @@ def test_panne_du_fournisseur_donne_un_refus(repondre_avec):
     assert resultat["refus"] is True
 
 
+@pytest.mark.parametrize("drapeau_refus", [{"refus": True}, {}])
+def test_un_refus_n_affiche_pas_une_affirmation_du_modele(repondre_avec, drapeau_refus):
+    """Cas reel (CGI, octobre 2026) : sans l'article 17 dans le contexte,
+    le modele a refuse... en ecrivant le taux de memoire et en l'attribuant
+    a l'article 7, qui traite des charges deductibles. Le texte d'un refus
+    echappait a toute validation : l'utilisateur lisait un faux fonde."""
+    resultat = repondre_avec(
+        {
+            "reponse": "Le taux est de 30 % (art. 338 AUSCGIE).",
+            "citations": [],
+            "confiance": "insuffisante",
+            **drapeau_refus,
+        }
+    )
+
+    assert resultat["refus"] is True
+    assert "30 %" not in resultat["reponse"]
+
+
+def test_un_refus_qui_oriente_sans_citer_est_conserve(repondre_avec):
+    explication = "Les articles fournis traitent de la SA, pas de la SARL."
+    resultat = repondre_avec(
+        {"reponse": explication, "citations": [], "confiance": "insuffisante",
+         "refus": True}
+    )
+
+    assert resultat["reponse"] == explication
+
+
 def test_insuffisante_sans_citation_reste_un_refus(repondre_avec):
     resultat = repondre_avec(
         {

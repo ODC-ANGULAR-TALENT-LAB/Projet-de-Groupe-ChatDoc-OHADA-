@@ -436,6 +436,28 @@ def repondre_en_flux(
     yield ("fin", _finaliser(brut, resultats))
 
 
+def texte_de_refus(texte_modele: str, resultats: list[tuple[dict, float]]) -> str:
+    """Ce que l'utilisateur lit quand le modele n'a pas pu fonder de reponse.
+
+    Le texte d'un refus echappait a toute validation : sans citation, rien
+    ne le controlait. Cas reel : sans l'article 17 du CGI dans le contexte,
+    le modele a « refuse » en ecrivant le taux de memoire et en l'attribuant
+    a l'article 7, qui traite des charges deductibles.
+
+    Mais ce texte a aussi une valeur : « les articles fournis traitent de la
+    SA, pas de la SARL » oriente l'utilisateur mieux qu'un message generique.
+    """
+    # On garde l'explication, pas le fondement : des qu'un refus nomme un
+    # article, il pretend appuyer quelque chose sur un texte, et rien n'a
+    # verifie ce qu'il lui fait dire — meme un article present au contexte
+    # (l'article 7 du CGI y figurait). Un chiffre sans article passe
+    # encore : le risque est accepte, une regex sur de la prose juridique
+    # ecarterait trop de refus utiles.
+    if not texte_modele.strip() or extraire_references(texte_modele):
+        return MESSAGE_NON_FONDE
+    return texte_modele
+
+
 def _finaliser(brut: dict, resultats: list[tuple[dict, float]]) -> dict:
     """Validation des citations — la garantie du produit.
 
@@ -444,7 +466,7 @@ def _finaliser(brut: dict, resultats: list[tuple[dict, float]]) -> dict:
     rejette.
     """
     if brut.get("refus"):
-        return refus(brut.get("reponse", MESSAGE_NON_FONDE))
+        return refus(texte_de_refus(brut.get("reponse", MESSAGE_NON_FONDE), resultats))
 
     citations = valider_citations(brut.get("citations") or [], resultats)
     confiance = brut.get("confiance", "insuffisante")
@@ -475,12 +497,17 @@ def _finaliser(brut: dict, resultats: list[tuple[dict, float]]) -> dict:
             "reponse": MESSAGE_REFERENCE_HORS_SOURCES,
         }
 
+    est_un_refus = confiance == "insuffisante" and not citations
     return {
-        "reponse": brut.get("reponse", ""),
+        "reponse": (
+            texte_de_refus(brut.get("reponse", ""), resultats)
+            if est_un_refus
+            else brut.get("reponse", "")
+        ),
         "citations": citations,
         "confiance": confiance,
         "mise_en_garde": brut.get("mise_en_garde") or None,
-        "refus": confiance == "insuffisante" and not citations,
+        "refus": est_un_refus,
     }
 
 
