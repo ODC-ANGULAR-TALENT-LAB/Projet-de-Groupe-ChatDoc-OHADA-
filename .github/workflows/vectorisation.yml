@@ -94,6 +94,8 @@ jobs:
           echo "Articles restants au depart : $depart"
           if [ "$depart" = "0" ]; then
             echo "### Corpus deja entierement vectorise — rien a faire." >> "$GITHUB_STEP_SUMMARY"
+            # Sans danger si l'index existe deja : CREATE INDEX IF NOT EXISTS.
+            python ingestion/4_vectoriser.py --creer-index
             exit 0
           fi
 
@@ -130,7 +132,9 @@ jobs:
 
           if [ "$final" = "0" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "**Corpus complet.** Reste a construire l'index HNSW :" >> "$GITHUB_STEP_SUMMARY"
-            echo '`python ingestion/4_vectoriser.py --creer-index`' >> "$GITHUB_STEP_SUMMARY"
-            echo "et a recalibrer SEUIL_PERTINENCE — voir le README." >> "$GITHUB_STEP_SUMMARY"
+            # L'index se construit ici, une fois TOUS les vecteurs en place :
+            # l'oublier laissait la recherche en parcours sequentiel.
+            python ingestion/4_vectoriser.py --creer-index
+            echo "**Corpus complet.** Index HNSW construit." >> "$GITHUB_STEP_SUMMARY"
+            echo "Reste a recalibrer SEUIL_PERTINENCE — voir le README." >> "$GITHUB_STEP_SUMMARY"
           fi
