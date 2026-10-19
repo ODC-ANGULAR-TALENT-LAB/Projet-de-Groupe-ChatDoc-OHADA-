@@ -29,7 +29,7 @@ const EXEMPLES = [
             l'assistant refuse explicitement quand le corpus ne permet pas
             de répondre.
           </p>
-          <p class="intro">5 questions par mois, gratuitement.</p>
+          <p class="intro">10 questions par mois, gratuitement.</p>
           <a routerLink="/connexion" class="principal lien-bouton">
             Se connecter ou créer un compte
           </a>

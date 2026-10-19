@@ -93,7 +93,7 @@ const PERSONAS: Persona[] = [
 
         @if (!auth.connecte()) {
           <p class="note">
-            5 questions par mois, gratuitement. La
+            10 questions par mois, gratuitement. La
             <a routerLink="/bibliotheque">bibliothèque</a> reste consultable
             sans compte.
           </p>

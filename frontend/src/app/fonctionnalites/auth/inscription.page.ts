@@ -88,7 +88,7 @@ export class InscriptionPage {
   );
 
   protected readonly avantages = [
-    '5 questions par mois, sans carte bancaire',
+    '10 questions par mois, sans carte bancaire',
     'Historique, favoris et annotations privées',
     'Alerte quand un article que vous suivez change',
   ];
