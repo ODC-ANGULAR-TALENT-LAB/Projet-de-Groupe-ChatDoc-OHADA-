@@ -101,8 +101,12 @@ services:
       # vert, /sante repond, les deux services tournent — et l'API
       # n'autorise qu'une origine qu'aucun navigateur n'enverra jamais.
       # Le site est en ligne et ne fonctionne pas.
+      #
+      # La seconde origine est le meme site deploye sur Vercel. Les deux
+      # coexistent : retirer l'une coupe ce site de l'API, sans erreur
+      # visible ailleurs que dans la console du navigateur.
       - key: ORIGINES_AUTORISEES
-        value: https://chatdocs-web.onrender.com
+        value: https://chatdocs-web.onrender.com,https://chatdocs-ohada.vercel.app
 
       # Active HSTS et masque le diagnostic detaille de /sante.
       - key: PRODUCTION
